@@ -1,30 +1,41 @@
-\Chapter{Koncepció}
+\Chapter{Processz ütemezés}
 
-\Section{A fejezet célja}
+\Section{Az ütemezési probléma}
 
-Ez a fejezet még nem a saját eredményekkel foglalkozik, hanem bemutatja, mi a problémakör, milyen módszerekkel, milyeneredményeket sikerült elérni eddig másoknak.
+\Section{Elterjedt ütemezési stratégiák}
 
-A hivatkozások jelentős része ehhez a fejezethez szokott kötődni.
-(Egy hivatkozás például így néz ki \cite{coombs1987markup}.)
-Itt lehet bemutatni a hasonló alkalmazásokat.
+\SubSection{$\mathcal{O}(1)$}
 
-\Section{Tartalom és felépítés}
+\SubSection{$\mathcal{O}(n)$}
 
-A fejezet tartalma témától függően változhat. Az alábbiakat attól függően különböző arányban tartalmazhatják.
-\begin{itemize}
-\item Irodalomkutatás. Amennyiben a dolgozat egy módszer kidolgozására, kifejlesztésére irányul, akkor itt lehet részletesen végignézni (módszertani vagy időrendi bontásban), hogy az eddigiekben milyen eredmények születtek a témakörben.
-\item Technológia. Mivel jellemzően kutatásról vagy szoftverfejlesztésről van szó, ezért annak a jellemző elemeit, technikai részleteit itt kell bemutatni.
-Ez tehát egy módszeres bevezetés ahhoz, hogy ha valaki nem jártas a témakörben, akkor tudja, hogy a dolgozat milyen aktuálisan elérhető eredményeket, eszközöket használt fel.
-\item Piackutatás. Bizonyos témáknál új termék vagy szolgáltatás kifejlesztése a cél.
-Ekkor érdemes annak alaposan utánanézni, hogy aktuálisan milyen eszközök érhetők el a piacon.
-Ez szoftverek esetében a hasonló alkalmazások bemutatását, táblázatos formában történő összehasonlítását jelentheti.
-Szerepelhetnek képek és észrevételek a viszonyításként bemutatott alkalmazásokhoz.
-\item Követelmény specifikáció. Külön szakaszban érdemes részletesen kitérni az elkészítendő alkalmazással kapcsolatos követelményekre.
-Ehhez tartozhatnak forgatókönyvek (\textit{scenario}-k).
-A szemléletesség kedvéért lehet hozzájuk képernyőkép vázlatokat is készíteni, vagy a használati eseteket más módon szemléltetni.
-\end{itemize}
+\SubSection{Completely Fair Scheduler}
 
-\Section{Amit csak említés szintjén érdemes szerepeltetni}
+\begin{table}[h]
+\centering
+\caption{A processz végrehajtásához szükséges idő}
+\label{tab:processtimes}
+\begin{tabular}{|c|c|}
+\hline
+Processz & idő \\
+\hline
+A & 8ms \\
+B & 4ms \\
+C & 16ms \\
+D & 4ms \\
+\hline
+\end{tabular}
+\end{table}
 
-Az olvasóról annyit feltételezhetünk, hogy programozásban valamilyen szinten járatos, és a matematikai alapfogalmakkal sem ebben a dolgozatban kell megismertetni.
-A speciális eszközök, programozási nyelvek, matematikai módszerekk és jelölések persze jó, hogy ha említésre kerülnek, de nem kell nagyon belemenni a közismertnek tekinthető dolgokba.
+\begin{table}[h]
+\centering
+\caption{A processzekre jutó időszeletek}
+\label{tab:timeslices}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+\hline
+A & 1 & 2 & 3 & 4 & 6 & 8 & & \\
+B & 1 & 2 & 3 & 4 & & & & \\
+C & 1 & 2 & 3 & 4 & 6 & 8 & 12 & 16 \\
+D & 1 & 2 & 3 & 4 & & & & \\
+\hline
+\end{tabular}
+\end{table}
