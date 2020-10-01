@@ -1,4 +1,5 @@
-A benchmark programot mellékeltem, a test.sh script indítja el a benchmarkot, a megfelelő ütemező beállításokkal és ez outputot egy log fájlba menti.Annak érdekében hogy a sysctl-t és a programok nice értékét módosítani lehessen, a test.sh-t root jogosultsággal kell futtatni.
+A benchmark programot mellékeltem, a test.sh script indítja el a benchmarkot, a megfelelő ütemező beállításokkal és ez outputot egy log fájlba menti.
+Annak érdekében hogy a sysctl-t és a programok nice értékét módosítani lehessen, a test.sh-t root jogosultsággal kell futtatni.
 
 	$sudo ./test.sh
 
