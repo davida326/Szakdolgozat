@@ -1,0 +1,38 @@
+{
+    "measurements": [
+        {
+            "parameters": {
+                "priority": -20,
+                "wake_up_time": 40,
+                "min_granularity": 100000,
+                "latency": 100000
+            },
+            "results": [
+                10, 20, 30, 40, 50
+            ]
+        },
+        {
+            "parameters": {
+                "priority": -6,
+                "wake_up_time": 40,
+                "min_granularity": 100000,
+                "latency": 100000
+            },
+            "results": [
+                10, 20, 32, 40, 50
+            ]
+        },
+        {
+            "parameters": {
+                "priority": 6,
+                "wake_up_time": 40,
+                "min_granularity": 100000,
+                "latency": 100000
+            },
+            "results": [
+                10, 20, 30, 44, 56
+            ]
+        }
+    ]
+}
+
