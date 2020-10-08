@@ -179,4 +179,69 @@ Ennel felhasználásával könnyen végig tudtam iterálni, a rendszerben lévő
  p->se.prev_sum_exec_runtime,p->se.exec_start);
 \end{cpp}
 
-Prio
+
+%TODO https://doc.opensuse.org/documentation/leap/archive/42.1/tuning/html/book.sle.tuning/cha.tuning.taskscheduler.html
+\SubSection{Ütemezési politikák(Scheduling policy)}
+A linux kernel a következő ütemezési politikákat támogatja:
+\begin{itemize}
+    \item SCHED\_FIFO - Időkritikus valós idejű processzek ütemezésére használják. Az elsőnek érzekett processz kerül először kiszolgálásra.
+
+	\item	SCHED\_RR - SCHED\_FIFO-hez hasonló, szintén valós idejű processzekhez használják. A Kerge Rigó ütemezési algoritmust használja.
+
+    \item SCHED\_BATCH - CPU lázas processzek ütemezésére tervezték.
+    
+	\item SCHED\_IDLE - Ezt az ütemezési politikát, kis intenzitású processzek esetén használják
+	
+	\item SCHED\_OTHER - Alapértelmezett ütemezési algoritmus, amit a normál processzek nagytöbbsége is használ.
+
+\end{itemize}
+
+\SubSection{Processz Prioritási szintek és azok módosítása}
+\begin{cpp}
+struct task_struct {
+...	
+		int				prio;
+...
+};
+\end{cpp}
+
+A \texttt{prio} paramétert az adott processz, prioritási szintjének meghatározására, használja az ütemező. Egy processz statikus prioritási értéke, pedig adott ütemezési politikákhoz mérten változhat. Ezeket a \texttt{chrt -m} paranccsal láthatjuk.
+\begin{cpp}
+$ chrt -m
+SCHED_OTHER min/max priority	: 0/0
+SCHED_FIFO min/max priority	: 1/99
+SCHED_RR min/max priority	: 1/99
+SCHED_BATCH min/max priority	: 0/0
+SCHED_IDLE min/max priority	: 0/0
+SCHED_DEADLINE min/max priority	: 0/0
+\end{cpp}
+%$
+Normál processzek esetén 120-as a statikus prioritás, ezt az értéket módosíthatjuk, a nice illetve a renice-paranccsal.
+Ez a nice érték -20 és +19 között mozoghat, attól függően hogy mennyire szeretnénk nagylelkűek lenni, a többi processzel szemben.
+A 100 prioritási szint, a legfontosabb amíg a 139-es a legkevésbé fontos.
+Egy átlagos taskból is készíthetünk realtime processzt, ekkor viszont másik runqueue-ba( \texttt{rt\_rq} ) kerül és egy másik ütemező fog velük foglalkozni. Real time processzek készítésénél, megválaszthatjuk hogy RR(Kerge Rigó) vagy FIFO(First in, First out) ütemező algoritmust szeretnénk. 
+
+chrt - <ütemező algoritmus> <prioritási szám> <futtatható program vagy -p pid>
+program segítségével készíhetünk valós idejű processzeket.
+RealTime processzek esetén, a prioritási szintek megfordulnak, a legnagyobb szám jelzi a legfontosabb processz prioritási szintet.
+99-es prioritás jelzi a legfontosabb processzt és 0-ás a legkevésbé fontosat.
+
+%TODO Benchmarkok(phoronix)
+%TODO https://www.phoronix-test-suite.com/
+\SubSection{Benchmark}
+Az ütemező optimalizálására végzett különböző módosításaim, megjelenítésére a Phoronix Test Suite (PTS) programot használom.
+A Phoronix Test Suite a rendelkezésre álló legátfogóbb tesztelési és benchmarking platform, amely kibővíthető keretet biztosít, azaz új tesztek is egyszerűen hozzáadhatók.
+A szoftvert úgy tervezték hogy, mind kvalitatív, mind kvantitatív benchmark méréseket lehessen végezni, egyszerűen, hatékonyan és reprodukálhatóan.
+  
+%TODO Adott benchmarkok bemutatűsa
+Processzor igényes benchmarkokhoz, több félét is választottam. Az első, a Sample Pi Program volt, a benchmark egy \texttt{C++} nyelven írt program, ami a Pi-t, a 8,765,4321 számjegyéig kiszámolja Leibniz formula alapján. Ez egyetlen processzként próbálja megterhelni, valamelyik processzor magot.
+
+A második processzor igényes program, az ebizzy tesztje. Ez egy olyan program amely egy webszerver munkaterheléséhez hasonló processzeket generál. Az előzővel ellentétben, ez már egyszerre több processzben indul el és fut le. Emiatt itt mégnagyobb szerepet kap az ütemező és az optimalizálási kisérleteim bemutatására szánt statégiáim.
+ 
+%TODO Adott probléma megközelítési módjai
+
+%TODO Prio 
+%TODO Sysctl interface -> kernel.sched_*(paraméterek)
+%TODO Sysctl kernel.sched 
+%TODO Script program leírása, bemutatása
+
