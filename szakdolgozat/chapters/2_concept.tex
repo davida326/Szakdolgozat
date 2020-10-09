@@ -238,10 +238,36 @@ Processzor igényes benchmarkokhoz, több félét is választottam. Az első, a 
 
 A második processzor igényes program, az ebizzy tesztje. Ez egy olyan program amely egy webszerver munkaterheléséhez hasonló processzeket generál. Az előzővel ellentétben, ez már egyszerre több processzben indul el és fut le. Emiatt itt mégnagyobb szerepet kap az ütemező és az optimalizálási kisérleteim bemutatására szánt statégiáim.
  
+\SubSection{Ütemező optimalizálási stratégiák - 1.megközelítés: Prioritás módosítás}
 %TODO Adott probléma megközelítési módjai
-
+Az optimalizálás problémát többféle módon is megközelítem, a dolgozatban.
 %TODO Prio 
-%TODO Sysctl interface -> kernel.sched_*(paraméterek)
-%TODO Sysctl kernel.sched 
+Az első ilyen módszer a prioritás módosítása.
+Figyelembe kell venni azt hogy, cpu lázas processzek életük során, nagyobb részt töltenek számítással mint i/o perifériára történő várakozással vagy felhasználóval történő interakcióval. Emiatt nekik sokkal nagyobb időszeleteket kell hogy kapjanak, annak érdekében hogy eredményesen fussanak.
+Ezt a prioritás növelésével lehet elérni, ebből érezhető hogy őket real-time processzként nem érdemes futtatni. Ők a 139-es prioritási szint felé haladnak.
+Real-time processznek olyat érdemes választani, ami gyors reakciót, magas interaktivitást igényel.
+%TODO csak pusztán prioritásra alapuló teszt eredmények táblázatosan, mellé grafikonon plot-olva?
+\SubSection{Ütemező optimalizálási stratégiák - 2. megközelítés Kernel paraméterek módosítása futásidőben}
+%TODO Sysctl (ez egy interface?)
+%forrás: https://linux.die.net/man/8/sysctl
+Ahhoz hogy futásidőbe módosítani tudjam a kernel paramétereket, szükségem van egy eszközre, erre találták fel a sysctl interface-t. Ennek a segítségével fogom módosítani az ütemező paramétereit futásidőben.
+A paraméterek amiket módosít elérhetők a \texttt{/proc/sys.}-alatt. 
+Ütemező változókból akad itt bőven, emiatt én konkrétan háromra fogok fókuszálni.
+%TODO Forrás:https://doc.opensuse.org/documentation/leap/archive/42.1/tuning/html/book.sle.tuning/cha.tuning.taskscheduler.html
+\begin{itemize}
+	\item sched\_latency\_ns Preempció késleltetést lehet vele szabályozni, főként CPU-bound processzeknél fontos.(ns - Nanoszekundum) 
+	
+Alapértelmezett értéke: 6,000,000ns
+	\item sched\_min\_granularity\_ns - Minimális idő ami után újra küldhető a processz számára preempció.
+	
+Alapértelmezett értéke: 4,000,000ns
+	\item sched\_wakeup\_granularity\_ns Wakeup preempciót milyen időközönként küldhet egy processz számára. A változó értékének növelése csökkenti a wakeup-megszakításokat, ezáltal a számításigényes taszkok diszturbanciája csökkenthető.
+\end{itemize}
+
+A dolgozat során ezeket a paramétereket és mellette a prioritást szabályzását fogom vizsgálni, annak érdekében hogy jobb eredményt hozzak ki a rendszerből, mint alapesetben.
+%ez nem biztos hogy sikerülni fog de próbálkozni fogok
+
 %TODO Script program leírása, bemutatása
+%TODO kernel.sched_*(paraméterek)
+%TODO Sysctl kernel.sched 
 
