@@ -127,7 +127,7 @@ do
                     echo ', ' &>>ertekek.json 
                     { nice -$setPrio ./ebizzy-0.3/ebizzy -S 20; } &>>ertekek.json
                     echo ']}' &>>ertekek.json 
-                    if [ $latency -eq 1 ] && [ $min_gran -eq 1 ] && [ $wakeup_gran -eq 1 ] && [ $prio -eq 1 ]
+                    if [ $latency -eq 3 ] && [ $min_gran -eq 3 ] && [ $wakeup_gran -eq 3 ] && [ $prio -eq 3 ]
                       then echo ""
                       else echo "," &>> ertekek.json
                 fi
