@@ -1,13 +1,12 @@
 #!/bin/bash
+#Függőségek "time" program
 #Készítette Vass Dávid Attila
 sysctl kernel.sched_tunable_scaling=0
 #Ezt  a tunable_scaling paramétert, 0-ra kell hogy állítsam mivel ez a beállított értékeimen még módosítani.
 #Emiatt a teszt nem lenne eredményes.
 #A programban kezdetben négy részre vannak szétszedve a beállítási paraméterek és minden beállítással 5 mintát veszek.
 #Ebből remélhetőleg lehet majd látni a változásokat.
-#A program kimenete: <latency> <min_gran> <wakeup_gran> <prio>
-#                    <time parancs átlagos kimenete 5x>//real time, user time, sys time
-#A szebb kimenet érdekében, ezt módosítani fogom.
+#A program kimenete: JSON fájlt: ertekek.json
 latency=0;
 min_gran=0;
 wakeup_gran=0;
@@ -15,74 +14,89 @@ prio=0;
 setPrio=0;
 #Két prioritás változót használok mivel ezt nem állíthatom sysctl segítségével.
 #Az első változó a beállítások iterációjához szükséges, a setPrio pedig a konkrét prioritással futtatja a programot.
-echo '[' &>>ertekek.log
+echo '{
+    "measurements": [' &>>ertekek.json
 setLatency() {
+    local -n ref=$2
     case $1 in
         0)
+            ref=100000
             sysctl kernel.sched_latency_ns=100000
             ;;
         1)
+            ref=333400000
             sysctl kernel.sched_latency_ns=333400000
             ;;
         2)
+            ref=666700000
             sysctl kernel.sched_latency_ns=666700000
             ;;
         3)
+            ref=1000000000
             sysctl kernel.sched_latency_ns=1000000000
             ;;
         *)
-            echo "ERROR!set_latency" >> log
+            echo "ERROR!set_latency" >>ertekek.json
     esac
 }
 setMin_gran() {
+    local -n ref=$2
     case $1 in
         0)
+            ref=100000
             sysctl kernel.sched_min_granularity_ns=100000
             ;;
         1)
+            ref=333400000
             sysctl kernel.sched_min_granularity_ns=333400000
             ;;
         2)
+            ref=666666666
             sysctl kernel.sched_min_granularity_ns=666666666
             ;;
         3)
+            ref=100000000
             sysctl kernel.sched_min_granularity_ns=1000000000
             ;;
         *)
-            echo "ERROR!set_min_gran" >> log
+            echo "ERROR!set_min_gran" >>ertekek.json
     esac
 }
 setWakeup_gran() {
+    local -n ref=$2
     case $1 in
         0)
+            ref=0
             sysctl kernel.sched_wakeup_granularity_ns=0
             ;;
         1)
+            ref=333333333
             sysctl kernel.sched_wakeup_granularity_ns=333333333
             ;;
         2)
+            ref=666666666
             sysctl kernel.sched_wakeup_granularity_ns=666666666
             ;;
         3)
+            ref=1000000000
             sysctl kernel.sched_wakeup_granularity_ns=1000000000
             ;;
         *)
-            echo "ERROR!setWakeup_gran" >> log
+            echo "ERROR!setWakeup_gran" >>ertekek.json
     esac
 }
- for latency in {0..3}
- do
-     for min_gran in {0..3}
-     do
-         for wakeup_gran in {0..3}
-         do
-             for prio in {0..3}
-             do
+for latency in {0..3}
+do
+    for min_gran in {0..3}
+    do
+        for wakeup_gran in {0..3}
+        do
+            for prio in {0..3}
+            do
                 echo $latency:$min_gran:$wakeup_gran:$prio
-                setLatency $latency
-                setMin_gran $min_gran
-                setWakeup_gran $wakeup_gran
-                echo '{"latency":"'$latency'", "min_gran":"'$min_gran'", "wakeup_gran":"'$wakeup_gran'","prio:":"'$prio'","run":[{"0":"' &>>ertekek.log
+                setLatency $latency realLatency
+                setMin_gran $min_gran realMin_gran
+                setWakeup_gran $wakeup_gran realWakeup_gran
                     case $prio in
                         0)
                             setPrio=-20
@@ -97,18 +111,24 @@ setWakeup_gran() {
                             setPrio=19
                             ;;
                         *)
-                            echo "ERROR!setPrio" >> ertekek.log
+                            echo "ERROR!setPrio" >> ertekek.json
                     esac
-                    { /usr/bin/time -f "%e" nice -$setPrio ./sample-program; } &>>ertekek.log
-                    echo '","1":"' &>>ertekek.log 
-                    { /usr/bin/time -f "%e" nice -$setPrio ./sample-program; } &>>ertekek.log
-                    echo '","2":"' &>>ertekek.log 
-                    { /usr/bin/time -f "%e" nice -$setPrio ./sample-program; } &>>ertekek.log 
-                    echo '","3":"' &>>ertekek.log
-                    { /usr/bin/time -f "%e" nice -$setPrio ./sample-program; } &>>ertekek.log 
-                    echo '","4":"' &>>ertekek.log
-                    { /usr/bin/time -f "%e" nice -$setPrio ./sample-program; } &>>ertekek.log 
-                    echo '"}]},' &>>ertekek.log
+                    echo '{ "parameters":' &>>ertekek.json
+                    echo '{"latency":"'$realLatency'", "min_gran":"'$realMin_gran'", "wakeup_gran":"'$realWakeup_gran'","prio:":"'$setPrio'"},"results":[' &>>ertekek.json
+                    { /usr/bin/time -f "%e" nice -$setPrio ./pi-benchmark/sample-pi-program; } &>>ertekek.json
+                    echo ', ' &>>ertekek.json 
+                    { /usr/bin/time -f "%e" nice -$setPrio ./pi-benchmark/sample-pi-program; } &>>ertekek.json
+                    echo ', ' &>>ertekek.json 
+                    { /usr/bin/time -f "%e" nice -$setPrio ./pi-benchmark/sample-pi-program; } &>>ertekek.json 
+                    echo ', ' &>>ertekek.json
+                    { /usr/bin/time -f "%e" nice -$setPrio ./pi-benchmark/sample-pi-program; } &>>ertekek.json 
+                    echo ', ' &>>ertekek.json
+                    { /usr/bin/time -f "%e" nice -$setPrio ./pi-benchmark/sample-pi-program; } &>>ertekek.json 
+                    echo ']}' &>>ertekek.json
+                    if [ $latency -eq 1 ] && [ $min_gran -eq 1 ] && [ $wakeup_gran -eq 1 ] && [ $prio -eq 1 ]
+                    then echo ""
+                    else echo "," &>> ertekek.json
+                    fi
    		    done
  
         done
@@ -117,4 +137,4 @@ setWakeup_gran() {
 
 done
 
-echo ']' &>>ertekek.log
+echo ']}' &>>ertekek.json

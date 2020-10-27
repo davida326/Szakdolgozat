@@ -510,15 +510,15 @@ start_threads(void)
 	if (verbose)
 		printf("Threads finished\n");
 
-	printf("%u records/s\n",
+	printf("%u\n",
 	       (unsigned int) (((double) records_read)/elapsed));
 
 	usr_time = difftimeval(&end_ru.ru_utime, &start_ru.ru_utime);
 	sys_time = difftimeval(&end_ru.ru_stime, &start_ru.ru_stime);
 
-	printf("real %5.2f s\n", elapsed);
-	printf("user %5.2f s\n", usr_time.tv_sec + usr_time.tv_usec/1e6);
-	printf("sys  %5.2f s\n", sys_time.tv_sec + sys_time.tv_usec/1e6);
+	//printf("real %5.2f s\n", elapsed);
+	//printf("user %5.2f s\n", usr_time.tv_sec + usr_time.tv_usec/1e6);
+	//printf("sys  %5.2f s\n", sys_time.tv_sec + sys_time.tv_usec/1e6);
 }
 
 int
