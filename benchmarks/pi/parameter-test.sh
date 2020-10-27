@@ -2,7 +2,7 @@
 #Függőségek "time" program
 #Készítette Vass Dávid Attila
 sysctl kernel.sched_tunable_scaling=0
-#Ezt  a tunable_scaling paramétert, 0-ra kell hogy állítsam mivel ez a beállított értékeimen még módosítani.
+#Ezt  a tunable_scaling paramétert,  0-ra kell hogy állítsam mivel ez a beállított értékeimen még módosítani.
 #Emiatt a teszt nem lenne eredményes.
 #A programban kezdetben négy részre vannak szétszedve a beállítási paraméterek és minden beállítással 5 mintát veszek.
 #Ebből remélhetőleg lehet majd látni a változásokat.
