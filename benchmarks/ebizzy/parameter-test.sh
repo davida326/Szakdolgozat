@@ -57,7 +57,7 @@ setMin_gran() {
             sysctl kernel.sched_min_granularity_ns=666666666
             ;;
         3)
-            ref=100000000
+            ref=1000000000
             sysctl kernel.sched_min_granularity_ns=1000000000
             ;;
         *)
