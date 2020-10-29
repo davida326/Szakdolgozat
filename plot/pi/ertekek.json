@@ -1,0 +1,3330 @@
+{
+    "measurements": [
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"0","prio":"-20"},"results":[
+3.56
+, 
+3.59
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"0","prio":"-6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"0","prio":"6"},"results":[
+3.56
+, 
+3.55
+, 
+3.57
+, 
+3.55
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"0","prio":"19"},"results":[
+3.69
+, 
+3.56
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.58
+, 
+3.58
+, 
+3.58
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"-6"},"results":[
+3.57
+, 
+3.57
+, 
+3.58
+, 
+3.58
+, 
+3.56
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.58
+, 
+3.88
+, 
+3.58
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"19"},"results":[
+3.58
+, 
+3.58
+, 
+3.58
+, 
+3.57
+, 
+3.58
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.58
+, 
+3.92
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"-6"},"results":[
+3.58
+, 
+3.64
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"6"},"results":[
+3.55
+, 
+3.60
+, 
+3.57
+, 
+3.57
+, 
+3.73
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"19"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+3.57
+, 
+3.57
+, 
+3.58
+, 
+3.56
+, 
+3.58
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.58
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.66
+, 
+3.62
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"19"},"results":[
+3.55
+, 
+3.57
+, 
+3.57
+, 
+3.56
+, 
+3.59
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"0","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"0","prio":"-6"},"results":[
+3.57
+, 
+3.58
+, 
+3.67
+, 
+3.59
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"0","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.58
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"0","prio":"19"},"results":[
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"-20"},"results":[
+4.11
+, 
+6.53
+, 
+5.43
+, 
+6.17
+, 
+5.65
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"-6"},"results":[
+6.09
+, 
+6.05
+, 
+6.49
+, 
+6.47
+, 
+5.87
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"6"},"results":[
+5.63
+, 
+5.22
+, 
+5.58
+, 
+5.44
+, 
+6.28
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"19"},"results":[
+5.54
+, 
+6.06
+, 
+6.15
+, 
+4.83
+, 
+6.10
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"-20"},"results":[
+5.34
+, 
+6.21
+, 
+5.94
+, 
+6.29
+, 
+4.69
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"-6"},"results":[
+6.01
+, 
+5.66
+, 
+6.19
+, 
+5.33
+, 
+4.89
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"6"},"results":[
+6.71
+, 
+5.82
+, 
+5.72
+, 
+6.03
+, 
+5.24
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"19"},"results":[
+5.87
+, 
+5.91
+, 
+5.28
+, 
+5.61
+, 
+4.96
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+4.61
+, 
+5.79
+, 
+5.61
+, 
+5.94
+, 
+5.28
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+6.25
+, 
+6.09
+, 
+6.13
+, 
+5.52
+, 
+6.26
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"6"},"results":[
+6.10
+, 
+5.00
+, 
+6.45
+, 
+5.16
+, 
+5.91
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"19"},"results":[
+5.79
+, 
+5.71
+, 
+5.86
+, 
+5.61
+, 
+5.65
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"0","prio":"-20"},"results":[
+3.57
+, 
+3.55
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"0","prio":"-6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.58
+, 
+3.70
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"0","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.56
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"0","prio":"19"},"results":[
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"-20"},"results":[
+6.12
+, 
+5.08
+, 
+6.44
+, 
+5.05
+, 
+6.44
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"-6"},"results":[
+6.26
+, 
+4.92
+, 
+5.30
+, 
+5.26
+, 
+5.66
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"6"},"results":[
+5.99
+, 
+5.93
+, 
+5.95
+, 
+5.25
+, 
+5.17
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"19"},"results":[
+5.33
+, 
+6.21
+, 
+4.29
+, 
+5.28
+, 
+5.95
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"-20"},"results":[
+5.22
+, 
+5.45
+, 
+5.46
+, 
+6.32
+, 
+6.05
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"-6"},"results":[
+5.09
+, 
+5.53
+, 
+4.32
+, 
+4.67
+, 
+5.53
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"6"},"results":[
+5.11
+, 
+6.02
+, 
+5.83
+, 
+4.50
+, 
+6.44
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"19"},"results":[
+4.88
+, 
+5.42
+, 
+4.78
+, 
+5.91
+, 
+5.10
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+5.36
+, 
+5.97
+, 
+5.10
+, 
+5.26
+, 
+6.00
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+5.60
+, 
+4.25
+, 
+5.74
+, 
+5.43
+, 
+5.18
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"6"},"results":[
+5.21
+, 
+6.08
+, 
+6.19
+, 
+4.58
+, 
+5.17
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"19"},"results":[
+5.06
+, 
+5.69
+, 
+6.10
+, 
+5.21
+, 
+4.86
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"-20"},"results":[
+3.66
+, 
+3.57
+, 
+3.67
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"-6"},"results":[
+3.58
+, 
+3.69
+, 
+3.57
+, 
+3.88
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"6"},"results":[
+3.63
+, 
+3.69
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"19"},"results":[
+3.58
+, 
+3.57
+, 
+3.55
+, 
+3.58
+, 
+3.69
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"-20"},"results":[
+5.10
+, 
+5.96
+, 
+4.59
+, 
+5.21
+, 
+4.67
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"-6"},"results":[
+5.08
+, 
+5.13
+, 
+3.95
+, 
+4.31
+, 
+5.26
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"6"},"results":[
+5.83
+, 
+4.46
+, 
+4.07
+, 
+5.66
+, 
+5.80
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"19"},"results":[
+5.75
+, 
+4.80
+, 
+5.99
+, 
+4.29
+, 
+5.01
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"-20"},"results":[
+5.17
+, 
+5.78
+, 
+6.14
+, 
+7.85
+, 
+5.27
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"-6"},"results":[
+5.79
+, 
+4.84
+, 
+6.68
+, 
+4.44
+, 
+5.60
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"6"},"results":[
+5.58
+, 
+6.08
+, 
+4.77
+, 
+5.76
+, 
+4.78
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"19"},"results":[
+5.56
+, 
+5.47
+, 
+4.95
+, 
+5.15
+, 
+5.72
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+6.52
+, 
+5.45
+, 
+5.49
+, 
+5.39
+, 
+5.75
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+5.07
+, 
+4.69
+, 
+5.59
+, 
+5.77
+, 
+5.24
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"6"},"results":[
+5.41
+, 
+4.10
+, 
+5.58
+, 
+5.37
+, 
+6.19
+]}
+,
+{ "parameters":
+{"latency":"100000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"19"},"results":[
+5.13
+, 
+5.00
+, 
+5.61
+, 
+5.36
+, 
+5.83
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"0","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.59
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"0","prio":"-6"},"results":[
+3.58
+, 
+3.57
+, 
+3.59
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"0","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.55
+, 
+3.67
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"0","prio":"19"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.55
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"-6"},"results":[
+3.58
+, 
+3.55
+, 
+3.57
+, 
+3.55
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.55
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"19"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"-6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.59
+, 
+3.67
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"6"},"results":[
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"19"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.56
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.69
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+3.56
+, 
+3.59
+, 
+3.57
+, 
+3.55
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"19"},"results":[
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.60
+, 
+3.60
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"0","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.55
+, 
+3.55
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"0","prio":"-6"},"results":[
+3.58
+, 
+3.57
+, 
+3.55
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"0","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.56
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"0","prio":"19"},"results":[
+3.56
+, 
+3.57
+, 
+3.57
+, 
+3.55
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"-20"},"results":[
+5.62
+, 
+4.03
+, 
+6.01
+, 
+5.29
+, 
+6.19
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"-6"},"results":[
+4.82
+, 
+5.15
+, 
+5.01
+, 
+6.03
+, 
+5.93
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"6"},"results":[
+5.35
+, 
+5.06
+, 
+4.69
+, 
+4.20
+, 
+4.90
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"19"},"results":[
+4.68
+, 
+5.50
+, 
+5.24
+, 
+5.45
+, 
+5.76
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"-20"},"results":[
+6.46
+, 
+6.10
+, 
+5.81
+, 
+5.61
+, 
+5.06
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"-6"},"results":[
+5.31
+, 
+5.67
+, 
+6.10
+, 
+5.27
+, 
+5.23
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"6"},"results":[
+4.99
+, 
+5.61
+, 
+5.15
+, 
+5.08
+, 
+4.86
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"19"},"results":[
+4.57
+, 
+4.87
+, 
+4.41
+, 
+5.06
+, 
+5.66
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+5.26
+, 
+5.37
+, 
+4.86
+, 
+6.61
+, 
+4.95
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+5.38
+, 
+4.84
+, 
+6.24
+, 
+5.55
+, 
+5.03
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"6"},"results":[
+5.28
+, 
+5.72
+, 
+5.20
+, 
+3.69
+, 
+5.43
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"19"},"results":[
+5.62
+, 
+5.73
+, 
+4.70
+, 
+4.61
+, 
+5.58
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"0","prio":"-20"},"results":[
+3.55
+, 
+3.64
+, 
+3.57
+, 
+3.57
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"0","prio":"-6"},"results":[
+3.58
+, 
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"0","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"0","prio":"19"},"results":[
+3.68
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"-20"},"results":[
+4.99
+, 
+6.37
+, 
+4.97
+, 
+4.68
+, 
+6.04
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"-6"},"results":[
+5.89
+, 
+5.33
+, 
+5.61
+, 
+4.31
+, 
+4.78
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"6"},"results":[
+5.53
+, 
+5.70
+, 
+5.40
+, 
+4.87
+, 
+4.16
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"19"},"results":[
+5.00
+, 
+6.16
+, 
+4.70
+, 
+5.91
+, 
+5.69
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"-20"},"results":[
+4.99
+, 
+5.63
+, 
+4.60
+, 
+5.68
+, 
+6.07
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"-6"},"results":[
+5.69
+, 
+5.71
+, 
+4.29
+, 
+5.66
+, 
+5.22
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"6"},"results":[
+4.78
+, 
+6.26
+, 
+5.50
+, 
+5.03
+, 
+5.47
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"19"},"results":[
+5.42
+, 
+5.77
+, 
+5.65
+, 
+4.98
+, 
+5.78
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+4.78
+, 
+5.66
+, 
+4.26
+, 
+4.61
+, 
+5.87
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+6.44
+, 
+5.24
+, 
+5.35
+, 
+4.57
+, 
+5.83
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"6"},"results":[
+4.84
+, 
+5.13
+, 
+5.08
+, 
+5.24
+, 
+4.39
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"19"},"results":[
+4.75
+, 
+5.01
+, 
+6.13
+, 
+6.09
+, 
+5.29
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"-20"},"results":[
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"-6"},"results":[
+3.58
+, 
+3.54
+, 
+3.66
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"6"},"results":[
+3.57
+, 
+3.57
+, 
+3.55
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"19"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.67
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"-20"},"results":[
+6.13
+, 
+4.89
+, 
+4.25
+, 
+4.85
+, 
+5.40
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"-6"},"results":[
+5.96
+, 
+6.03
+, 
+5.13
+, 
+5.71
+, 
+4.44
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"6"},"results":[
+5.53
+, 
+5.05
+, 
+5.75
+, 
+5.27
+, 
+5.33
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"19"},"results":[
+5.92
+, 
+5.91
+, 
+4.82
+, 
+5.57
+, 
+4.41
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"-20"},"results":[
+5.72
+, 
+6.49
+, 
+5.49
+, 
+6.17
+, 
+6.23
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"-6"},"results":[
+4.96
+, 
+5.69
+, 
+4.83
+, 
+5.78
+, 
+5.10
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"6"},"results":[
+6.47
+, 
+5.89
+, 
+5.30
+, 
+5.05
+, 
+4.56
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"19"},"results":[
+5.63
+, 
+5.83
+, 
+4.70
+, 
+5.40
+, 
+6.06
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+5.53
+, 
+4.26
+, 
+5.21
+, 
+6.22
+, 
+5.24
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+3.70
+, 
+6.12
+, 
+5.26
+, 
+6.10
+, 
+6.18
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"6"},"results":[
+5.88
+, 
+6.01
+, 
+5.60
+, 
+5.37
+, 
+5.45
+]}
+,
+{ "parameters":
+{"latency":"333400000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"19"},"results":[
+5.42
+, 
+5.03
+, 
+5.53
+, 
+5.93
+, 
+5.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"0","prio":"-20"},"results":[
+3.57
+, 
+3.55
+, 
+3.57
+, 
+3.57
+, 
+3.60
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"0","prio":"-6"},"results":[
+3.55
+, 
+3.57
+, 
+3.57
+, 
+3.58
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"0","prio":"6"},"results":[
+3.66
+, 
+3.57
+, 
+3.55
+, 
+3.55
+, 
+3.63
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"0","prio":"19"},"results":[
+3.58
+, 
+3.55
+, 
+3.55
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"-20"},"results":[
+3.67
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"-6"},"results":[
+3.58
+, 
+3.58
+, 
+3.60
+, 
+3.58
+, 
+3.83
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"6"},"results":[
+3.68
+, 
+3.57
+, 
+3.57
+, 
+3.83
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"19"},"results":[
+3.71
+, 
+3.63
+, 
+3.57
+, 
+3.55
+, 
+3.67
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"-20"},"results":[
+3.58
+, 
+3.66
+, 
+3.55
+, 
+3.59
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"-6"},"results":[
+3.58
+, 
+3.67
+, 
+3.57
+, 
+3.72
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.59
+, 
+3.67
+, 
+3.58
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"19"},"results":[
+3.58
+, 
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+3.58
+, 
+3.55
+, 
+3.56
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+3.56
+, 
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.75
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"19"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"0","prio":"-20"},"results":[
+3.63
+, 
+3.57
+, 
+3.57
+, 
+3.55
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"0","prio":"-6"},"results":[
+3.88
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.59
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"0","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.83
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"0","prio":"19"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.55
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"-20"},"results":[
+3.58
+, 
+3.75
+, 
+3.57
+, 
+3.57
+, 
+3.60
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"-6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.60
+, 
+3.70
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"19"},"results":[
+3.58
+, 
+3.91
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"-20"},"results":[
+5.75
+, 
+4.93
+, 
+5.37
+, 
+6.11
+, 
+5.02
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"-6"},"results":[
+5.24
+, 
+5.91
+, 
+5.19
+, 
+5.47
+, 
+5.81
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"6"},"results":[
+6.22
+, 
+5.67
+, 
+5.47
+, 
+5.25
+, 
+6.48
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"19"},"results":[
+5.91
+, 
+5.66
+, 
+6.08
+, 
+5.98
+, 
+5.50
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+6.00
+, 
+6.12
+, 
+5.50
+, 
+5.59
+, 
+5.29
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+4.12
+, 
+6.59
+, 
+5.56
+, 
+4.44
+, 
+4.71
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"6"},"results":[
+5.11
+, 
+6.18
+, 
+5.21
+, 
+5.37
+, 
+4.76
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"19"},"results":[
+4.65
+, 
+5.60
+, 
+5.96
+, 
+4.54
+, 
+4.03
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"0","prio":"-20"},"results":[
+3.56
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"0","prio":"-6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"0","prio":"6"},"results":[
+3.56
+, 
+3.55
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"0","prio":"19"},"results":[
+3.56
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"-6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.70
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"19"},"results":[
+3.58
+, 
+3.55
+, 
+3.57
+, 
+3.57
+, 
+3.66
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"-20"},"results":[
+4.78
+, 
+5.01
+, 
+5.25
+, 
+4.76
+, 
+5.02
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"-6"},"results":[
+4.91
+, 
+4.89
+, 
+7.16
+, 
+5.62
+, 
+4.59
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"6"},"results":[
+4.47
+, 
+5.68
+, 
+5.66
+, 
+3.89
+, 
+6.43
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"19"},"results":[
+5.98
+, 
+6.86
+, 
+5.26
+, 
+4.27
+, 
+5.63
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+5.27
+, 
+5.86
+, 
+5.26
+, 
+4.27
+, 
+5.49
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+5.20
+, 
+5.97
+, 
+4.78
+, 
+4.73
+, 
+6.55
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"6"},"results":[
+6.24
+, 
+6.05
+, 
+5.77
+, 
+5.61
+, 
+5.81
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"19"},"results":[
+4.88
+, 
+5.12
+, 
+5.35
+, 
+5.21
+, 
+6.15
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.67
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"-6"},"results":[
+3.60
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"19"},"results":[
+3.58
+, 
+3.55
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"-6"},"results":[
+3.55
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"6"},"results":[
+3.72
+, 
+3.67
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"19"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.55
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"-20"},"results":[
+5.20
+, 
+5.45
+, 
+4.59
+, 
+6.18
+, 
+5.42
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"-6"},"results":[
+5.32
+, 
+5.29
+, 
+4.02
+, 
+5.88
+, 
+5.62
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"6"},"results":[
+5.72
+, 
+4.94
+, 
+4.58
+, 
+5.53
+, 
+5.31
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"19"},"results":[
+5.16
+, 
+4.04
+, 
+5.90
+, 
+5.32
+, 
+4.59
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+4.93
+, 
+5.46
+, 
+5.04
+, 
+5.31
+, 
+6.14
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+5.95
+, 
+5.58
+, 
+5.83
+, 
+5.13
+, 
+5.08
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"6"},"results":[
+5.93
+, 
+5.87
+, 
+3.56
+, 
+4.19
+, 
+5.23
+]}
+,
+{ "parameters":
+{"latency":"666700000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"19"},"results":[
+5.32
+, 
+5.98
+, 
+4.30
+, 
+4.67
+, 
+6.24
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"0","prio":"-20"},"results":[
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"0","prio":"-6"},"results":[
+3.58
+, 
+3.55
+, 
+3.57
+, 
+3.55
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"0","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.70
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"0","prio":"19"},"results":[
+3.60
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.59
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"-20"},"results":[
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"-6"},"results":[
+3.60
+, 
+3.57
+, 
+3.55
+, 
+3.55
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.69
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"333333333","prio":"19"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"-20"},"results":[
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"-6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.72
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"6"},"results":[
+3.57
+, 
+3.67
+, 
+3.57
+, 
+3.67
+, 
+3.58
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"666666666","prio":"19"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.55
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+3.59
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+3.68
+, 
+3.57
+, 
+3.58
+, 
+3.55
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"6"},"results":[
+3.58
+, 
+3.67
+, 
+3.57
+, 
+3.57
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"100000", "wakeup_gran":"1000000000","prio":"19"},"results":[
+3.58
+, 
+3.57
+, 
+3.66
+, 
+3.55
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"0","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.64
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"0","prio":"-6"},"results":[
+3.60
+, 
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"0","prio":"6"},"results":[
+3.62
+, 
+3.55
+, 
+3.59
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"0","prio":"19"},"results":[
+3.58
+, 
+3.55
+, 
+3.57
+, 
+3.60
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"-6"},"results":[
+3.57
+, 
+3.59
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"6"},"results":[
+3.56
+, 
+3.67
+, 
+3.57
+, 
+3.55
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"333333333","prio":"19"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"-20"},"results":[
+5.12
+, 
+5.42
+, 
+4.84
+, 
+5.67
+, 
+4.40
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"-6"},"results":[
+4.96
+, 
+5.28
+, 
+4.64
+, 
+5.45
+, 
+6.24
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"6"},"results":[
+4.82
+, 
+5.60
+, 
+6.12
+, 
+5.13
+, 
+5.81
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"666666666","prio":"19"},"results":[
+4.73
+, 
+5.59
+, 
+4.31
+, 
+6.19
+, 
+5.07
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+4.03
+, 
+5.17
+, 
+5.91
+, 
+5.39
+, 
+3.97
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+4.78
+, 
+6.07
+, 
+5.48
+, 
+5.70
+, 
+6.31
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"6"},"results":[
+4.98
+, 
+5.25
+, 
+5.35
+, 
+6.16
+, 
+5.51
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"333400000", "wakeup_gran":"1000000000","prio":"19"},"results":[
+5.84
+, 
+4.91
+, 
+4.76
+, 
+5.88
+, 
+4.46
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"0","prio":"-20"},"results":[
+3.56
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"0","prio":"-6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.64
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"0","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"0","prio":"19"},"results":[
+3.58
+, 
+3.59
+, 
+3.67
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.83
+, 
+3.56
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"-6"},"results":[
+3.58
+, 
+3.58
+, 
+3.55
+, 
+3.57
+, 
+3.55
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"6"},"results":[
+3.56
+, 
+3.57
+, 
+3.57
+, 
+3.67
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"333333333","prio":"19"},"results":[
+3.58
+, 
+3.55
+, 
+3.55
+, 
+3.56
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"-20"},"results":[
+4.28
+, 
+4.81
+, 
+4.63
+, 
+6.64
+, 
+5.36
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"-6"},"results":[
+4.27
+, 
+5.92
+, 
+5.78
+, 
+5.40
+, 
+5.23
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"6"},"results":[
+4.74
+, 
+4.81
+, 
+5.14
+, 
+5.71
+, 
+5.49
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"666666666","prio":"19"},"results":[
+5.03
+, 
+5.36
+, 
+6.00
+, 
+4.63
+, 
+4.97
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+5.31
+, 
+5.35
+, 
+4.38
+, 
+4.82
+, 
+6.43
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+5.63
+, 
+5.48
+, 
+5.83
+, 
+6.00
+, 
+6.97
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"6"},"results":[
+6.18
+, 
+5.15
+, 
+5.83
+, 
+6.13
+, 
+5.51
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"666666666", "wakeup_gran":"1000000000","prio":"19"},"results":[
+5.30
+, 
+4.29
+, 
+5.14
+, 
+4.55
+, 
+4.96
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"-6"},"results":[
+3.58
+, 
+3.57
+, 
+3.60
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"6"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.69
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"0","prio":"19"},"results":[
+3.57
+, 
+3.55
+, 
+3.67
+, 
+3.56
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"-20"},"results":[
+3.58
+, 
+3.57
+, 
+3.57
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"-6"},"results":[
+3.58
+, 
+3.57
+, 
+3.55
+, 
+3.69
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"6"},"results":[
+3.58
+, 
+3.58
+, 
+3.60
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"333333333","prio":"19"},"results":[
+3.58
+, 
+3.58
+, 
+3.56
+, 
+3.57
+, 
+3.57
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"-20"},"results":[
+5.12
+, 
+4.65
+, 
+5.91
+, 
+4.99
+, 
+5.80
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"-6"},"results":[
+5.09
+, 
+4.09
+, 
+5.56
+, 
+5.53
+, 
+5.81
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"6"},"results":[
+5.30
+, 
+4.66
+, 
+4.96
+, 
+5.60
+, 
+6.08
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"666666666","prio":"19"},"results":[
+5.24
+, 
+5.61
+, 
+4.42
+, 
+5.87
+, 
+5.59
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"-20"},"results":[
+4.81
+, 
+4.92
+, 
+4.45
+, 
+5.61
+, 
+5.67
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"-6"},"results":[
+4.42
+, 
+4.89
+, 
+5.62
+, 
+5.47
+, 
+4.26
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"6"},"results":[
+5.14
+, 
+4.51
+, 
+5.28
+, 
+5.27
+, 
+6.05
+]}
+,
+{ "parameters":
+{"latency":"1000000000", "min_gran":"1000000000", "wakeup_gran":"1000000000","prio":"19"},"results":[
+6.72
+, 
+5.53
+, 
+7.07
+, 
+4.58
+, 
+5.31
+]}
+]}
