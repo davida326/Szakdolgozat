@@ -114,7 +114,7 @@ do
                             echo "ERROR!setPrio" >> ertekek.json
                     esac
                     echo '{ "parameters":' &>>ertekek.json
-                    echo '{"latency":"'$realLatency'", "min_gran":"'$realMin_gran'", "wakeup_gran":"'$realWakeup_gran'","prio:":"'$setPrio'"},"results":[' &>>ertekek.json
+                    echo '{"latency":"'$realLatency'", "min_gran":"'$realMin_gran'", "wakeup_gran":"'$realWakeup_gran'","prio":"'$setPrio'"},"results":[' &>>ertekek.json
                     { /usr/bin/time -f "%e" nice -$setPrio ./pi-benchmark/sample-pi-program; } &>>ertekek.json
                     echo ', ' &>>ertekek.json 
                     { /usr/bin/time -f "%e" nice -$setPrio ./pi-benchmark/sample-pi-program; } &>>ertekek.json
