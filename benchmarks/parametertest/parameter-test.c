@@ -3,7 +3,7 @@
 #include <stdio.h>          //kiíratásokhoz/fájlkezeléshez
 #include <stdlib.h>         //shell parancs kiadásához
 #include <string.h>         //benchmark eredmények változóba mozgatásához strcpy
-#include <signal.h>
+#include <signal.h>         //SIGINT(^C), SIGTERM signalok lekezeléséhez
 
 void SIGhandler(int);
 int setLatency(int *);
