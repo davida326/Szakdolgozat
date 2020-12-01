@@ -4,7 +4,12 @@
 #include <stdlib.h>         //shell parancs kiadásához
 #include <string.h>         //benchmark eredmények változóba mozgatásához strcpy
 #include <signal.h>         //SIGINT(^C), SIGTERM signalok lekezeléséhez
-#define TESTS 5
+#include <fcntl.h>          //open() -> /dev/null megnyitásához
+
+#define TESTS 6
+#define DEFAULT 5
+#define INIT -1
+
 void SIGhandler(int);
 int setLatency(int *);
 int setMin_gran(int *);
@@ -22,6 +27,8 @@ void fs_markStart(int);
 void fs_markFinish();
 void qgears2Start(int);
 void qgears2Finish();
+void ethrStart(int);
+void ethrFinish();
 void parameterTestStart(FILE *,int,int);
 void parameterTestFinish(int );
 void resetPar();
@@ -34,8 +41,8 @@ typedef struct Parameters{
 }parameters;
 
 int main(int argc, char *argv[]){
-    int samplecount = 5; //default samplecount
-    int benchmark = -1;
+    int samplecount = DEFAULT; 
+    int benchmark = INIT;
     signal(SIGINT, SIGhandler);
     signal(SIGTERM, SIGhandler);
     FILE *fp;
@@ -45,7 +52,7 @@ int main(int argc, char *argv[]){
         samplecount = atoi(argv[2]);
     }
     else{
-        printf("# ./parameter-test <testname> <samplecount>\nAvailable tests:\npi\nebizzy\nstream\nfs_mark\nqgears2\n");
+        printf("# ./parameter-test <testname> <samplecount>\nAvailable tests:\npi\t-\t(Processor)\nebizzy\t-\t(Processor[multicore])\nstream\t-\t(Memory)\nfs_mark\t-\t(Disk)\nqgears2\t-\t(Graphics)\nethr\t-\t(Network)\n");
         exit(0);
     }
     parameterTestStart(fp,benchmark,samplecount);
@@ -61,6 +68,7 @@ void parameterTestFinish(int benchmark){
     endBenchmark[2]=streamFinish;
     endBenchmark[3]=fs_markFinish;
     endBenchmark[4]=qgears2Finish;
+    endBenchmark[5]=ethrFinish;
     (*endBenchmark[benchmark])(benchmark);
 }
 void parameterTestStart(FILE *fp, int benchmark,int samplecount){
@@ -76,6 +84,7 @@ void parameterTestStart(FILE *fp, int benchmark,int samplecount){
     startBenchmark[2]=streamStart;
     startBenchmark[3]=fs_markStart;
     startBenchmark[4]=qgears2Start;
+    startBenchmark[5]=ethrStart;
     for(run.latency = 0;run.latency < 4;run.latency++){
         real.latency=setLatency(&run.latency);
         for(run.min_gran = 0;run.min_gran < 4;run.min_gran++){
@@ -239,6 +248,11 @@ FILE *initBenchmark(char *name,int *b){
         system("make --directory=../qgears2/qgears2-1.0.1/");
         *b = 4;
         fp = fopen("../qgears2/logs/ertekek.json","w+");
+    }
+    else if(strcmp(name,"ethr")==0){
+        system("make --directory=../ethr/ethr/");
+        *b = 5;
+        fp = fopen("../ethr/logs/ertekek.json","w+");
     }   
     else printf("no\n");
 }
@@ -290,6 +304,43 @@ void qgears2Finish(){
     system("make clean --directory=../qgears2/qgears2-1.0.1/");
     resetPar();
 }
+
+void ethrStart(int samplecount){
+    FILE *avg,*comm;
+    fclose(fopen("tmpresults","w"));
+    for(int i=0;i<samplecount;i++){
+        pid_t pid = fork();
+        if(pid==0){
+            int fd = open("/dev/null", O_WRONLY);
+            dup2(fd, 1); //új filedescriptorokat adok a szervernek 
+            dup2(fd, 2); //így a kimenetet amit a szerver adna, továbbítom a /dev/null-ba
+            close(fd); 
+            execl("../ethr/ethr/ethr","./ethr","-s",NULL);
+        }
+        else {
+            fclose(fopen("avg.log","w"));
+            char buff[255];
+            system("../ethr/ethr/ethr -c localhost -p tcp -t c -n 1 -d 20s 1> avg.log");
+            FILE *avg = fopen("avg.log","r");
+            double avgVal=0, length=0;
+            while(fscanf(avg,"%s",buff)!=EOF){
+                avgVal+=atof(buff);
+                length++;
+            }
+            fclose(avg);
+            comm = fopen("tmpresults","a");
+            fprintf(comm,"%.2lf\n",(avgVal/length));
+            kill(pid,SIGINT);
+            fclose(comm);
+        }
+    }
+}
+
+void ethrFinish(){
+    system("make clean --directory=../ethr/ethr/");
+    resetPar();
+}
+
 void piStart(int samplecount){
     FILE *comm;      
     fclose(fopen("tmpresults", "w"));                              
