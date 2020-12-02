@@ -1,0 +1,1 @@
+{ "measurements": [{ "parameters":{"latency":"100000", "min_gran":"100000", "wakeup_gran":"0","prio":"-20","vm.swap":"0"},"results":[1176,1173,1173,1173,1179]}]}

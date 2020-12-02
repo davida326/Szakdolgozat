@@ -6,7 +6,7 @@
 #include <signal.h>         //SIGINT(^C), SIGTERM signalok lekezeléséhez
 #include <fcntl.h>          //open() -> /dev/null megnyitásához
 
-#define TESTS 6
+#define TESTS 7
 #define DEFAULT 5
 #define INIT -1
 
@@ -29,6 +29,8 @@ void qgears2Start(int);
 void qgears2Finish();
 void ethrStart(int);
 void ethrFinish();
+void ctx_clockStart(int);
+void ctx_clockFinish();
 void parameterTestStart(FILE *,int,int);
 void parameterTestFinish(int );
 void resetPar();
@@ -52,7 +54,7 @@ int main(int argc, char *argv[]){
         samplecount = atoi(argv[2]);
     }
     else{
-        printf("# ./parameter-test <testname> <samplecount>\nAvailable tests:\npi\t-\t(Processor)\nebizzy\t-\t(Processor[multicore])\nstream\t-\t(Memory)\nfs_mark\t-\t(Disk)\nqgears2\t-\t(Graphics)\nethr\t-\t(Network)\n");
+        printf("# ./parameter-test <testname> <samplecount>\nAvailable tests:\npi\t-\t(Processor[singlecore])\nebizzy\t-\t(Processor[multicore])\nstream\t-\t(Memory)\n*fs_mark\b\t-\t(Disk)\nqgears2\t-\t(Graphics)\nethr\t-\t(Network)\nctx-clock -\b\t(System)\n");
         exit(0);
     }
     parameterTestStart(fp,benchmark,samplecount);
@@ -69,6 +71,7 @@ void parameterTestFinish(int benchmark){
     endBenchmark[3]=fs_markFinish;
     endBenchmark[4]=qgears2Finish;
     endBenchmark[5]=ethrFinish;
+    endBenchmark[6]=ctx_clockFinish;
     (*endBenchmark[benchmark])(benchmark);
 }
 void parameterTestStart(FILE *fp, int benchmark,int samplecount){
@@ -85,15 +88,16 @@ void parameterTestStart(FILE *fp, int benchmark,int samplecount){
     startBenchmark[3]=fs_markStart;
     startBenchmark[4]=qgears2Start;
     startBenchmark[5]=ethrStart;
-    for(run.latency = 0;run.latency < 4;run.latency++){
+    startBenchmark[6]=ctx_clockStart;
+    for(run.latency = 0;run.latency < 1;run.latency++){
         real.latency=setLatency(&run.latency);
-        for(run.min_gran = 0;run.min_gran < 4;run.min_gran++){
+        for(run.min_gran = 0;run.min_gran < 1;run.min_gran++){
             real.min_gran = setMin_gran(&run.min_gran);
-            for(run.wakeup_gran = 0;run.wakeup_gran < 4;run.wakeup_gran++){
+            for(run.wakeup_gran = 0;run.wakeup_gran < 1;run.wakeup_gran++){
                 real.wakeup_gran = setWakeup(&run.wakeup_gran);
-                for(run.prio = 0; run.prio < 4; run.prio++){
+                for(run.prio = 0; run.prio < 1; run.prio++){
                     real.prio = setPrio(&run.prio);
-                    for(run.swap = 0; run.swap <4; run.swap++){
+                    for(run.swap = 0; run.swap <1; run.swap++){
                     real.swap = setVMSwap(&run.swap);
                     testcount++;
                     fprintf(fp,"{ \"parameters\":");
@@ -118,7 +122,7 @@ void parameterTestStart(FILE *fp, int benchmark,int samplecount){
                         free(iresult[i]);
                     }
                     fprintf(fp,"]}");
-                    if(!((run.latency==3) && (run.min_gran==3) && (run.wakeup_gran==3) && (run.prio==3) && (run.swap==3))) fprintf(fp,", ");  
+                    if(!((run.latency==0) && (run.min_gran==0) && (run.wakeup_gran==0) && (run.prio==0) && (run.swap==0))) fprintf(fp,", ");  
                     }
                 }
             }
@@ -253,6 +257,11 @@ FILE *initBenchmark(char *name,int *b){
         system("make --directory=../ethr/ethr/");
         *b = 5;
         fp = fopen("../ethr/logs/ertekek.json","w+");
+    }
+    else if(strcmp(name,"ctx-clock")==0){
+        system("make --directory=../ctx-clock/ctx-clock-1.0.0/");
+        *b = 6;
+        fp = fopen("../ctx-clock/logs/ertekek.json","w");
     }   
     else printf("no\n");
 }
@@ -338,6 +347,17 @@ void ethrStart(int samplecount){
 
 void ethrFinish(){
     system("make clean --directory=../ethr/ethr/");
+    resetPar();
+}
+
+void ctx_clockStart(int samplecount){
+    FILE *comm;
+    fclose(fopen("tmpresults","w"));
+    for(int i=0;i<samplecount;i++) system("../ctx-clock/ctx-clock-1.0.0/ctx_clock >> tmpresults");
+}
+
+void ctx_clockFinish(){
+    system("make clean --directory=../ctx-clock/ctx-clock-1.0.0/");
     resetPar();
 }
 
