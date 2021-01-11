@@ -89,17 +89,17 @@ void parameterTestStart(FILE *fp, int benchmark,int samplecount){
     startBenchmark[4]=qgears2Start;
     startBenchmark[5]=ethrStart;
     startBenchmark[6]=ctx_clockStart;
-    for(run.latency = 0;run.latency < 1;run.latency++){
+    for(run.latency = 0;run.latency < 4;run.latency++){
         real.latency=setLatency(&run.latency);
-        for(run.min_gran = 0;run.min_gran < 1;run.min_gran++){
+        for(run.min_gran = 0;run.min_gran < 4;run.min_gran++){
             real.min_gran = setMin_gran(&run.min_gran);
-            for(run.wakeup_gran = 0;run.wakeup_gran < 1;run.wakeup_gran++){
+            for(run.wakeup_gran = 0;run.wakeup_gran < 4;run.wakeup_gran++){
                 real.wakeup_gran = setWakeup(&run.wakeup_gran);
-                for(run.prio = 0; run.prio < 1; run.prio++){
+                for(run.prio = 0; run.prio < 4; run.prio++){
                     real.prio = setPrio(&run.prio);
-                    for(run.swap = 0; run.swap <1; run.swap++){
+                    for(run.swap = 0; run.swap <4; run.swap++){
                     real.swap = setVMSwap(&run.swap);
-                    testcount++;
+                    testcount++;     //4^5 = 1024
                     fprintf(fp,"{ \"parameters\":");
                     fprintf(fp,"{\"latency\":\"%d\", \"min_gran\":\"%d\", \"wakeup_gran\":\"%d\",\"prio\":\"%d\",\"vm.swap\":\"%d\"},\"results\":[",real.latency,real.min_gran,real.wakeup_gran,real.prio,real.swap);
                     printf("testnumber: %d\nlatency:%d min_gran:%d wakeup_gran:%d priority:%d vm.swappiness:%d\n",testcount,run.latency,run.min_gran,run.wakeup_gran,run.prio,run.swap);
@@ -122,7 +122,8 @@ void parameterTestStart(FILE *fp, int benchmark,int samplecount){
                         free(iresult[i]);
                     }
                     fprintf(fp,"]}");
-                    if(!((run.latency==0) && (run.min_gran==0) && (run.wakeup_gran==0) && (run.prio==0) && (run.swap==0))) fprintf(fp,", ");  
+                    if(!((run.latency==3) && (run.min_gran==3) && (run.wakeup_gran==3) && (run.prio==3) && (run.swap==3))) fprintf(fp,", ");  
+                    fclose(result);
                     }
                 }
             }
@@ -365,7 +366,7 @@ void piStart(int samplecount){
     FILE *comm;      
     fclose(fopen("tmpresults", "w"));                              
     for(int i=0;i<samplecount;i++){                                
-        comm = popen(" /usr/bin/time -o ./tmpresults --append -f '%e' ../pi/pi-benchmark/sample-program.sh ","r");
+        comm = popen(" /usr/bin/time -o ./tmpresults --append -f '%e' ../pi/pi-benchmark/sample-pi-program ","r");
         fclose(comm);
     }
 }
