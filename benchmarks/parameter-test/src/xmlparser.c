@@ -39,24 +39,12 @@ void writeConfig(char *location){               /* futtatás root jogosultságga
 	xmlFreeDoc(doc);
 }
 
-
-
-void getValueFromFile(char *location,char *val){
-    xmlDoc *doc;
-    xmlNode *root;
-    doc = xmlParseFile(location);
-    root = xmlDocGetRootElement(doc);
-    char actualValue[50];
-    searchForNodeValue(root,doc,"Value",actualValue);
-    strcpy(val,actualValue);
-}
-
 void searchForNodeValue(xmlNode *node,xmlDoc *doc,char *nodeName,char *actualValue){
     if(!xmlStrcmp(node->name,(const xmlChar *)nodeName)){
         xmlChar *key;
-        key = xmlNodeListGetString(doc,node->xmlChildrenNode,1);
-        sprintf(actualValue,"%s",key);
-        xmlFree(key);
+        key = xmlNodeListGetString(doc,node->xmlChildrenNode,1);    /* kikeresi a megfelelő nevű node-ot          */
+        sprintf(actualValue,"%s",key);                              /* az értékét eltárolja a megadott pointer-be */
+        xmlFree(key);                                               
     }
     xmlNode *children;
     if( node->children != NULL )    
@@ -68,4 +56,14 @@ void searchForNodeValue(xmlNode *node,xmlDoc *doc,char *nodeName,char *actualVal
             }
         children = children->next;
     }
+}
+
+void getValueFromFile(char *location,char *val){
+    xmlDoc *doc;                                    /* a paraméterként megkapott fájlútvonalat megnyitja,       */
+    xmlNode *root;                                  /* az előző függvény segítségével, eltárolja az eredményt   */
+    doc = xmlParseFile(location);                   /* az eredményt továbbadja a kapott char *val-nak           */
+    root = xmlDocGetRootElement(doc);
+    char actualValue[50];
+    searchForNodeValue(root,doc,"Value",actualValue);
+    strcpy(val,actualValue);
 }

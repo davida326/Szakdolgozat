@@ -38,10 +38,10 @@ void preparations(){                                          /* ez a paraméter
 }                                                             /* beállításait végzi el                */
 
 int selectedTest(int *sampleCount,int *intervalSplit){
-    initscr();
+    initscr();                     
     raw();
     int x,y,ch,select = 0;
-    getmaxyx(stdscr,y,x);
+    getmaxyx(stdscr,y,x);                  
     printw("press q to exit...");
     refresh();
     noecho();
@@ -91,24 +91,24 @@ int getIntegerWithMenu(char *request,int x,int y){
     return (dummy) ? dummy : SAMPLECOUNT_DEFAULT;  /* alapérték beállítása, amennyiben nem adunk meg értéket */
 }
 
-int menuPosition(){
-    int max = strlen(testList[0]);
+int menuPosition(){                     /*      a benchmarkot kiválasztó ablakban,     */
+    int max = strlen(testList[0]);      /* középre igazítja a felsorolt tesztek neveit */
     for(int i = 0;i<testListSize;i++)
         if(max < strlen(testList[i]))
             max = strlen(testList[i]);
     return max;
 }
 
-WINDOW *createWindow(int height,int width,int starty,int startx){
-    WINDOW *localWin = newwin(height, width,starty,startx);
+WINDOW *createWindow(int height,int width,int starty,int startx){  /* egyszerű ablakot létrehozok a méretekkel,     */
+    WINDOW *localWin = newwin(height, width,starty,startx);        /* és hogy az hol helyezkedjen el:startx,starty  */
     keypad(localWin,TRUE);
     box(localWin,0,0);
     wrefresh(localWin);
     return localWin;
 }
 
-void destroyWindow(WINDOW *localWin){
-    wborder(localWin,' ',' ',' ',' ',' ',' ',' ',' ');
+void destroyWindow(WINDOW *localWin){                       /* ha csak kitörölném, ott maradna pár + jel            */
+    wborder(localWin,' ',' ',' ',' ',' ',' ',' ',' ');      /* amit nem szeretnék,ezért így leszedem róla a keretet */
     wrefresh(localWin);
     delwin(localWin);
 }
@@ -116,11 +116,11 @@ void destroyWindow(WINDOW *localWin){
 void printMenu(WINDOW *menu,int selected){
     int x,y,wordLength = menuPosition();
     getmaxyx(menu,y,x);
-    char *mesg="Please choose a benchmark";
+    char *mesg="Please choose a benchmark";             
     mvwprintw(menu,1,(x-strlen(mesg))/2,mesg);
     for(int i=0;i<testListSize;i++){
         if(selected == i)
-            wattrset(menu,A_STANDOUT);
+            wattrset(menu,A_STANDOUT);          /* a benchmark kiválasztó menu, rajzolása */
         else
             wattrset(menu,A_NORMAL); 
         mvwprintw(menu,((y-testListSize)/2)+i,(x-wordLength)/2,testList[i]);
@@ -130,9 +130,9 @@ void printMenu(WINDOW *menu,int selected){
 void  SIGhandler(int sig)
 {
     switch (sig) {
-        case SIGINT:
-            resetParameters();
-            exit(0);
+        case SIGINT:                    /* SIGINT, (^C) illetve SIGTERM                  */
+            resetParameters();          /* signalok esetén visszaállítom a paramétereket */
+            exit(0);                    /* és a program megszünteti magát                */
         break;
         case SIGTERM:
             resetParameters();
@@ -142,7 +142,7 @@ void  SIGhandler(int sig)
 }
 void resetParameters(){
     system("sysctl kernel.sched_tunable_scaling=1");
-    system("sysctl kernel.sched_latency_ns=12000000");
+    system("sysctl kernel.sched_latency_ns=12000000");              /* ütemező hangoló paraméterek alapbeállításai */
     system("sysctl kernel.sched_min_granularity_ns=1500000");
     system("sysctl kernel.sched_wakeup_granularity_ns=2000000");
 }
@@ -162,12 +162,12 @@ void startTest(int testNum,int intervalSplit,int sampleCount){
     run.priority = -20;
     run.vm_swappiness = 0;
    
-    setFileName(fileName);
-    FILE *fp = fopen(fileName,"w");
-
+    setFileName(fileName);                          /* a névben szerepel egy dátum, */
+    FILE *fp = fopen(fileName,"w");                 /* így több teszt is futtatható,*/
+                                                    /* egymást követően             */
     fprintf(fp,"{\"testName\":\"%s\",\"measurements\":[",testList[testNum]);
 
-    commandBuilder(testNum,sampleCount,command);
+    commandBuilder(testNum,sampleCount,command);    
     resultPathBuilder(testNum,path);
     
     for(int i=0;i<intervalSplit;i++){
@@ -195,17 +195,18 @@ void startTest(int testNum,int intervalSplit,int sampleCount){
     /* Remélhetőleg itt már elkészült a .json fájl és visszaállítom a paramétereket. */
 }
 void setFileName(char *fileName){
-    time_t rawtime = time(NULL);
+    time_t rawtime = time(NULL);                        
     struct tm *ptm = localtime(&rawtime);
     strftime(fileName, 256, "./logs/result%Y%m%d%H%M%S.json", ptm);
 }
-void benchmarkCleanUp(int testNum){
-    char command[100];
+                                                            /* a törlés azért fontos mivel,                 */
+    void benchmarkCleanUp(int testNum){                     /* ugyanazzal a névvel, azonosítóval, leírással */
+    char command[100];                                      /* indítom a tesztet                            */
     sprintf(command,"rm -rf /var/lib/phoronix-test-suite/test-results/%s",testListResult[testNum]);
     system(command);
 };
-void benchmarkStart(char *command,int testCount){
-    printf("\nTest number: %d\n",testCount);
+void benchmarkStart(char *command,int testCount){       /* a futás közben megjelenő adatokat, */
+    printf("\nTest number: %d\n",testCount);            /* tervezem még módosítani            */
     system(command);    
 }
 void resultPathBuilder(int testNum,char *path){
@@ -214,8 +215,8 @@ void resultPathBuilder(int testNum,char *path){
 
 void setParameter(int parameter,int value){
     char *command;
-    char *execute[255];
-    switch(parameter){
+    char *execute[255];                     /* beállítjuk a kapott paramétert,      */ 
+    switch(parameter){                      /* a kapott értékre sysctl-segítségével */
         case LATENCY:
             command = "sysctl kernel.sched_latency_ns";
             break;
@@ -226,7 +227,7 @@ void setParameter(int parameter,int value){
             command = "sysctl kernel.sched_wakeup_granularity_ns";
             break;
         case PRIORITY:
-            setpriority(PRIO_PROCESS,getpid(),value);
+            setpriority(PRIO_PROCESS,getpid(),value);  
             return;
             break;
         case VM_SWAPPINESS:
@@ -241,9 +242,9 @@ void commandBuilder(int testNum,int sampleCount,char *command){
     char *preset_option;
     switch(testNum){
         case 2:
-            preset_option = "PRESET_OPTIONS=\"fs-mark.run-type=1000 Files, 1MB Size\"";
-            break;
-        case 3:
+            preset_option = "PRESET_OPTIONS=\"fs-mark.run-type=1000 Files, 1MB Size\""; /* Ezek a preset opciók, mindig fixen ugyanazzal a beállítással fogják   */
+            break;                                                                      /* indítani a benchmarkot, mint amit beleégettem kézzel.                 */
+        case 3:                                                                         /* Sajnos még nem jöttem rá hogyan kérhetem le csak a beállítás listát:( */
             preset_option = "PRESET_OPTIONS=\"stream.run-type=Copy\"";
             break;
         case 5:
@@ -251,17 +252,17 @@ void commandBuilder(int testNum,int sampleCount,char *command){
             break;
         default:
             preset_option = "";
-    }
+    }                       /* azért fontos beállítanom a nevét, azonosítót, leírást, mivel egyes futásokat megállíthat hogy, elkérje billentyűzetről ezeket */
     sprintf(command,"TEST_RESULTS_DESCRIPTION=myDescription TEST_RESULTS_IDENTIFIER=myIdentity TEST_RESULTS_NAME=%s FORCE_TIMES_TO_RUN=%d %s phoronix-test-suite batch-benchmark %s",testListResult[testNum],sampleCount,preset_option,testList[testNum]);
 }
 
-int getParameter(int parameter,int n,int iteration){
-    int latencyInterval = 999900000;
-    int min_granInterval = 999900000;
-    int wakeup_granInterval = 1000000000;
-    int priorityInterval = 39;
-    int vm_swappinessInterval = 100;
-    switch(parameter){
+int getParameter(int parameter,int n,int iteration){   /* Az startTest fgv-ben a paraméterek be vannak állítva a legkisebb értékre     */
+    int latencyInterval = 999900000;                   /* itt a található mindegyiknek a legnagyobb értéke.                            */     
+    int min_granInterval = 999900000;                  /* Ennek a függvénynek a visszatérési értékét, mindig hozzáadom                 */
+    int wakeup_granInterval = 1000000000;              /* az épp aktuális paraméter értékéhez.                                         */
+    int priorityInterval = 39;                         /* paraméterek: & parameter - melyik változóról van szó                         */
+    int vm_swappinessInterval = 100;                   /*              & n         - hány részre kellett szétszedni az intervallumot   */
+    switch(parameter){                                 /*              & interation- éppen melyik iterációnál járunk és ezzel szorzunk */ 
         case LATENCY:
             return (latencyInterval/(n-1))*iteration;
         case MIN_GRAN:
