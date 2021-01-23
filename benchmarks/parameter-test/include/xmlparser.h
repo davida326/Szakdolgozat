@@ -9,4 +9,5 @@ void writeNode(xmlNode *node,xmlDoc *doc,char *nodeName,char *value);
 void writeConfig(char *location);
 void searchForNodeValue(xmlNode *node,xmlDoc *doc,char *nodeName,char *actualValue);
 void getValueFromFile(char *location,char *val);
+
 #endif

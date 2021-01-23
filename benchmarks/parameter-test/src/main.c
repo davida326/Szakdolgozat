@@ -15,12 +15,13 @@
 #include "xmlparser.h"
 
 int main(int argc, char *argv[]){
-   
+    initscr();                     
+    raw();
     int intervalSplit,sampleCount;
     int testNum = selectedTest(&sampleCount,&intervalSplit);
-    endwin();
+    erase();
     preparations();
     startTest(testNum,intervalSplit,sampleCount);
-    
+    endwin();
     return 0;
 }
