@@ -1,9 +1,18 @@
 \Chapter{Bevezetés}
 
-A fejezet célja, hogy a feladatkiírásnál kicsit részletesebben bemutassa, hogy miről fog szólni a dolgozat.
-Érdemes azt részletezni benne, hogy milyen aktuális, érdekes és nehéz probléma megoldására vállalkozik a dolgozat.
+A mai világban nehezen elképzelhetőnek tűnnek azok a számítógépek, amik egyszerre csak egyetlen folyamatot képesek futtatni.
+A definiciója a single-tasking rendszereknek, kicsit értelmét vesztette a modern hardware-eken. A multi tasking rendszer már alapvető követelménynek tekinthető manapság. Egy multi tasking rendszerben, több proccess verseng egymással és mindenki szeretne processzorhoz jutni. Könnyen előfordulhat hogy száz, akár kétszáz processz is várakozik, de nekünk nincs  kétszáz processzorunk hogy mindenki futni tudjon. Ezt egy "pszeudo párhuzamossággal" éri el a rendszer, ami azt jelenti hogy váltogatva futnak és ez a váltogatás nagyon gyorsan történik. Egy másodperc alatt akár ezerszer is bekövetkezhet.
+A kernel egyik fő feladata, a futásra kész processzek közül egy számára a CPU  kiosztása. El kell döntenie, melyik futásra kész állapotú processz kapja meg a CPU-t. Scheduler-nek, ütemezőnek hívják kernelnek azt a részét, amelyik ezzel a döntéssel foglalkozik.
+%https://users.iit.uni-miskolc.hu/~vinczed/ldapauth/osbsc2019/Operacios-rendszerek-jegyzet.pdf
+%https://www.cs.rutgers.edu/~pxk/416/notes/07-scheduling.html
 
-Ez egy egy-két oldalas leírás.
-Nem kellenek bele külön szakaszok (section-ök).
-Az irodalmi háttérbe, a probléma részleteibe csak a következő fejezetben kell belemenni.
-Itt az olvasó kedvét kell meghozni a dolgozat többi részéhez.
+Négy olyan esemény fordulhat elő, ahol az ütemezőnek lépnie kell és meg kell hoznia a döntést:
+\begin{itemize}
+  \item Az aktuális processz futó állapotból, blokkolt állapotba kerül, ez I/O kérés vagy gyerek processzre való várakozás miatt következhet be.
+  \item Egy I/O művelet befejeződésének hatására, egy blokkolt processz, futásra kész állapotra vált. Ekkor az ütemező eldönti hogy, az aktuálisan futó processzt preemptálja és megválassza az új kész állapotú processzt.
+  \item Egy processz terminálódásakor.
+  \item Óraeszköztől származó megszakítás hatására, a processz futó állapotból, futásra kész állapotra vált. 
+\end{itemize}
+
+A dolgozat azt vizsgálja, hogy a Linux kernel esetében milyen lehetőségek vannak az ütemezés optimalizálására különféle operációs rendszer felhasználati módok esetében. Tipikusan elkülöníthetjük például az asztali környezettel használt, illetve a szerverként üzemeltetett rendszereket. A dolgozat áttekinti az ismert ütemezéső algoritmusokat, ezt követően a linux kernel legújabb ütemezőjét, a Completely Fair Scheduler-t optimalizálásra keres megoldásokat. Benchmark feladatok segítségével mérhetővé teszi, hogy az ütemezőkben elvégzett változtatások milyen hatást gyakorolnak a végrehajtáshoz szükséges időre.
+Az így kapott adatok alapján, egy Machine learning algoritmus segítségével készítek javaslatokat, az ütemező hangoló interface módosítására. A felhasználónak ki kell választania néhány beállítást, hogy mégis milyen felhasználási módra szeretné optimalizálni az ütemezőt és a model ezek alapján megpróbálja a legjobb beállítási lehetőségeket visszaadni.
