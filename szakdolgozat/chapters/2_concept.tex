@@ -18,6 +18,7 @@ Láthatók bizonyos ellentmondások a kritériumok között. A válaszidő minim
 A számításigényes munkák korlátozás nélküli
 előnyben részesítése javítja a hatékonyságot, de nem biztosítja a korrektséget, és az összevont
 teljesítmény is csorbulhat.
+Jelenleg a kernel 5.8.x verziójában, a normál processzek ütemezését a CFS ütemezési osztály végzi. 
 
 \Section{Elterjedt ütemezési stratégiák}
 
@@ -355,9 +356,9 @@ Bármelyik paraméter elhagyása az alábbiakat eredményezi.
 \end{itemize}
 \noindent Ezzel a három plusz paraméterrel, így néz ki a chrt program paraméterezése:
 \begin{python} 
-# chrt -d --sched-runtime 1000000 --sched-deadline 5000000 
+$ sudo chrt -d --sched-runtime 1000000 --sched-deadline 5000000 
 		--sched-period 5000000 0 ./test
-\end{python}
+\end{python}%$
 
 \SubSection{Completely Fair Scheduler}
 
@@ -444,7 +445,7 @@ const struct sched_class fair_sched_class = {
 
 A vruntime váltózó értékének kiszámításához, a CFS nem csak a nice értéket használja fel hanem a process load weight változóját is. A nice értékben történő lépegetés egyesével felfelé, minusz 10\% CPU időszeletet fog eredményezni, és minden lépés lefelé pedig plusz 10\%-ot. 
 A processz load weight változójának kiszámolásához a kernel fenttart egy tömböt amit \textit{sched\_prio\_to\_weight}-nek neveztek el. Itt megtalálható hogy melyik nice értékhez, milyen súly érték tartozik.
-%https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/core.c#L8182
+%TODO referencia a forráskódból: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/core.c#L8182
 \begin{cpp}
 const int sched_prio_to_weight[40] = {
  /* -20 */     88761,     71755,     56483,     46273,     36291,
@@ -514,8 +515,8 @@ A CFS taszk csoportok, a sched\_entity strúktúra egy része, és minden csopor
 \end{figure}
 
 \Section{Kernel modulok}
-%TODO The Linux Kernel Module Programming Guide. Peter Jay Salzman Michael Burian Ori Pomerantz. Copyright © 2001 Peter Jay Salzman.  
-%TODO Understanding the Linux Kernel, Third Edition by Daniel P. Bovet and Marco Cesati
+%TODO referencia könyvből: The Linux Kernel Module Programming Guide. Peter Jay Salzman Michael Burian Ori Pomerantz. Copyright © 2001 Peter Jay Salzman.  
+%TODO referencia könyvből: Understanding the Linux Kernel, Third Edition by Daniel P. Bovet and Marco Cesati
 Egy modul gyakorlatilag instrukciók sorozata, amit igény szerint, ki és be lehet tölteni a kernel-be. Kibővíti a kernel funkcionalitását, anélkül hogy újra keljen indítani a rendszert. Minden magasabb szintű kernel komponens, mint például fájlrendszerek, I/O eszköz driver, hálózati rétegek, stb, meg lehet írni modulként és be lehet tölteni a kernel-be.
 
 \noindent Az éppen aktuálisan betöltött moduljainkat, le tudjuk kérdezni az \texttt{\# lsmod} paranccsal, ami a \texttt{/proc/modules} fájl tartalmát listázza.
@@ -534,10 +535,10 @@ Minden kernel modulnak kell hogy legyen legalább két eljárása, az egyik ilye
 Ez egy inicializációs eljárás, az \texttt{init\_module()} hívódik meg amikor beszúrjuk a modult az \texttt{insmod} paranccsal.
 A másik a \texttt{cleanup\_module()}, ami pedig az eltávolítás során(\texttt{rmmod}) hívódik meg.
 A 2.3.13.-as kernel verzióban bevezettek egy újítást, ami szerint, mi határozhatjuk meg az eljárások neveit. Ehhez használjuk a \texttt{module\_init()} és a \texttt{module\_exit()} makrókat. Tipikusan, az \texttt{init\_module()}-ban írjuk meg a programunkat, ami lehet hogy kicserél egy kernel függvényt a miénkre vagy regisztrál valamilyen kezelőt a kernel-hez. A \texttt{cleanup\_module()}-nak pedig az lenne a feladata, hogy visszavonja a módosításokat, amit az \texttt{init\_module()} elvégzett.
-%https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-init-again.html
+%TODO referencia: https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-init-again.html
 
 A prink() függvénynek, nem a felhasználóval történő kommunikáció a fő szerepe, mégha én a mostani példában arra is használom. Ez egy naplózási eszköz(log) a kernel számára, amivel valamilyen fontos információt vagy hibaüzenetet továbbít. Az üzeneteknek, különböző fontossági szintjük van. Ezeket a szinteket hívjuk console\_loglevel-nek, ami egy kernelbeli változó, aminek a szintjeit 0-7 ig fogjuk megnézni. 
-%https://www.kernel.org/doc/html/latest/core-api/printk-basics.html
+%TODO referencia: https://www.kernel.org/doc/html/latest/core-api/printk-basics.html
 \begin{enumerate}
 \setcounter{enumi}{-1}
 	\item KERN\_EMERG \- A rendszerünk már használhatatlan állapotba került.
@@ -557,27 +558,6 @@ $ cat /proc/sys/kernel/printk
 %$
 Ezek a számok, az aktuális, alapértelmezett, minimális és boot-time-default log szinteket mutatják.
 
-A cél nálam az ütemező optimalizálása volt, különféle operációs rendszer felhasználati módok esetében. Emiatt szükségem volt az éppen aktuális processzek adataira.
-Ehhez a feladathoz készítettem egy betölthető modult, amiben a \texttt{printk()}-függvényt használtam, a processz adatok naplózására.
-A processzek az operációs rendszeren belül, egy duplán láncolt listában helyezkednek el.
-A processzek végigjárásához létezik egy \texttt{for\_each\_process} makró.
-\begin{cpp}
-struct task_struct *p;
-#define for_each_process(p) \
-	 for ( p = &init_task ; ( p = next_task(p)) != &init_task ; )
-\end{cpp}
-Ennel felhasználásával könnyen végig tudtam iterálni, a rendszerben lévő processzeken. A szükséges adatokat a processzekről, az őket definiáló struktúra váltózóiként értem el. Ez struktúra a \texttt{/linux/sched.h}-ban található.
-\begin{cpp}
- printk(KERN_INFO "/comm/and: \%s pid: \%d 
- prio: \%d rt_prio: \%d weight: \%lu 
- vruntime: \%llu pcount:\%lu 
- \\nsum_exec_runtime:\%llu 
- prev_sum_exec_runtime:\%llu 
- exec_start:\%llu\\n",p->comm,p->pid, 
- p->prio,rt_task(p),p->se.load.weight,p->se.vruntime,
- p->sched_info.pcount,p->se.sum_exec_runtime,
- p->se.prev_sum_exec_runtime,p->se.exec_start);
-\end{cpp}
 
 
 
