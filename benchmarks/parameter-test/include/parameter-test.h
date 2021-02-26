@@ -23,7 +23,6 @@
 #define PRIORITY 3
 #define VM_SWAPPINESS 4
 
-void printReverse(configList *head,int i,WINDOW *win);
 void preparations(char *testName);
 void selectedTest(int *sampleCount,int *intervalSplit,char *testName);
 void getStringWithMenu(char *requestUpper,char *requestLower,char *str,int x,int y);
