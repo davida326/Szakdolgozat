@@ -120,9 +120,9 @@ void getStringWithMenu(char *requestUpper,char *requestLower,char *str,int x,int
     echo();
     WINDOW *strMenu = createWindow(HEIGHT,WIDTH+20,((y-HEIGHT)/2),(x-WIDTH-20)/2);
 
-    mvwprintw(strMenu,(HEIGHT/3),1,requestUpper);
+    
     mvwprintw(strMenu,(HEIGHT/3)+1,1,requestLower);
-
+    mvwprintw(strMenu,(HEIGHT/3),1,requestUpper);
     wscanw(strMenu,"%s",str);
 
     wborder(strMenu,' ',' ',' ',' ',' ',' ',' ',' '); 
