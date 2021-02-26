@@ -9,100 +9,147 @@ typedef struct parameters{       /* ütemező hangolási és swap memória vált
     int vm_swappiness;
 }parameters;
 
-char *testList[] = {           /* maguk a tesztek nevei  */
-    "sample-program",          /* és egy exit string,    */
-    "ebizzy",                  /* az ncurses menühöz     */
-    "fs-mark",
-    "stream",
-    "ctx-clock",
-    "glmark2",
-    "exit"
-};
+void printReverse(configList *head,int i,WINDOW *win) { 
+    // Base case   
+    if (head == NULL) 
+       return; 
+    i--;
+    // print the list after head node 
+    printReverse(head->next,i,win); 
+    
+    // After everything else is printed, print head 
+    mvwprintw(win,i+2,1,"%d - %s",i, head->value); 
+} 
 
-char *testListResult[] = {        /* phoronix-test-suite program      */   
-    "sampleprogramres",           /* segítségével lementem a tesztek  */
-    "ebizzyres",                  /* eredményeit, ezekkel a nevekkel  */
-    "fsmarkres",
-    "streamres",
-    "ctxclockres",
-    "glmark2res",
-};
+void preparations(char *testName){                      
+    // teszt telepítés
+    system("sysctl kernel.sched_tunable_scaling=0 > /dev/null"); /* Ezt a paramétert 0-ra állítottam, */        
+    char command[255],testVersion[255];                          /* annak érdekében hogy az ütemező   */
+    printw("installing test...");                                /* ne módosítsa a paramétereket.     */
+    refresh();
+    sprintf(command,"phoronix-test-suite install %s > /dev/null",testName);
+    system(command);                                          /* teszt telepítése */
+    clear();
+    refresh();
 
-int testListSize = sizeof(testList)/sizeof(char *);
-void preparations(){                                          /* ez a paraméter azt szabályozza hogy, */
-    system("sysctl kernel.sched_tunable_scaling=0 > /dev/null");          /* az ütemező is módosíthatja a         */
-                                                              /* sched_latency_ns változó értékét     */
-                                                              /* ( ezt én nem szeretném )             */
-                                                              /*--------------------------------------*/
+    //PHASE2 - teszt verziószám, config-xml fájlok keresése
+    sprintf(command,"ls /var/lib/phoronix-test-suite/installed-tests/pts | grep %s > testVersion.txt",testName);
+    system(command);
+    FILE *version = fopen("testVersion.txt","r");
+    fscanf(version,"%s",testVersion);                         
+    fclose(version);
+    remove("testVersion.txt");
+    char location[255];
+    sprintf(location,"/var/lib/phoronix-test-suite/test-profiles/pts/%s/test-definition.xml",testVersion);
+    /* a test-defininition.xml fájlban találhatók meg a teszteknél kiválasztható konfigurációk listája */
+    
+    //config fájlok módosítása/teszt benchmark előkészítése
+    int y,x;
+    getmaxyx(stdscr,y,x);
+    WINDOW *win = createWindow(HEIGHT,WIDTH*2,((y-HEIGHT)/2),(x-WIDTH*2)/2); // új ablak létrehozása 
+    configList *nodeList = NULL;    // láncolt listában tárolom el a lehetséges beállítási kategóriákat
+    refresh();
+    xmlDoc *doc;                                            
+    xmlNode *root;
+    doc = xmlParseFile(location);       // fájl megnyitása
+    root = xmlDocGetRootElement(doc);
+    searchForNodes(root,doc,"Option",&nodeList);    // a fájlban megkeresi az összes "Option" elnevezési node-ot
+    for(;nodeList!=NULL;nodeList=nodeList->next){   // az Option node-okon belül szükségem van két fontos elemre
+        char displayName[80];                       // ezek a DisplayName és az identifier.
+        char identifier[80];                        // A displayname a beállítás neve
+                                                    // az identifier pedig az azonosítója
+        int num=0,yline=1;
+        configList *entryList = NULL;
+        searchForNodeValue(nodeList->element,doc,"DisplayName",displayName); //kikeresem a két node értékét
+        searchForNodeValue(nodeList->element,doc,"Identifier",identifier);
+        int defaultEntry=0;
+        searchForDefaultEntry(nodeList->element,"DefaultEntry",&defaultEntry); // megnézem hogy van-e alapértelmezett beállítás ezekre a
+        char input[80];                                                        // konfigurációkra
+        mvwprintw(win,yline,1,"%s",displayName);yline++;
+        wmove(win,yline+1,0);
+        
+        if(!strcmp(identifier,"auto-resolution")){     //amennyiben az azonosító "auto-resolution", sajnos nem tudom megjeleníteni az opciókat hozzá
+            mvwprintw(win,yline,1,"Enter the id of the resolution, you want.");yline++; //azonban az input ugyanúgy feldolgozható 
+            mvwprintw(win,yline,1,"Resolutions can be different from one test, to another.");yline++;
+            mvwprintw(win,yline,1,"(goes from 1 to N)");yline++;
+            mvwprintw(win,yline,1,"You can see the resolutions available,");yline++;
+            mvwprintw(win,yline,1,"at openbenchmarking.orgtest/pts/your_test");yline++;
+            mvwprintw(win,yline,1,"Configuration(positive integer):");yline++;
+        }
+        else{
+            searchForNodeValues(nodeList->element,doc,"Name",&entryList,&num); // Minden más beállításhoz, megtalálható az .xml fájlban
+            printReverse(entryList,num+1,win);                                 // a lehetséges opciók. Ezt egy másik láncolt listában tárolom.
+            yline=yline+num+1;
+            mvwprintw(win,yline,1,"Write the configuration number please, from above");yline++;
+            mvwprintw(win,yline,1,"Configuration(positive integer):");yline++;
+        }
+        
+        wrefresh(win);
+        wscanw(win,"%s",&input);  
+        if(defaultEntry)                             // Abban az esetben ha van alapértelmezett beállítás, azt módosítom
+            writeNode(nodeList->element,"DefaultEntry",input);
+        else
+            insertNode(nodeList->element,input);     // egyébként újat szúrok be
+        freeList(entryList); // felszabadítja a láncolt lista által lefoglalt memóriát
+    }
+    xmlSaveFormatFile(location, doc, 0);           // elmenti a módosításokat és felülírja a fájlt
+	xmlFreeDoc(doc);                                              
+    wclear(win);
+    wrefresh(win);
+    destroyWindow(win);     
+    freeList(nodeList);          // felszabadítja a láncolt lista által lefoglalt memóriát
     writeConfig("/etc/phoronix-test-suite.xml");              /* batch-benchmark configurációs        */
 }                                                             /* beállításait végzi el                */
 
-int selectedTest(int *sampleCount,int *intervalSplit){
-    
+void selectedTest(int *sampleCount,int *intervalSplit,char *testName){
     int x,y,ch,select = 0;
     getmaxyx(stdscr,y,x);                  
-    printw("press q to exit...");
-    refresh();
-    noecho();
-    WINDOW *menu = centerWindow();
-    printMenu(menu,select);
-
-    while(1){
-        ch = wgetch(menu);
-        switch(ch){
-            case KEY_UP: 
-                if(select == 0) select = (testListSize-1);
-                else --select;
-            break;
-            case KEY_DOWN:
-                if(select == (testListSize-1)) select = 0;
-                else ++select;
-            break;
-            case 113:
-                endwin();
-                exit(0);
-            case 10:
-                if(select == (testListSize-1)){
-                    endwin();
-                    exit(0);
-                }
-                else{
-                    destroyWindow(menu);
-                    *sampleCount = getIntegerWithMenu("sample count:",x,y);
-                    *intervalSplit = getIntegerWithMenu("parameter split:",x,y);
-                    return select;
-                } 
-        }
-        wrefresh(menu);
-        printMenu(menu,select);
-    }
+    getStringWithMenu("test name:pts/","(without version number)",testName,x,y); //tesztnév beállítása
+    do{
+        *sampleCount = getIntegerWithMenu("sample count:"); 
+    }while(*sampleCount ==1);
+    if(*sampleCount==5)
+        printw("default value has been set for sample count\n");
+    do{
+        *intervalSplit = getIntegerWithMenu("parameter split:");
+    }while(*intervalSplit==1);
+    if(*intervalSplit==5)
+        printw("default value has been set for the parameter split value\n");
 }
+void getStringWithMenu(char *requestUpper,char *requestLower,char *str,int x,int y){
+    echo();
+    WINDOW *strMenu = createWindow(HEIGHT,WIDTH+20,((y-HEIGHT)/2),(x-WIDTH-20)/2);
 
-int getIntegerWithMenu(char *request,int x,int y){
-    WINDOW *menu = createWindow(HEIGHT,WIDTH,(y-HEIGHT)/2,(x-WIDTH)/2);
+    mvwprintw(strMenu,(HEIGHT/3),1,requestUpper);
+    mvwprintw(strMenu,(HEIGHT/3)+1,1,requestLower);
+
+    wscanw(strMenu,"%s",str);
+
+    wborder(strMenu,' ',' ',' ',' ',' ',' ',' ',' '); 
+    wclear(strMenu);
+    wrefresh(strMenu);
+    delwin(strMenu);
+}
+int getIntegerWithMenu(char *request){
+    WINDOW *menu = centerWindow();
     mvwprintw(menu,(HEIGHT/3),(WIDTH-strlen(request))/2,request);
     echo();
     int dummy=0;
     mvwscanw(menu,(HEIGHT/3),((WIDTH+strlen(request))/2),"%d",&dummy);
     mvwprintw(menu,2,0,"%d",dummy);
+    wclear(menu);
     wrefresh(menu);
     destroyWindow(menu);
     return (dummy) ? dummy : SAMPLECOUNT_DEFAULT;  /* alapérték beállítása, amennyiben nem adunk meg értéket */
 }
 
-int menuPosition(){                     /*      a benchmarkot kiválasztó ablakban,     */
-    int max = strlen(testList[0]);      /* középre igazítja a felsorolt tesztek neveit */
-    for(int i = 0;i<testListSize;i++)
-        if(max < strlen(testList[i]))
-            max = strlen(testList[i]);
-    return max;
-}
 WINDOW *centerWindow(){
     int x,y;
     getmaxyx(stdscr,y,x);
     WINDOW *menu = createWindow(HEIGHT,WIDTH,((y-HEIGHT)/2),(x-WIDTH)/2);
     return menu;
 }
+
 WINDOW *createWindow(int height,int width,int starty,int startx){  /* egyszerű ablakot létrehozok a méretekkel,     */
     WINDOW *localWin = newwin(height, width,starty,startx);        /* és hogy az hol helyezkedjen el:startx,starty  */
     keypad(localWin,TRUE);
@@ -113,26 +160,11 @@ WINDOW *createWindow(int height,int width,int starty,int startx){  /* egyszerű 
 
 void destroyWindow(WINDOW *localWin){                       /* ha csak kitörölném, ott maradna pár + jel            */
     wborder(localWin,' ',' ',' ',' ',' ',' ',' ',' ');      /* amit nem szeretnék,ezért így leszedem róla a keretet */
-
     delwin(localWin);
 }
 
-void printMenu(WINDOW *menu,int selected){
-    int x,y,wordLength = menuPosition();
-    getmaxyx(menu,y,x);
-    char *mesg="Please choose a benchmark";             
-    mvwprintw(menu,1,(x-strlen(mesg))/2,mesg);
-    for(int i=0;i<testListSize;i++){
-        if(selected == i)
-            wattrset(menu,A_STANDOUT);          /* a benchmark kiválasztó menu, rajzolása */
-        else
-            wattrset(menu,A_NORMAL); 
-        mvwprintw(menu,((y-testListSize)/2)+i,(x-wordLength)/2,testList[i]);
-        wrefresh(menu);
-    }
-}
-void  SIGhandler(int sig)
-{
+
+void  SIGhandler(int sig){
     switch (sig) {
         case SIGINT:                    /* SIGINT, (^C) illetve SIGTERM                  */
             resetParameters();          /* signalok esetén visszaállítom a paramétereket */
@@ -150,14 +182,14 @@ void resetParameters(){
     system("sysctl kernel.sched_min_granularity_ns=1500000 > /dev/null");
     system("sysctl kernel.sched_wakeup_granularity_ns=2000000 > /dev/null");
 }
-void startTest(int testNum,int intervalSplit,int sampleCount){ 
+void startTest(int intervalSplit,int sampleCount,char *testName){ 
     
     signal(SIGINT, SIGhandler);
     signal(SIGTERM, SIGhandler);
     char fileName[256];
-    char command[200];
-    char path[200];
-    char result[100];
+    char command[1024];
+    char path[1024];
+    char result[80];
     int y,x,size = 5,testCount = 1,testIndex = 0;
     parameters run;
     run.latency = 100000;
@@ -166,21 +198,19 @@ void startTest(int testNum,int intervalSplit,int sampleCount){
     run.priority = -20;
     run.vm_swappiness = 0;
     char lastResults[size][255];
-    initializeArr(lastResults,size);
+    initializeArr(lastResults,size); /* kitölti --- jelekkel az eredményhalmazt */
     refresh();
     WINDOW *menuOnRun = centerWindow();
-
     cbreak();
     setFileName(fileName);                          /* a névben szerepel egy dátum, */
     FILE *fp = fopen(fileName,"w");                 /* így több teszt is futtatható,*/
                                                     /* egymást követően             */
-    fprintf(fp,"{\"testName\":\"%s\",\"measurements\":[",testList[testNum]);
-
-    commandBuilder(testNum,sampleCount,command);    
-    resultPathBuilder(testNum,path);
+    fprintf(fp,"{\"testName\":\"%s\",\"measurements\":[",testName);
+    commandBuilder(testName,sampleCount,command);    
+    resultPathBuilder(testName,path);
     for(int i=0;i<intervalSplit;i++){
         setParameter(LATENCY,run.latency+getParameter(LATENCY,intervalSplit,i));
-        for (int j = 0; j < intervalSplit; j++){
+         for (int j = 0; j < intervalSplit; j++){
             setParameter(MIN_GRAN,run.min_gran+getParameter(MIN_GRAN,intervalSplit,j));
             for(int k = 0; k < intervalSplit; k++){
                 setParameter(WAKEUP_GRAN,run.wakeup_gran+getParameter(WAKEUP_GRAN,intervalSplit,k));
@@ -191,12 +221,20 @@ void startTest(int testNum,int intervalSplit,int sampleCount){
                         printMenuOnRun(menuOnRun,lastResults,size,testCount,(int)pow(intervalSplit,5),testIndex);
                         setParameter(VM_SWAPPINESS,run.vm_swappiness+getParameter(VM_SWAPPINESS,intervalSplit,m));
                         fprintf(fp,"{\"parameters\":{\"latency\":\"%d\",\"min_gran\":\"%d\",\"wakeup_gran\":\"%d\",\"priority\":\"%d\",\"vm.swappiness\":\"%d\"},",run.latency+getParameter(LATENCY,intervalSplit,i),run.min_gran+getParameter(MIN_GRAN,intervalSplit,j),run.wakeup_gran+getParameter(WAKEUP_GRAN,intervalSplit,k),run.priority+getParameter(PRIORITY,intervalSplit,l),run.vm_swappiness+getParameter(VM_SWAPPINESS,intervalSplit,m));
-                        benchmarkStart(command,testCount);
-                        getValueFromFile(path,result);
+                        benchmarkStart(command);
+                        getValueFromFile(path,"Value",result);
                         pushNextResult(lastResults,size,&testIndex,result);
-                        benchmarkCleanUp(testNum);
+                        benchmarkCleanUp(testName);
                         fprintf(fp,"\"result\":%s}%s",result,(!(i == (intervalSplit-1) && j == (intervalSplit-1) && k == (intervalSplit-1) && l == (intervalSplit-1) && m == (intervalSplit-1)) ? ", " : "]}"));
                         destroyWindow(menuOnRun);
+                            /* a paraméterként megkapott fájlútvonalat megnyitja,       */
+                            /* az előző függvény segítségével, eltárolja az eredményt   */
+                        /* az eredményt továbbadja a kapott char *val-nak           */
+                        
+                         
+                        
+                        
+                    
                     }
                 }
             }
@@ -246,21 +284,21 @@ void setFileName(char *fileName){
     strftime(fileName, 256, "./logs/result%Y%m%d%H%M%S.json", ptm);
 }
                                                             /* a törlés azért fontos mivel,                 */
-    void benchmarkCleanUp(int testNum){                     /* ugyanazzal a névvel, azonosítóval, leírással */
-    char command[100];                                      /* indítom a tesztet                            */
-    sprintf(command,"rm -rf /var/lib/phoronix-test-suite/test-results/%s",testListResult[testNum]);
+void benchmarkCleanUp(char *testName){                         /* ugyanazzal a névvel, azonosítóval, leírással */
+    char command[100];                                      /* indítom a következő tesztet                  */
+    sprintf(command,"rm -rf /var/lib/phoronix-test-suite/test-results/%sres",testName);
     system(command);
 };
-void benchmarkStart(char *command,int testCount){       /* a futás közben megjelenő adatokat, */
+void benchmarkStart(char *command){       
     system(command);    
 }
-void resultPathBuilder(int testNum,char *path){
-    sprintf(path,"/var/lib/phoronix-test-suite/test-results/%s/composite.xml",testListResult[testNum]);
+void resultPathBuilder(char *testName,char *path){
+    sprintf(path,"/var/lib/phoronix-test-suite/test-results/%sres/composite.xml",testName);
 }
 
 void setParameter(int parameter,int value){
     char *command;
-    char *execute[255];                     /* beállítjuk a kapott paramétert,      */ 
+    char execute[255];                     /* beállítjuk a kapott paramétert,      */ 
     switch(parameter){                      /* a kapott értékre sysctl-segítségével */
         case LATENCY:
             command = "sysctl kernel.sched_latency_ns";
@@ -283,22 +321,8 @@ void setParameter(int parameter,int value){
     system(execute);
 }
 
-void commandBuilder(int testNum,int sampleCount,char *command){
-    char *preset_option;
-    switch(testNum){
-        case 2:
-            preset_option = "PRESET_OPTIONS=\"fs-mark.run-type=1000 Files, 1MB Size\""; /* Ezek a preset opciók, mindig fixen ugyanazzal a beállítással fogják   */
-            break;                                                                      /* indítani a benchmarkot, mint amit beleégettem kézzel.                 */
-        case 3:                                                                         /* Sajnos még nem jöttem rá hogyan kérhetem le csak a beállítás listát:( */
-            preset_option = "PRESET_OPTIONS=\"stream.run-type=Copy\"";
-            break;
-        case 5:
-            preset_option = "PRESET_OPTIONS=\"glmark2.run-type=800 x 600\"";
-            break;
-        default:
-            preset_option = "";
-    }                       /* azért fontos beállítanom a nevét, azonosítót, leírást, mivel egyes futásokat megállíthat hogy, elkérje billentyűzetről ezeket */
-    sprintf(command,"TEST_RESULTS_DESCRIPTION=myDescription TEST_RESULTS_IDENTIFIER=myIdentity TEST_RESULTS_NAME=%s FORCE_TIMES_TO_RUN=%d %s phoronix-test-suite batch-benchmark %s > /dev/null ",testListResult[testNum],sampleCount,preset_option,testList[testNum]);
+void commandBuilder(char *testName,int sampleCount,char *command){
+    sprintf(command,"TEST_RESULTS_DESCRIPTION=myDescription TEST_RESULTS_IDENTIFIER=myIdentity TEST_RESULTS_NAME=%sres FORCE_TIMES_TO_RUN=%d PRESET_OPTIONS='%s' phoronix-test-suite batch-benchmark %s > /dev/null ",testName,sampleCount,testName,testName);
 }
 
 int getParameter(int parameter,int n,int iteration){   /* Az startTest fgv-ben a paraméterek be vannak állítva a legkisebb értékre     */

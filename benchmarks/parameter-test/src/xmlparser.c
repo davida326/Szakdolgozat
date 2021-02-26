@@ -1,19 +1,32 @@
 #include "xmlparser.h"
 
-void writeNode(xmlNode *node,xmlDoc *doc,char *nodeName,char *value){
+void writeNode(xmlNode *node,char *nodeName,char *value){
     if(!xmlStrcmp(node->name,(const xmlChar *)nodeName)){   /* rekurzívan kikeresi a megfelelő nevü node-ot       */
         xmlNodeSetContent(node,value);                      /* amint megtalálta, módosítja azt a megadott értékre */
     }
-    xmlNode *children;                          /* node -> gyerek -> gyerek -> NULL !STOP!;*/
-    if( node->children != NULL )                /*      NextIteration: node = node->next   */
+                              /* node -> gyerek -> gyerek -> NULL !STOP!;*/
+    if( node->children != NULL ){                /*      NextIteration: node = node->next   */
+        xmlNode *children;
         children = node->children;
-    while( children != NULL){
-            if(children->type == 1){
-                if( children->children != NULL )
-                writeNode(children,doc,nodeName,value);                 
-            }
-        children = children->next;
+        while( children != NULL){
+                if(children->type == 1){
+                    if( children->children != NULL )
+                    writeNode(children,nodeName,value);                 
+                else return;
+                }
+            children = children->next;
+        }
     }
+}
+void freeList(configList *head){
+    configList *tmp;
+    while (head != NULL)
+    {
+       tmp = head;
+       head = head->next;
+       free(tmp);
+    }
+
 }
 
 void writeConfig(char *location){               /* futtatás root jogosultsággal                    */
@@ -25,45 +38,128 @@ void writeConfig(char *location){               /* futtatás root jogosultságga
     doc = xmlParseFile(location);           //fájl megnyitása
     root = xmlDocGetRootElement(doc);       //gyökérelem eltárolása
 
-    writeNode(root,doc,"DynamicRunCount","FALSE");      //nagy szórás esetén plussz méréseket végez(ez néha 40+ mérést is jelent)
-    writeNode(root,doc,"SaveResults","TRUE");           //Előre beállítok pár paramétert, hogy a folyamatos futást ne állítsák meg
-    writeNode(root,doc,"OpenBrowser","FALSE");          
-    writeNode(root,doc,"UploadResults","FALSE");
-    writeNode(root,doc,"PromptForTestIdentifier","FALSE");
-    writeNode(root,doc,"PromptForTestDescription","FALSE");
-    writeNode(root,doc,"PromptSaveName","FALSE");
-    writeNode(root,doc,"RunAllTestCombinations","FALSE");
-    writeNode(root,doc,"Configured","TRUE");
+    writeNode(root,"DynamicRunCount","FALSE");      //nagy szórás esetén plussz méréseket végez(ez néha 40+ mérést is jelent)
+    writeNode(root,"SaveResults","TRUE");           //Előre beállítok pár paramétert, hogy a folyamatos futást ne állítsák meg
+    writeNode(root,"OpenBrowser","FALSE");          
+    writeNode(root,"UploadResults","FALSE");
+    writeNode(root,"PromptForTestIdentifier","FALSE");
+    writeNode(root,"PromptForTestDescription","FALSE");
+    writeNode(root,"PromptSaveName","FALSE");
+    writeNode(root,"RunAllTestCombinations","FALSE");
+    writeNode(root,"Configured","TRUE");
 
     xmlSaveFormatFile (location, doc, 0); //átírt fájl mentése
 	xmlFreeDoc(doc);
 }
-
-void searchForNodeValue(xmlNode *node,xmlDoc *doc,char *nodeName,char *actualValue){
+void searchForDefaultEntry(xmlNode *node,char *nodeName,int *defaultEntry){
     if(!xmlStrcmp(node->name,(const xmlChar *)nodeName)){
-        xmlChar *key;
-        key = xmlNodeListGetString(doc,node->xmlChildrenNode,1);    /* kikeresi a megfelelő nevű node-ot          */
-        sprintf(actualValue,"%s",key);                              /* az értékét eltárolja a megadott pointer-be */
-        xmlFree(key);                                               
+        *defaultEntry=1;        
     }
-    xmlNode *children;
-    if( node->children != NULL )    
+    
+    if( node->children != NULL ){
+        xmlNode *children;
         children = node->children;
-    while( children != NULL){
+        while( children != NULL){
             if(children->type == 1){
                 if( children->children != NULL )
-                searchForNodeValue(children,doc,nodeName,actualValue);                 
+                    searchForDefaultEntry(children,nodeName,defaultEntry);                 
             }
         children = children->next;
     }
+    }
+    
 }
 
-void getValueFromFile(char *location,char *val){
+void searchForNodeValue(xmlNode *node,xmlDoc *doc,char *nodeName,char *actualValue){
+    
+    if(!xmlStrcmp(node->name,(const xmlChar *)nodeName)){
+        xmlChar *key;
+        key = xmlNodeListGetString(doc,node->xmlChildrenNode,1);    /* kikeresi a megfelelő nevű node-ot          */
+        sprintf(actualValue,"%s",key);                            /* az értékét eltárolja a megadott pointer-be */
+        xmlFree(key);                                               
+    }
+    if( node->children != NULL ){
+        xmlNode *children;
+        children = node->children;
+        while( children != NULL){
+            if(children->type == 1){
+                if( children->children != NULL )
+                    searchForNodeValue(children,doc,nodeName,actualValue);  
+            }
+            children = children->next;
+        }
+    }
+    
+}
+
+void insertNode (xmlNodePtr cur, char *keyword) {
+	xmlNewTextChild (cur, NULL, "DefaultEntry", keyword);
+    return;
+}
+void searchForNodes(xmlNode *node,xmlDoc *doc,char *nodeName,configList **head){
+    if(!xmlStrcmp(node->name,(const xmlChar *)nodeName)){
+          /* kikeresi a megfelelő nevű node-ot          */
+        if((*head)==NULL){
+            (*head)=malloc(sizeof(configList));
+            (*head)->element=node;
+        }
+        else{
+            configList *link = malloc(sizeof(configList));
+            link->element = node;
+            link->next = (*head);
+            (*head) = link;
+        }
+    }
+    
+    if( node->children != NULL ){
+        xmlNode *children;
+        children = node->children;
+    
+    while( children != NULL){
+                if(children->type == 1){
+                    if( children->children != NULL )
+                        searchForNodes(children,doc,nodeName,head);
+                }
+            children = children->next;
+        }
+    }
+}
+
+void searchForNodeValues(xmlNode *node,xmlDoc *doc,char *nodeName,configList **head,int *num){
+    if(!xmlStrcmp(node->name,(const xmlChar *)nodeName)){
+        xmlChar *key;
+        *num = *num+1;
+        key = xmlNodeListGetString(doc,node->xmlChildrenNode,1);    /* kikeresi a megfelelő nevű node-ot          */
+        if((*head)==NULL){
+            (*head)=malloc(sizeof(configList));
+            sprintf((*head)->value,"%s",key);
+        }
+        else{
+            configList *link = malloc(sizeof(configList));
+            sprintf(link->value,"%s",key);
+            link->next = (*head);
+            (*head) = link;
+        }
+        xmlFree(key);                                               
+    }
+    
+    if( node->children != NULL ){
+        xmlNode *children;
+        children = node->children;
+        while( children != NULL){
+                if(children->type == 1){
+                    if( children->children != NULL ){
+                        searchForNodeValues(children,doc,nodeName,head,num);
+                    }
+                }
+            children = children->next;
+        }
+    }
+}
+void getValueFromFile(char *location,char *nodeName,char *val){
     xmlDoc *doc;                                    /* a paraméterként megkapott fájlútvonalat megnyitja,       */
     xmlNode *root;                                  /* az előző függvény segítségével, eltárolja az eredményt   */
     doc = xmlParseFile(location);                   /* az eredményt továbbadja a kapott char *val-nak           */
     root = xmlDocGetRootElement(doc);
-    char actualValue[50];
-    searchForNodeValue(root,doc,"Value",actualValue);
-    strcpy(val,actualValue);
+    searchForNodeValue(root,doc,nodeName,val);    
 }

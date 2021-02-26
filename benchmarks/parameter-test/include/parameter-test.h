@@ -23,20 +23,26 @@
 #define PRIORITY 3
 #define VM_SWAPPINESS 4
 
-void  SIGhandler(int);
+void printReverse(configList *head,int i,WINDOW *win);
+void preparations(char *testName);
+void selectedTest(int *sampleCount,int *intervalSplit,char *testName);
+void getStringWithMenu(char *requestUpper,char *requestLower,char *str,int x,int y);
+int getIntegerWithMenu(char *request);
 WINDOW *centerWindow();
-WINDOW *createWindow(int,int,int,int);
-void destroyWindow(WINDOW *);
-int menuPosition();
-void printMenu(WINDOW *,int);
-int selectedTest(int *,int *);
-void startTest(int,int,int);
-void commandBuilder(int testNum,int sampleCount,char *);
-void preparations();
-void resultPathBuilder(int testNum,char *path);
+WINDOW *createWindow(int height,int width,int starty,int startx);
+void destroyWindow(WINDOW *localWin);
+void  SIGhandler(int sig);
 void resetParameters();
-void setFileName(char *fileName);
-void printMenuOnRun(WINDOW *localWin,char (*resultsArr)[255],int size,int testCount,int maxTest,int selected);
+void startTest(int intervalSplit,int sampleCount,char *testName);
+void initializeArr(char (*resultsArr)[255],int size);
 void pushNextResult(char (*resultsArr)[255],int size,int *i,char *result);
+void printMenuOnRun(WINDOW *localWin,char (*resultsArr)[255],int size,int testCount,int maxTest,int selected);
+void setFileName(char *fileName);
+void benchmarkCleanUp(char *testName);
+void benchmarkStart(char *command);
+void resultPathBuilder(char *testName,char *path);
+void setParameter(int parameter,int value);
+void commandBuilder(char *testName,int sampleCount,char *command);
+int getParameter(int parameter,int n,int iteration);
 
 #endif
