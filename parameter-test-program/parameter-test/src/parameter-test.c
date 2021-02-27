@@ -73,7 +73,7 @@ void preparations(char *testName){
         if(!strcmp(identifier,"auto-resolution")){     //amennyiben az azonosító "auto-resolution", sajnos nem tudom megjeleníteni az opciókat hozzá
             mvwprintw(win,yline,1,"Enter the id of the resolution, you want.");yline++; //azonban az input ugyanúgy feldolgozható 
             mvwprintw(win,yline,1,"Resolutions can be different from one test, to another.");yline++;
-            mvwprintw(win,yline,1,"(goes from 1 to N)");yline++;
+            mvwprintw(win,yline,1,"(goes from 0 to N)");yline++;
             mvwprintw(win,yline,1,"You can see the resolutions available,");yline++;
             mvwprintw(win,yline,1,"at openbenchmarking.orgtest/pts/your_test");yline++;
             mvwprintw(win,yline,1,"Configuration(positive integer):");yline++;
