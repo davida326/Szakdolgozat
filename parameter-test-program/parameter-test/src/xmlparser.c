@@ -153,6 +153,13 @@ void searchForNodeValues(xmlNode *node,xmlDoc *doc,char *nodeName,configList **h
     }
 }
 void getValueFromFile(char *location,char *nodeName,char *val){
+    if( !(access( location, 0 ) == 0)) { // fájl létezésének ellenörzése, ha sajnos nem letezik ilyen teszt
+        clear();                            // programnév-x.x.x
+        printw("eredmeny fajl nem talalhato\n");
+        refresh();
+        getch();
+        exit(0);
+    } 
     xmlDoc *doc;                                    /* a paraméterként megkapott fájlútvonalat megnyitja,       */
     xmlNode *root;                                  /* az előző függvény segítségével, eltárolja az eredményt   */
     doc = xmlParseFile(location);                   /* az eredményt továbbadja a kapott char *val-nak           */

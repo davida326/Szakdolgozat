@@ -21,15 +21,11 @@ void printReverse(configList *head,int i,WINDOW *win){ // láncolt lista fordít
     mvwprintw(win,i+2,1,"%d - %s",i, head->value); 
 } 
 void preparations(char *testName){                      
-    // teszt telepítés
+    
     system("sysctl kernel.sched_tunable_scaling=0 > /dev/null"); /* Ezt a paramétert 0-ra állítottam, */        
-    char command[255];                          /* annak érdekében hogy az ütemező   */
-    printw("installing test...");                                /* ne módosítsa a paramétereket.     */
-    refresh();
-    sprintf(command,"phoronix-test-suite install %s > /dev/null",testName);
-    system(command);                                          /* teszt telepítése */
-    clear();
-    refresh();
+                                                                 /* annak érdekében hogy az ütemező   */
+                                                                 /* ne módosítsa a paramétereket.     */
+    
 
     //teszt verziószám, config-xml fájlok keresése
     char location[255];
@@ -117,6 +113,10 @@ void selectedTest(int *sampleCount,int *intervalSplit,char *testName){
     }while(*intervalSplit==1);
     if(*intervalSplit==5)
         printw("default value has been set for the parameter split value\n");
+                                    
+    refresh();                               
+    clear();
+    refresh();    
 }
 void getStringWithMenu(char *requestUpper,char *requestLower,char *str,int x,int y){
     echo();
