@@ -95,7 +95,14 @@ void preparations(char *testName){
     wclear(win);
     wrefresh(win);
     destroyWindow(win);     
-    freeList(nodeList);          // felszabadítja a láncolt lista által lefoglalt memóriát
+    freeList(nodeList);                     // felszabadítja a láncolt lista által lefoglalt memóriát
+    if( !(access( "/etc/phoronix-test-suite.xml", 0 ) == 0)) { 
+        clear();                         
+        printw("eredmeny fajl nem talalhato\n");
+        refresh();
+        getch();
+        exit(0);
+    } 
     writeConfig("/etc/phoronix-test-suite.xml");              /* batch-benchmark configurációs        */
 }                                                             /* beállításait végzi el                */
 

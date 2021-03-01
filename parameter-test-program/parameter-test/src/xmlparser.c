@@ -153,8 +153,8 @@ void searchForNodeValues(xmlNode *node,xmlDoc *doc,char *nodeName,configList **h
     }
 }
 void getValueFromFile(char *location,char *nodeName,char *val){
-    if( !(access( location, 0 ) == 0)) { // fájl létezésének ellenörzése, ha sajnos nem letezik ilyen teszt
-        clear();                            // programnév-x.x.x
+    if( !(access( location, 0 ) == 0)) { 
+        clear();                         
         printw("eredmeny fajl nem talalhato\n");
         refresh();
         getch();
