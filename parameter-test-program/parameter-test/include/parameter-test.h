@@ -24,7 +24,7 @@
 #define VM_SWAPPINESS 4
 
 void preparations(char *testName);
-void initTestVariables(int *sampleCount,int *intervalSplit,char *testName);
+void initTestVariables(char *testName,int *sampleCount,int *interval);
 void getStringWithMenu(char *requestUpper,char *requestLower,char *str,int x,int y);
 int getIntegerWithMenu(char *request);
 WINDOW *centerWindow();
@@ -32,7 +32,7 @@ WINDOW *createWindow(int height,int width,int starty,int startx);
 void destroyWindow(WINDOW *localWin);
 void  SIGhandler(int sig);
 void resetParameters();
-void startTest(int intervalSplit,int sampleCount,char *testName);
+void startTest(int interval,int sampleCount,char *testName);
 void initializeArr(char (*resultsArr)[255],int size);
 void pushNextResult(char (*resultsArr)[255],int size,int *i,char *result);
 void printMenuOnRun(WINDOW *localWin,char (*resultsArr)[255],int size,int testCount,int maxTest,int selected,char *testName);

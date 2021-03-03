@@ -20,11 +20,11 @@
 int main(int argc, char *argv[]){
     initscr();                 //ncurses screen initialisation 
     raw();                      
-    int intervalSplit,sampleCount;
+    int interval,sampleCount;
     char testName[250]="";
-    initTestVariables(&sampleCount,&intervalSplit,testName); // tesztek, hozzátartozó változók beállítása
+    initTestVariables(testName,&sampleCount,&interval); // tesztek, hozzátartozó változók beállítása
     preparations(testName);                             // config fájlok írása
-    startTest(intervalSplit,sampleCount,testName);      // a teszt indítása, ütemező hangoló paramétereket változtatásával
+    startTest(interval,sampleCount,testName);      // a teszt indítása, ütemező hangoló paramétereket változtatásával
     endwin();               
     
     return 0;
