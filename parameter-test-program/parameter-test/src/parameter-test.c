@@ -106,7 +106,7 @@ void preparations(char *testName){
     writeConfig("/etc/phoronix-test-suite.xml");              /* batch-benchmark configurációs        */
 }                                                             /* beállításait végzi el                */
 
-void selectedTest(int *sampleCount,int *intervalSplit,char *testName){
+void initTestVariables(int *sampleCount,int *intervalSplit,char *testName){
     int x,y,ch,select = 0;
     getmaxyx(stdscr,y,x);                  
     getStringWithMenu("test name:pts/","(with version number)",testName,x,y); // tesztnév bekérése

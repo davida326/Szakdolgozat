@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
     raw();                      
     int intervalSplit,sampleCount;
     char testName[250]="";
-    selectedTest(&sampleCount,&intervalSplit,testName); // tesztek, hozzátartozó változók beállítása
+    initTestVariables(&sampleCount,&intervalSplit,testName); // tesztek, hozzátartozó változók beállítása
     preparations(testName);                             // config fájlok írása
     startTest(intervalSplit,sampleCount,testName);      // a teszt indítása, ütemező hangoló paramétereket változtatásával
     endwin();               

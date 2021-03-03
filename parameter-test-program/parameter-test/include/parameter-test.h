@@ -24,7 +24,7 @@
 #define VM_SWAPPINESS 4
 
 void preparations(char *testName);
-void selectedTest(int *sampleCount,int *intervalSplit,char *testName);
+void initTestVariables(int *sampleCount,int *intervalSplit,char *testName);
 void getStringWithMenu(char *requestUpper,char *requestLower,char *str,int x,int y);
 int getIntegerWithMenu(char *request);
 WINDOW *centerWindow();
