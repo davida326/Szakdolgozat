@@ -462,7 +462,7 @@ const int sched_prio_to_weight[40] = {
 \noindent Ez súly változó, a processz struktúrában \textit{struct load\_weight load}-ként szerepel
 
 Egy processz vruntime változó értékét a futással töltött idejéből(\textit{delta\_exec}), processz súlyából(\textit{se->load}), illetve a nice értékéből (\textit{NICE\_0\_LOAD}) kapjuk meg.
-\begin{equation}
+\begin{equation} \label{eq:2}
 vruntime += \frac{delta\_exec}{se->load}*NICE\_0\_LOAD
 \end{equation}
 
@@ -487,16 +487,7 @@ Ahol az nr\_running jelöli a runqueue-ban található taszkok számát. Ha ez a
 period =  nr\_running * sysctl\_sched\_min\_granularity
 \end{equation}
 Ez az alsó határ, az úgynevezett \textit{min\_granularity}.
-Ez látható az alábbi kódrészletben is.
-\begin{cpp}
-static u64 __sched_period(unsigned long nr_running)
-{
-	if (unlikely(nr_running > sched_nr_latency))
-		return nr_running * sysctl_sched_min_granularity;
-	else
-		return sysctl_sched_latency;
-}
-\end{cpp}
+
 
 \SubSection{Csoportos ütemezés}
 
