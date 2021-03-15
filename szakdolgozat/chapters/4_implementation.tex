@@ -259,6 +259,7 @@ A rejtett réteghez tartozó neuron szám, aktivációs függvény és solver me
 \caption{Kereszt-validáció, a paraméterek megkeresésére}
 \label{fig:neuralnetwork}
 \end{figure}
+
 Erre az sklearn.grid\_search.GridSearchCV függvényt választottam, ami egy kimerítő keresést végez, a legjobb paraméterek megtalálásához. A függvény alkalmazásához készítenem kellett egy paraméter készletet, amiben végig próbálja az összes lehetséges kombinációját. Ami azt jelenti hogy, minden próba végén kiértékeli a modelt egy Cross-Validation módszer segítségével. Ezáltal megkaptam azokat a model paramétereket, amivel a legjobban teljesített.
 A modelhez így a tangens hiperbólikusz használtam fel aktivációs függvényként, emellett kilenc rejtett rétegben található neuron és az L-BFGS optimalizáló algoritmust alkalmaztam.
 
@@ -298,4 +299,4 @@ A serverWorkload segítségével a felhasználó a futtatni kívánt processzeih
 A swap paraméterrel, a felhasználó eldöntheti hogy szeretne-e swap memóriát használni. Érdemes lehet ezt a változót beállítani 1-re, kevés memóriával rendelkező számítógépek esetén. Abban az esetben ha nincs szüksége erre az opcióra, 0-ra kell beállítania az értéket.
 
 A kimenet a paraméterkészlet az ütemező hangoláshoz, processzhez ajánlott prioritás és swap memóriát szabályzó kernel paraméter, az adott felhasználási módhoz szabályozva.
-A modelt előre betanítottam, így futtatáskor nincs szükség újra és újra betanítani. A model, a teszt eredmények és az elkészült programok, mind megtalálhatók a githubon.
+A modelt előre betanítottam, így futtatáskor nincs szükség újra és újra betanítani. A model, a teszt eredmények és az elkészült programok, mind megtalálhatók github-on
