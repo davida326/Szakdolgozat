@@ -1,7 +1,19 @@
 \Chapter{Összefoglalás}
 
-Hasonló szerepe van, mint a bevezetésnek.
-Itt már múltidőben lehet beszélni.
-A szerző saját meglátása szerint kell összegezni és értékelni a dolgozat fontosabb eredményeit.
-Meg lehet benne említeni, hogy mi az ami jobban, mi az ami kevésbé jobban sikerült a tervezettnél.
-El lehet benne mondani, hogy milyen további tervek, fejlesztési lehetőségek vannak még a témával kapcsolatban.
+A szakdolgozatom célja a Linux processz ütemező optimalizálása, megadott használati módokra.
+A dolgozat elején, elméletben mutattam be a jelenlegi processz ütemezőt, úgygondoltam hogy fontos lehet megérteni hogy, hogyan is müködik és milyen lehetőségeink vannak a módosítására.
+A módszer amit választottam a processz ütemező optimalizálására, az csak néhány lehetőséget fedett le a sok megközelítés közül. A rendszer optimalizálás témaköre mai napig is népszerű, sok könyv és egyéb olvasmány jelenik meg ezzel kapcsolatban, amik különböző módszereket mutatnak be, a jobb teljesítmény eléréséhez a rendszereinkben.
+Az elméleti rész után, az elkészült programokhoz felhasznált komponensek kerültek bemutatásra, majd a megvalósítási folyamat következett. A parameter-test program számos módosításon átesett, először még csak előre meghatározott benchmark tesztekkel lehetett végezni méréseket és nem volt lehetőség konfigurációk kiválasztására sem. Azóta sikerült megoldanom a konfigurációs fájlok módosítását és a pts program megfelelő paraméterezését. 
+
+Az általam készített programok főként az ütemező hangoló változók módosításáról szóltak, mivel ezeket viszonylag egyszerű elérni, futásközben is módosíthatók és a dinamikusan számolódó időszeletek miatt, úgy gondolom hogy egy megfelelő szabályzást érhetünk el vele a processz ütemezőn.
+
+Az elkészült ML program alkalmas lehet olyan rendszergazda számára, aki esetleg régebbi számítógépekkel dolgozik és ki szeretné belőlük hozni a maximum teljesítményt.
+A ML program futtatásához csak néhány kérdés megválaszolására van szükség, az adott felhasználási móddal kapcsolatban és ez alapján javasol egy paraméterkészletet a processz ütemező hangolására.
+
+A programok jelenlegi állapotukban müködőképesek, azonban a programok fejlesztésére van lehetőség. A következő néhány pontba összeszedtem az ehhez kapcsolódó ötleteim.
+\begin{itemize}
+\item Machine Learning program tanítását összesen 6144 mintával végeztem, úgy hogy a változók invervallumaikat négy részre szedtem szét. Úgygondolom hogy több mintával és az invervallumra több részre való bontásával, tovább fejleszthető a model, ami precízebb javaslatokhoz vezethez.
+\item A parameter-test programnál úgy gondolom hogy, megoldható lenne a kiválasztott benchmark automatikus telepítése, mivel a jelenlegi változat csak elindítja a már feltelepített teszt programot.
+\item Az ML programhoz egy grafikus interfész készítése, így lehet több felhasználó számára  is egyszerűbbnek tűnhet a használata.
+\end{itemize}
+

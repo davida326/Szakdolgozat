@@ -102,15 +102,21 @@ A programhoz ncurses library-t használtam, így kialakíthattam rajta egy menü
 
 \SubSection{ Parameter-test program felépítése }
 
-A program először inicializálja az ncurses képernyőt, majd ezután meghívja az első fő függvényt, aminek a feladata hogy bekérje a felhasználótól a teszt nevét verziószámmal együtt, ezt követően a mintaszámot a tesztekből, illetve hogy hány részre szedje szét a paramétereket.  
+A program először inicializálja az ncurses képernyőt, majd ezután meghívja az első fő függvényt, aminek a feladata hogy bekérje a felhasználótól a teszt nevét verziószámmal együtt. Ezután a mintaszámot, illetve az intervallum szétbontásának számát kéri be.  
+
 \begin{cpp}
 void initTestVariables(char *testName, int *sampleCount, int *interval)
 \end{cpp}
-Az utóbbi két paraméter átugorható enter megnyomásával, ekkor alapértelmezett öt mintát fog venni és öt részre fogja szétszedni az intervallumokat. A tesztnév megadásnál fontos a veriószám megadás, mivel a tesztekből újabb változatok kerülnek fel a openbenchmark.org-ra és minden verzióhoz új jegyzéket készít a PTS program a /var/lib/phoronix-test-suite/test-profiles/pts directory-ba. Minden teszthez tartozik egy jegyzék, amiben több xml kiterjesztésű fájl is megtalálható, ezek közül fontos kiemelni a test-definition.xml-t amiben a teszthez tartozó konfigurációs beállítások találhatók meg.
+
+Az utóbbi két input átugorható enter megnyomásával, ekkor alapértelmezett öt mintát fog venni és öt részre fogja szétszedni az intervallumokat.
+A tesztnév megadásnál fontos a veriószám megadás, mivel a tesztekből újabb változatok kerülnek fel a openbenchmark.org-ra és minden verzióhoz új jegyzéket készít a PTS program a /var/lib/phoronix-test-suite/test-profiles/pts directory-ba.
+Minden teszthez tartozik egy jegyzék, amiben több xml kiterjesztésű fájl is megtalálható, ezek közül fontos kiemelni a test-definition.xml-t amiben a teszthez tartozó konfigurációs beállítások találhatók meg.
 A kezdeti paraméterek megadását követően, a teszt előkészületeihez ér a program, itt történik meg a teszt név ellenörzése, elérhető teszt konfigurációk listázása, kiválasztása és a batch-benchmark benchmark indítási módszer konfigurálása. 
+
 \begin{cpp}
 void preparations(char *testName)
 \end{cpp}
+
 A sched\_tunable\_scaling kernel változó alapértelmezett értéke 1, amiről megtudhattuk az elöző pontban hogy, bizonyos mértékben módosítani fogja a beállított kernel változókat a teszt során, emiatt én preparations függvényem elején, ezt az értéket 0-ra állítom. Így biztosítom azt hogy véletlenül se legyen emiatt, benchmarkból származó inkonzisztens értékem.
 Ezt követi a tesztnév-verziószám ellenörzés, amennyiben nem találja meg a megadott névvel a fájlt, a program hibaüzenettel leáll.
 Abban az esetben ha létezik a fájl és hozzá tartozó teszt, a konfigurációs beállításokat meg kell jelenítsem illetve módosítanom kell azokra az értékekere, amelyeket a felhasználó kiválaszt.
@@ -128,6 +134,14 @@ void startTest(int interval, int sampleCount, char *testName);
 \end{cpp}
 A főbb paraméterek átadása meghatározza a kimeneti fájl nevét, amibe belefűzi a dátumot(év, hónap, nap, óra, perc, másodperc), így több teszt is futtatható egymást követően, anélkül hogy felülírnák egymást.
 Ezt követően a kernel változók inicializálásra kerülnek, mind a saját intervallumának a legkisebb értékét veszi fel. A program a ciklusmagban, készít egy menüt, amibe kiírja a teszt nevét, a teszt sorszámát és az utolsó öt eredményt, amit a teszt az aktuális beállításokkal produkált. A menü kirajzolása után elindul az első benchmark, a kívánt mintaszámmal és konfigurációs beállításokkal. Amikor a benchmark befejeződött, az eredményt eltárolja a /var/lib/phoronix-test-suite/test-results/myresult/composite.xml fájlban, amelyből a program kiolvassa az eredményt, amit továbbít az eredmény fájlba, az aktuális kernel változókkal együtt. Ezt az eredményt továbbítja az eredmények oszlopba is, így a felhasználó is követheti az eredmények változását.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=2.0]{images/parameter-test.png}
+\caption{Parameter-test program utolsó eredmények}
+\label{fig:parameter-test}
+\end{figure}
+
 Végül a menu ablakot törli és újrarajzolja a következő iterációban.
 Amikor a teszt végzett, az összes kernel változó végigpróbálásával, a fájlt lezárja és visszaállítja a változókat az eredeti értékükre.
 Az így kapott fájl formátuma json típusú, ez főként a feldolgozás miatt volt fontos.
@@ -186,7 +200,7 @@ anélkül, hogy kifejezetten beprogramozták volna.''
 
 A gépi tanulásnál számos területe létezik, azonban az én problémám megoldására supervised learning-et alkalmaztam. Ami azt jelenti hogy, az adathalmazban az egyes mintáknál, megtalálhatók a tulajdonságok(features), illetve az elvárt eredmények is(labels).
 Mivel a kernel változók intervallumait négy részre szedtem szét a teszteléseknél, így erre egy klasszifikációs algoritmust használok fel.
-A modelt az adott problémához mérten kell felépíteni, ehhez fontos hogy optimálisan válasszuk meg rejtett rétegek, illetve az ezekben található neuronok számát.
+A modelt az adott problémához mérten kell felépíteni, amihez fontos hogy optimálisan válasszuk meg rejtett rétegek, illetve a neuronok számát.
 Az én esetemben, a model öt bemenettel, illetve öt kimenettel rendelkezik és egy rejtett réteget választottam a feladathoz.
 
 \begin{figure}[h!]
@@ -298,5 +312,27 @@ A serverWorkload segítségével a felhasználó a futtatni kívánt processzeih
 
 A swap paraméterrel, a felhasználó eldöntheti hogy szeretne-e swap memóriát használni. Érdemes lehet ezt a változót beállítani 1-re, kevés memóriával rendelkező számítógépek esetén. Abban az esetben ha nincs szüksége erre az opcióra, 0-ra kell beállítania az értéket.
 
-A kimenet a paraméterkészlet az ütemező hangoláshoz, processzhez ajánlott prioritás és swap memóriát szabályzó kernel paraméter, az adott felhasználási módhoz szabályozva.
-A modelt előre betanítottam, így futtatáskor nincs szükség újra és újra betanítani. A model, a teszt eredmények és az elkészült programok, mind megtalálhatók github-on
+A kimenet a paraméterkészlet az ütemező hangoláshoz, a futtatni kívánt processzekhez az ajánlott prioritás és swap memóriát szabályzó kernel paraméter, az adott felhasználási módhoz mérten.
+A model létrehozása és betanítása a következő képpen történik az sklearn library felhasználásával. 
+\begin{python}
+model = MultiOutputClassifier(MLPClassifier(
+	solver="lbfgs",
+	hidden_layer_sizes=(9,),
+	activation="tanh"))
+model.fit(X_train,y_train)
+\end{python}
+A hagyományos model létrehozása során elég csak az MLPClassifier-t meghívni, a kívánt paraméterekkel. Az én esetem viszont kicsit máshogy néz ki, a modellem több bemenettel, illetve kimenetettel rendelkezik. A MultiOutputClassifier ezt valósítja meg nekem, és paraméterként pedig egy estimator-t vár, ami jelen esetben nálam az MLPClassifier.
+
+%TODO referencia a joblib-hez: https://scikit-learn.org/stable/modules/model_persistence.html
+Annak érdekében hogy tesztelés gördülékenyebben zajlódjon, a modelt előre betanítottam, így futtatáskor nincs szükség újra és újra elvégezni a tanítást.
+A model lementéséhez, többféle lehetőség is rendelkezésre áll. Én ehhez a joblib modult választottam, mivel sokkal effektívebb olyan objektumoknál amik nagyobb méretű numpy tömböket tartalmaznak és a sklearn oldalán is ennek a használatát javasolják.
+Két függvényt alkalmazok, az első a lementést valósítja meg joblib.dump(), ami paraméterként az elkészített modelt kapja meg és hogy milyen néven mentsük el.
+A másik a betöltésért felel, itt egyszerűen csak a fájlnévre hivatkozunk.
+Mint ahogy látható az alábbi kódrészletből, szintaktikailag sem mondható túl bonyolultnak.
+
+\begin{python}
+joblib.dump(model,"model.sav") 
+model = joblib.load("model.sav") 
+\end{python}
+A model, a teszt eredmények és az elkészült programok, mind megtalálhatók github-on
+
