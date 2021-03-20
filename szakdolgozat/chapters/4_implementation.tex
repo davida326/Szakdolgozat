@@ -4,7 +4,7 @@
 
 Az optimalizáláshoz szükség van adatokra a processzekről, amelyeket egy kernel modul segítségével könnyedén kinyerhetünk.
 Mint ahogy az előző fejezetben láthattuk, minden processzhez tartozik egy vruntime változó, ami alapján történik a processzek megválasztása. 
-Kernel modul segítségével a processzek tulajdonságai mint például a vruntime, prioritás, súly és egyéb információk egyszerűen lekérdezhetők.
+Kernel modul segítségével a processzek tulajdonságai, mint például a vruntime, prioritás, súly és egyéb információk egyszerűen lekérdezhetők.
 A kernelben processzek egy duplán láncolt listában tárolódnak, amit úgy hívnak hogy Processz tábla. Minden egyes elem a listában egy task\_struct típusú processz descriptor, amit a \texttt{<linux/sched.h>}-ban defináltak. Egy processzről minden információ elérhető ezen keresztül.
 
 \begin{figure}[h!]
@@ -35,20 +35,24 @@ Ez sajnos elég hosszadalmas lehet, emiatt másik megoldást választottam.
 
 \Section{Processzor magok elszigetelése}
 
+% TODO: Itt kicsit hirtelen a váltás az előző részhez képest.
+
 %TODO referencia: https://hu.wikipedia.org/wiki/Red_Hat_Enterprise_Linux
 A Red Hat egy nyílt forráskódú szoftverek fejlesztésével foglalkozó vállalat. A Red Hat Enterprise Linux (rövidítve RHEL) egy, a Red Hat által készített, kereskedelmi felhasználásra szánt Linux-disztribúció.
 %TODO referencia https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/pdf/Performance_Tuning_Guide/Red_Hat_Enterprise_Linux-7-Performance_Tuning_Guide-en-US.pdf
-A Red Hat által kiadott RHEL7 teljesítményre való hangolás útmutatójában, olvashatunk egy olyan módszerről, amellyel elkülöníthetünk processzorokat a ütemezőtől. Ezáltal elérhetjük azt hogy az elkülönített processzorokon csak az általunk kiválasztott processzek futhatnak. Megvalósíthatjuk azt is hogy, egy processzhez több cpu magot rendelünk, így az izolált processzorokon nem lesz sok vetélytársa akivel versengenie kellene, emiatt teljesítménynövekvést tapasztalhatunk.
+A Red Hat által kiadott RHEL7 teljesítményre való hangolás útmutatójában, olvashatunk egy olyan módszerről, amellyel elkülöníthetünk processzorokat a ütemezőtől. Ezáltal elérhetjük azt hogy az elkülönített processzorokon csak az általunk kiválasztott processzek futhatnak. Megvalósíthatjuk azt is hogy, egy processzhez több CPU magot rendelünk, így az izolált processzorokon nem lesz sok vetélytársa akivel versengenie kellene, emiatt teljesítménynövekvést tapasztalhatunk.
 Ezt főként több CPU maggal rendelkező számítógépek esetén érdemes alkalmazni.
 
-Egy processzor mag izolálást többféle képpen is megvalósíthatunk egy Linux Operációs rendszerben.
-Legegyszerűbben úgy érthetjük el, hogyha a bootolási paramétereket módosítjuk. A harmadik és a hatodiktól, a nyolcadik processzor mag izolálásához elegendő csak /etc/default/grub fájlt módosítanunk a következő képpen.
+Egy processzor mag izolálást többféleképpen is megvalósíthatunk egy Linux operációs rendszerben.
+Legegyszerűbben úgy érthetjük el, hogyha a bootolási paramétereket módosítjuk. Például a harmadik és a hatodiktól, a nyolcadik processzor mag izolálásához elegendő csak /etc/default/grub fájlt módosítanunk a következő képpen.
 
 \begin{python}
 GRUB_CMDLINE_LINUX_DEFAULT="isolcpus=2,5-7"
 \end{python}
 
-CPU izolációhoz használhatjuk még a tuna programot, amivel bármikor végrehajthatjuk ezt a műveletet és nem csak bootoláskor érvényesülnek a változtatások. Azonban ez a módszer kicsit máshogy működik mint az isolcpus paraméter, amit láthattunk az előbb. A tuna programmal nem tudjuk elérni azt a teljesítmény javítást amit az isolcpus paraméterrel sikerült.
+CPU izolációhoz használhatjuk még a tuna programot, amivel bármikor végrehajthatjuk ezt a műveletet és nem csak bootoláskor érvényesülnek a változtatások. Azonban ez a módszer kicsit máshogy működik, mint az isolcpus paraméter, amit az előzőekben láthattunk. A tuna programmal nem tudjuk elérni azt a teljesítmény javítást amit az isolcpus paraméterrel sikerült.
+
+% TODO: Az utolsó észrevételhez érdemes lehet írni egy rövid indoklást.
 
 Az elszigelt processzorokhoz a taskset program segítségével tudunk manuálisan hozzárendelni processzeket. Amennyiben egy PTS benchmark programot szeretnénk a harmadik processzor maghoz rendelni, azt a következő képpen tehetjük meg.
 
@@ -56,8 +60,8 @@ Az elszigelt processzorokhoz a taskset program segítségével tudunk manuálisa
 $ taskset -c 2 phoronix-test-suite benchmark stream
 \end{python}%$
 
-A taskset programmal izoláció nélküli processzorokhoz is rendelhetünk processzeket, viszont így nem biztos hogy, annyira jelentős lesz a teljesítmény javulás.
-A RedHat útmutatóban olvashatunk egy numactl programról amivel szintén hasonló eredményt érhetünk el mint a taskset programmal. Itt viszont van egy probléma, mivel amennyiben elszigetelt processzorhoz szeretnénk rendelni processzt, hibát kapunk.
+A taskset programmal izoláció nélküli processzorokhoz is rendelhetünk processzeket, viszont így nem biztos, hogy annyira jelentős lesz a teljesítmény javulás.
+A RedHat útmutatóban olvashatunk egy numactl programról amivel szintén hasonló eredményt érhetünk el, mint a taskset programmal. Itt viszont van egy probléma, mivel amennyiben elszigetelt processzorhoz szeretnénk rendelni processzt, hibát kapunk.
 A numactl program ugyanis más logikát követ, amit láthatunk a következő kódrészletből.
 
 \begin{cpp}
@@ -104,7 +108,7 @@ __numa_parse_cpustring(const char *s, struct bitmask *allowed_cpus_ptr)
 		...
 \end{cpp}
 
-Először kiolvassa a cpu affinitás-maszkot, és ezzel ellenörzi, hogy a megadott cpu-lista érvényes-e és csak akkor végzi el a processz cpuhoz való rendelését, amikor ez érvényes.
+Először kiolvassa a CPU affinitás-maszkot, és ezzel ellenörzi, hogy a megadott CPU-lista érvényes-e és csak akkor végzi el a processz CPU-hoz való rendelését, amikor ez érvényes.
 Ezzel szemben a taskset programnak kicsit egyszerűbb a logikája.
 
 \begin{cpp}
@@ -143,15 +147,16 @@ A sikeres processzor elszigetelést ellenörizhetjük a htop programmal, amint e
 \label{fig:taskset}
 \end{figure}
 
-A másik módszer egy kicsit egyszerűbb, az elszigetelt cpu magokat megtalálhatjük a /sys/devices/system/cpu/isolated fájlban, vagy arra is van lehetőségünk hogy, az ellentétét listázzuk ami a /sys/devices/system/cpu/present fájlban található.
+A másik módszer egy kicsit egyszerűbb, az elszigetelt CPU magokat megtalálhatjük a /sys/devices/system/cpu/isolated fájlban, vagy arra is van lehetőségünk, hogy az ellentétét listázzuk ami a /sys/devices/system/cpu/present fájlban található.
 
 \Section{Ütemező módosítása}
+
 A feladat a Linux processz ütemező optimalizálása, különféle használati módokra.
 Ennek eléréséhez megtehetem hogy, módosításokat végzek az ütemezőn, amit elvégezhetek úgy hogy, konkrétan a forráskódot írom át, ezután újra lefordítom a kernelt és megfigyelem a módosítások hatásait.
-A probléma hogy ez a folyamat hosszadalmas lehet, emiatt kerestem más módszereket.
-Megfigyeltem hogy a több változó is elérhető az ütemező hangolására, így nincs szükség arra hogy újakat vezessek be.
+A probléma, hogy ez a folyamat hosszadalmas lehet, emiatt kerestem más módszereket.
+Megfigyeltem, hogy több változó is elérhető az ütemező hangolására, így nincs szükség arra, hogy újakat vezessek be.
 
-Ezeket a változókat megtalálhatjuk a /proc/sys/kernel/ jegyzékben, fontos kiemelni hogy ezek a változók futásidőben is módosíthatók. Minden változóhoz tartozik egy intervallum, amin belül tetszőlegesen módosítható az értéke. 
+Ezeket a változókat megtalálhatjuk a /proc/sys/kernel/ jegyzékben. Fontos kiemelni, hogy ezek a változók futásidőben is módosíthatók. Minden változóhoz tartozik egy intervallum, amin belül tetszőlegesen módosítható az értéke. 
 
 Az értékek módosítását megadhatjuk direkt:
 \begin{python}
@@ -168,12 +173,12 @@ Az ütemező használati módokra történő optimalizálási kísérletemben, a
 \begin{itemize}
 \item sched\_latency\_ns
 
-Ez a paraméter akkor játszik nagy szerepet, hogyha a processzek darabszáma a runqueue-ban, kisebb mint az nr\_latency. Fontos hogy ez az érték nem összetévesztendő az időszelet méretével mivel, annak a számítását már láthattuk a \ref{eq:2} egyenletben. 
+Ez a paraméter akkor játszik nagy szerepet, hogyha a processzek darabszáma a runqueue-ban, kisebb mint az nr\_latency. Fontos, hogy ez az érték nem összetévesztendő az időszelet méretével mivel, annak a számítását már láthattuk a \ref{eq:2} egyenletben. 
 
 %https://elixir.bootlin.com/linux/v5.8.5/source/Documentation/scheduler/sched-design-CFS.rst
 \item sched\_min\_granularity\_ns
 
-Ez a változó gyakorlatilag nagy processz szám esetén próbál meg egy elegendő minimális időszeletet biztosítani a processzek számára. Emiatt feltételezhetjük azt is hogy végtelen processz szám esetén is, legalább egy milliszekundumot.
+Ez a változó gyakorlatilag nagy processz szám esetén próbál meg egy elegendő minimális időszeletet biztosítani a processzek számára. Emiatt feltételezhetjük azt is, hogy végtelen processz szám esetén is, legalább egy milliszekundumot.
 Amikor a processzek száma nagyobb mint az nr\_latency, a \textbf{period} megegyezik sched\_min\_granularity\_ns és a fair runqueue-ban lévő processzek szorzatával, ami látható az alábbi kódrészletben is.
 
 \begin{cpp}
@@ -220,13 +225,13 @@ Az utolsó végrehajtás után eltelt idő, ameddig a feladatot „gyorsítótá
 Egy ilyen friss taszk-nál kevésbé valószínű hogy az ütemező átvinné egy másik CPU-ra, szóval a változó értékének növelése, csökkenti ezt az esélyt.
 \item sched\_nr\_migrate
 
-Az a maximális taszk szám amit a kiegyensúlyozási eljárás során kezel az ütemező.
+Az a maximális taszk szám, amit a kiegyensúlyozási eljárás során kezel az ütemező.
 \item sched\_rr\_timeslice\_ms
 
 Az időszelet mérete, amit futással tölthet mielőtt preemptálja az ütemező és a taszk lista végére kerül.
 \item sched\_rt\_period\_us
 
-A CFS ütemező ennyi időt vár, mielőtt odaadná a cpu-t valamelyik valós idejű taszknak újra.
+A CFS ütemező ennyi időt vár, mielőtt odaadná a CPU-t valamelyik valós idejű taszknak újra.
 \item sched\_rt\_runtime\_us
 
 Az a maximális processzor idő amit felhasználhat egy valós idejű taszk.
@@ -234,8 +239,9 @@ Az a maximális processzor idő amit felhasználhat egy valós idejű taszk.
 A felsorolt paraméterek közül a sched\_latency\_ns, sched\_wakeup\_granularity\_ns és a sched\_wakeup\_granularity\_ns kap nagyobb figyelmet a dolgozatban. Ezek mellett még a processzek prioritási szintjét fogom módosítani, amivel a vruntime számításnál találkozhatunk.
 Az utolsó változó pedig a vm.swappiness, amit szintén elérhetünk a sysctl interfész segítségével. 
 A vm.swappiness egy hangolható kernelparaméter, amely szabályozza, hogy a kernel mennyire kedvez a swap memóriának a RAM felett. A változó intervalluma 0-100 ig terjed, magasabb érték agresszív kilapozást eredményez, amíg a nullánál pedig mondhatni teljesen ki lesz kapcsolva a swap memória használata. Az összes ütemezőhöz kapcsoló hangolható paraméter tesztelése túl sok időt vehet igénybe, feltéve azt hogy minden beállítással szeretnék futtatni egy tesztet és egyes paraméterek intervallumai sem mondhatók túl kicsinek. Ezért a kiválasztott paramétereim intervallumát négy részre fogom szétszedni, annak érdekében hogy a tesztek hamarabb lefussanak, így több időt tudok szánni a kapott adatok elemzésére.
+
 A módosítások hatásait benchmark programokkal tervezem mérni, ehhez a PTS programot fogom felhasználni. Mivel különböző felhasználási módokra tervezem az optimalizálást, így az openbenchmarking.org oldaláról minden kategóriából választottam egy tesztet. 
-Teszt választásnál fő szempont volt a gyors lefutási idő, a teszt müködése és hogy milyen konfigurációs beállítások elérhetők hozzá. Annak érkében hogy hogy pontos mérést végezzek a tesztekkel, célszerűnek tartottam azt hogy minden változó módosításnál több mintát is vegyek.
+Teszt választásnál fő szempont volt a gyors lefutási idő, a teszt müködése, és hogy milyen konfigurációs beállítások elérhetők hozzá. Annak érkében, hogy pontos mérést végezzek a tesztekkel, célszerűnek tartottam azt, hogy minden változó módosításnál több mintát is vegyek.
 Mivel kézzel a tesztek indítása és a paraméterek megváltoztatása egyesével elég hosszadalmas lenne, így készítettem erre egy programot.
 
 \Section{Parameter-test program}
@@ -299,11 +305,14 @@ Ezt követően a kernel változók inicializálásra kerülnek, mind a saját in
 Végül a menu ablakot törli és újrarajzolja a következő iterációban.
 Amikor a teszt végzett, az összes kernel változó végigpróbálásával, a fájlt lezárja és visszaállítja a változókat az eredeti értékükre.
 Az így kapott fájl formátuma json típusú, ez főként a feldolgozás miatt volt fontos.
-\Section{SchedulerTuneML program}
-A program Python programozási nyelven készült, több különböző modul felhasználásával.
- A program célja hogy, parameter-test program által készített json fájlokat feldolgozza. A fájlból kinyert adatokat elemezni, besorolja őket csoportokba, diagrammokat készít ezekről és javaslatokat tesz a kernel változók értékeinek beállítására, az adott felhasználási módhoz viszonyítva.
 
-\SubSection{SchedulerTuneML program implentációja }
+\Section{SchedulerTuneML program}
+
+A program Python programozási nyelven készült, több különböző modul felhasználásával.
+A program célja hogy, parameter-test program által készített JSON fájlokat feldolgozza. A fájlból kinyert adatokat elemezni, besorolja őket csoportokba, diagrammokat készít ezekről és javaslatokat tesz a kernel változók értékeinek beállítására, az adott felhasználási módhoz viszonyítva.
+
+\SubSection{SchedulerTuneML program implentációja}
+
 A program Jupyter Notebook-ban készült, emiatt a fájlok .ipynb kiterjesztésüek. Kihasználva a notebook által készíthető cellákat, a legtöbb kódrészlet mellé készítettem leírásokat, úgy gondolom hogy egyszerűbben megérthetők ezekkel, az egyes kódrészletek.
 %a programokat kategóriákba sorolom
 A benchmark program által készített eredmények tesztenként eltérőek, ami főként a különböző felhasználási módból következik. Ezeket az értékeket normalizálnom kell először, mielőtt felhasználnám a model betanításánál. Ehhez feature scaling-et alkalmaztam, ami azt jelenti hogy abban az esetben amikor a teszt értékek közül a kisebb érték számít jobbnak a következő képletet használom fel. 
@@ -314,8 +323,8 @@ Amennyiben a nagyobb érték számít jobbnak, az előző képlett kicsit módos
 \begin{equation}
 x = \frac{x-min}{max-min}
 \end{equation}
-Ezek felhasználásával, biztosítom hogy az értékek nulla és egy között maradjanak.
-A meglévő adathalmazom azonban önmagában nem elegendő arra hogy, a neurális hálót be tudjam tanítani vele, emiatt új elemeket, illetve kategóriákat vezettem be.
+Ezek felhasználásával biztosítom, hogy az értékek nulla és egy között maradjanak.
+A meglévő adathalmazom azonban önmagában nem elegendő arra, hogy a neurális hálót be tudjam tanítani vele, emiatt új elemeket, illetve kategóriákat vezettem be.
 \begin{itemize}
 \item resultClass
 
@@ -327,6 +336,8 @@ A program első lépései, a json fájlok megnyitása, az értékeken történő
     60 < x& < 80 &: 3 \\
     80 < x& < 100&: 4
 \end{alignat*}
+
+% TODO: Jó így táblázatos formában. Lehet esetleg említeni, hogy floor(x / 20) formában is számolható.
 
 \item serverWorkload
 
@@ -352,7 +363,7 @@ anélkül, hogy kifejezetten beprogramozták volna.''
 \par\nobreak\smallskip\hfill—Arthur Samuel, 1959
 \end{quote}
 
-A gépi tanulásnál számos területe létezik, azonban az én problémám megoldására supervised learning-et alkalmaztam. Ami azt jelenti hogy, az adathalmazban az egyes mintáknál, megtalálhatók a tulajdonságok(features), illetve az elvárt eredmények is(labels).
+A gépi tanulásnál számos területe létezik, azonban az én problémám megoldására supervised learning-et alkalmaztam. Ami azt jelenti, hogy az adathalmazban az egyes mintáknál, megtalálhatók a tulajdonságok(features), illetve az elvárt eredmények is(labels).
 Mivel a kernel változók intervallumait négy részre szedtem szét a teszteléseknél, így erre egy klasszifikációs algoritmust használok fel.
 A modelt az adott problémához mérten kell felépíteni, amihez fontos hogy optimálisan válasszuk meg rejtett rétegek, illetve a neuronok számát.
 Az én esetemben, a model öt bemenettel, illetve öt kimenettel rendelkezik és egy rejtett réteget választottam a feladathoz.

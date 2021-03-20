@@ -1,4 +1,4 @@
-\Chapter{Komponensek}
+\Chapter{Felhasznált eszközök és technológiák}
 
 %TODO https://www.phoronix-test-suite.com/
 %TODO https://www.phoronix-test-suite.com/documentation/phoronix-test-suite.pdf
@@ -25,34 +25,41 @@ A teszt a végrehajtási időt méri, ezáltal minél hamarabb lefut, annál job
 %TODO https://github.com/linux-test-project/ltp/tree/master/utils/benchmark/ebizzy-0.3
 
 \SubSection{Ebizzy}
+
 Ez az ebizzy tesztje, egy olyan program, amely egy webszerver munkaterheléséhez hasonló munkaterheléseket generál. Egyszerre több szálon fut, amik külön-külön nagy mennyiségű memóriát allokálnak és szabadítanak fel, kis időközönként. Ebből kifolyólag hatékonyan, meg tudja terhelni a processzorokat. A rekord per másodperc rátája minél magasabb kell hogy legyen, a rendszerben töltött idő pedig minél kisebb. Én a tesztet 20 másodpercre rögzítettem, így amire figyelnem kell az a rekordszám másodpercenként.
 
 \SubSection{FS-Mark}
+
 Az FS-Mark célja a fájlrendszer teljesítményének tesztelése.
 A teszt képes több módban is futni, a módok a fájlok méretét, darabszámát, illetve a program több szálon való futtatását szabályozzák. 
 Az program az írás részt szinkronban végzi jegyzékekken, meghajtókon keresztül.
 A választható konfigurációs módok közül, én 1000 fájl készítését választottam, 1MB-os mérettel fájlonként.
 
 \SubSection{Stream}
+
 A Stream benchmark egy egyszerű szintetikus benchmark program, amely méri a fenntartható memória sávszélességet (MBps-ben) és a számítási sebességet, egyszerű vector műveletekkel.
 Lényegében ez a teszt, a rendszermemória (RAM) teljesítményét méri.
 A teszten belül négy konfiguráció elérhető, amiből én az egyszerű  "Copy" módszert választottam.
 Itt 16 byte körüli a feltételezett memóriaforgalom iterációnként.
 
 \SubSection{Ctx-clock}
+
 Ctx\_clock egy egyszerű teszt program, a kontextus váltás mérése, órajelciklusokban.
 Tehát itt jobb eredménynek számít, a minél kisebb eredmény elérése a tesztben.
 Ez a benchmark egy tipikus rendszer terheléses tesztek közé sorolható.
 
 \SubSection{Glmark2}
-%ez a leglátványosabb teszt...bla bla
+
+%ez a leglátványosabb teszt...bla bla :D
 Ez a Linaro glmark2 portjának tesztje, jelenleg az X11 OpenGL 2.0-t használja. A GLmark2 az OpenGL alapvető benchmarkja. Az összes teszt közül, ez a "leglátványosabb", 3D-s alakzatokat mozgat, textúrájukat cseréli, emellett az árnyékokat és fényeket szabályoz is szabályozza.
 Alapvetően a grafikus kártyát próbálja meg terhelni, a benchmark pedig az átlagos Képkocka/Másodperc számot határozza meg.
 
 \Section{Sysctl interfész}
+
 A sysctl segítségével módosíthatjuk a kernel paramétereket futásidőben. Ezek a paraméterek elérhetők a /proc/sys/ jegyzékben. Emiatt a sysctl-nek szüksége van a proc fájlrendszerre. A sysctl interfész használható adatok olvasására és írására is egyaránt.
 
 \Section{Python}
+
 %TODO Referencia: python.org/doc/essays/blurb/
 Az ütemezőn végzett módosításokból és benchmarkok programokból származó adataim feldolgozását Pythonban végzem.
 A Python egy interpreteres, objektum-orientált, magas szintá programozási nyelv, dinamikus szemantikával.
@@ -60,6 +67,7 @@ A Python interpreter és a kiterjedt szabványkönyvtár, forrásként vagy bin�
 A Python programok hibakeresése egyszerű: egy hiba vagy rossz bemenet soha nem okoz szegmentálási hibát.
 
 \SubSection{Jupyter-notebook}
+
 %TODO Referencia: https://jupyter-notebook.readthedocs.io/en/stable/notebook.html
 A jupyter notebook kiterjeszti az interaktív konzol alapú megközelítését minőségileg új irányba, webalapú alkalmazás biztosításával, ami alkalmas a teljes számítási folyamat elvégzésére: kód fejlesztésére, dokumentálására és végrehajtására, valamint az eredmények közlésére.
 Nagyon szimpatikusnak találtam hogy, böngészőn belüli kódszerkesztésnél, automatikus a szintaxis kiemelés, emellett pedig a behúzásokat és a böngésző füleket is szépen kezeli.
@@ -69,6 +77,7 @@ A számítás eredményének megjelenítése olyan multimédiás ábrázolókat 
 Emiatt a notebook fájlok, a munkamenet számítási rekordjainak egy nyilvántartása. Azaz egy fájlban megtalálható mind a futtatható kód, a magyarázó szöveg a matematikával és a kapott objektumok gazdag ábrázolásával. A dokumentum fájlokban egy JSON található és .ipynb kiterjesztéssel rendelkezik.
 
 \SubSection{Numpy}
+
 %TODO Referencia: https://numpy.org/doc/stable/user/whatisnumpy.html
 A NumPy a tudományos számítás alapvető csomagja a Pythonban.
 Ez egy Python-könyvtár, amely többdimenziós tömb objektumot, különféle származtatott objektumokat (például maszkolt tömbök és mátrixok) és rutinok széles választékát kínálja a gyors tömb műveleteihez, beleértve a matematikai, logikai, válogatást, kiválasztást, I/O , diszkrét Fourier-transzformációk, alapvető lineáris algebra, alapvető statisztikai műveletek, véletlenszerű szimuláció és még sok más.
@@ -84,11 +93,13 @@ Az ndarray méretének megváltoztatása új tömböt hoz létre, és törli az 
 \end{itemize}
 
 \SubSection{Matplotlib}
+
 %TODO referencia: https://matplotlib.org/stable/index.html
 A Matplotlib egy átfogó könyvtár statikus, animált és interaktív vizuális elemek létrehozásához a Pythonban.
 Én a matplotlib csomagnak a pyplot részét használtam, az adathalmazaim megjelenítésére és elemzésére. A matplotlib.pyplot olyan funkciók gyűjteménye, amelyek a matplotlib-et úgy működtetik, mint a MATLAB. A függvényekkel itt, tipikusan olyan műveleteket végezhetünk mint új ábrák készítése, vonalak megjelenítése a grafikonon, az ábrázolt elem cimkékkel való ellátása, stb.
 
 \SubSection{Pandas}
+
 %TODO referencia: https://pandas.pydata.org/docs/getting_started/index.html#intro-to-pandas
 A pandas egy gyors, hatékony, rugalmas és könnyen használható nyílt forráskódú adatelemzési és manipulációs eszköz, ami a Python programozási nyelv tetejére épült.
 
@@ -97,6 +108,7 @@ Ha táblázatos adatokkal szeretnénk dolgozni, mint például táblázatokban v
 A pandas segítségével grafikonon is ábrázolhatjuk az adathalmazainkat, amihez a matplotlib csomagot használja. Minden pandas által készített grafikon ábra egy matplotlib objektum.
 
 \SubSection{Scikit-learn}
+
 %TODO referencia: https://www.tutorialspoint.com/scikit_learn/scikit_learn_introduction.htm
 
 A Scikit-learn (Sklearn) az egyik leghasznosabb és legerősebb könyvtár a gépi tanuláshoz, Pythonban. Széles válogatást nyújt a gépi tanulás és a statisztikai modellezés hatékony eszközeiből, beleértve a klasszifikációt, a regressziót, a klaszterezést és a dimenziócsökkentést a Python konzisztencia felületén keresztül. Ez a könyvtár, amelyet nagyrészt Pythonban lett megírva, a NumPy, a SciPy és a Matplotlib alapokra épül.
