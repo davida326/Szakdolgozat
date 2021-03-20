@@ -1,7 +1,153 @@
 \Chapter{Megvalósítás}
+
+\Section{Processz adatok lerkérdezése kernel modullal}
+
+Az optimalizáláshoz szükség van adatokra a processzekről, amelyeket egy kernel modul segítségével könnyedén kinyerhetünk.
+Mint ahogy az előző fejezetben láthattuk, minden processzhez tartozik egy vruntime változó, ami alapján történik a processzek megválasztása. 
+Kernel modul segítségével a processzek tulajdonságai mint például a vruntime, prioritás, súly és egyéb információk egyszerűen lekérdezhetők.
+A kernelben processzek egy duplán láncolt listában tárolódnak, amit úgy hívnak hogy Processz tábla. Minden egyes elem a listában egy task\_struct típusú processz descriptor, amit a \texttt{<linux/sched.h>}-ban defináltak. Egy processzről minden információ elérhető ezen keresztül.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.75]{images/processTable.png}
+\caption{Processz Tábla}
+\label{fig:structurehierarchi}
+\end{figure}
+
+\noindent A processz táblán a \texttt{for\_each\_process} makróval, egyszerűen végighaladtunk.
+\begin{cpp}
+struct task_struct *p;
+#define for_each_process(p) \
+	 for ( p = &init_task ; ( p = next_task(p)) != &init_task ; )
+\end{cpp}
+A \texttt{printk()}-függvényt használtam, a processz adatok naplózására.
+\begin{cpp}
+     for_each_process(p)
+        if(!p->rt_priority)
+            printk(KERN_INFO "command:%s, pid:%d, priority:%d 
+            ,weight:%lu	,vruntime:%llu",p->comm,p->pid,p->prio
+            ,p->se.load.weight,p->se.vruntime);
+
+\end{cpp}
+
+Amennyiben az ütemező módosításokat közvetlenül a kernelben szeretnénk elvégezni, a változtatások után újra kell fordítanunk a kernelt.
+Ez sajnos elég hosszadalmas lehet, emiatt másik megoldást választottam.
+
+\Section{Processzor magok elszigetelése}
+
+%TODO referencia: https://hu.wikipedia.org/wiki/Red_Hat_Enterprise_Linux
+A Red Hat egy nyílt forráskódú szoftverek fejlesztésével foglalkozó vállalat. A Red Hat Enterprise Linux (rövidítve RHEL) egy, a Red Hat által készített, kereskedelmi felhasználásra szánt Linux-disztribúció.
+%TODO referencia https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/pdf/Performance_Tuning_Guide/Red_Hat_Enterprise_Linux-7-Performance_Tuning_Guide-en-US.pdf
+A Red Hat által kiadott RHEL7 teljesítményre való hangolás útmutatójában, olvashatunk egy olyan módszerről, amellyel elkülöníthetünk processzorokat a ütemezőtől. Ezáltal elérhetjük azt hogy az elkülönített processzorokon csak az általunk kiválasztott processzek futhatnak. Megvalósíthatjuk azt is hogy, egy processzhez több cpu magot rendelünk, így az izolált processzorokon nem lesz sok vetélytársa akivel versengenie kellene, emiatt teljesítménynövekvést tapasztalhatunk.
+Ezt főként több CPU maggal rendelkező számítógépek esetén érdemes alkalmazni.
+
+Egy processzor mag izolálást többféle képpen is megvalósíthatunk egy Linux Operációs rendszerben.
+Legegyszerűbben úgy érthetjük el, hogyha a bootolási paramétereket módosítjuk. A harmadik és a hatodiktól, a nyolcadik processzor mag izolálásához elegendő csak /etc/default/grub fájlt módosítanunk a következő képpen.
+
+\begin{python}
+GRUB_CMDLINE_LINUX_DEFAULT="isolcpus=2,5-7"
+\end{python}
+
+CPU izolációhoz használhatjuk még a tuna programot, amivel bármikor végrehajthatjuk ezt a műveletet és nem csak bootoláskor érvényesülnek a változtatások. Azonban ez a módszer kicsit máshogy működik mint az isolcpus paraméter, amit láthattunk az előbb. A tuna programmal nem tudjuk elérni azt a teljesítmény javítást amit az isolcpus paraméterrel sikerült.
+
+Az elszigelt processzorokhoz a taskset program segítségével tudunk manuálisan hozzárendelni processzeket. Amennyiben egy PTS benchmark programot szeretnénk a harmadik processzor maghoz rendelni, azt a következő képpen tehetjük meg.
+
+\begin{python}
+$ taskset -c 2 phoronix-test-suite benchmark stream
+\end{python}%$
+
+A taskset programmal izoláció nélküli processzorokhoz is rendelhetünk processzeket, viszont így nem biztos hogy, annyira jelentős lesz a teljesítmény javulás.
+A RedHat útmutatóban olvashatunk egy numactl programról amivel szintén hasonló eredményt érhetünk el mint a taskset programmal. Itt viszont van egy probléma, mivel amennyiben elszigetelt processzorhoz szeretnénk rendelni processzt, hibát kapunk.
+A numactl program ugyanis más logikát követ, amit láthatunk a következő kódrészletből.
+
+\begin{cpp}
+static struct bitmask *
+__numa_parse_cpustring(const char *s, struct bitmask *allowed_cpus_ptr)
+{
+	int invert = 0, relative=0;
+	int conf_cpus = numa_num_configured_cpus();
+	char *end;
+	struct bitmask *mask;
+
+	mask = numa_allocate_cpumask();
+
+	if (s[0] == 0)
+		return mask;
+	if (*s == '!') {
+		invert = 1;
+		s++;
+	}
+	if (*s == '+') {
+		relative++;
+		s++;
+	}
+	do {
+		unsigned long arg;
+		int i;
+
+		if (!strcmp(s,"all")) {
+			copy_bitmask_to_bitmask(allowed_cpus_ptr, mask);
+			s+=4;
+			break;
+		}
+		arg = get_nr(s, &end, allowed_cpus_ptr, relative);
+		if (end == s) {
+			numa_warn(W_cpuparse,
+			 "unparseable cpu description `%s'\n", s);
+			goto err;
+		}
+		if (!numa_bitmask_isbitset(allowed_cpus_ptr, arg)) {
+			numa_warn(W_cpuparse, 
+			"cpu argument %s is out of range\n", s);
+			goto err;
+		}
+		...
+\end{cpp}
+
+Először kiolvassa a cpu affinitás-maszkot, és ezzel ellenörzi, hogy a megadott cpu-lista érvényes-e és csak akkor végzi el a processz cpuhoz való rendelését, amikor ez érvényes.
+Ezzel szemben a taskset programnak kicsit egyszerűbb a logikája.
+
+\begin{cpp}
+static void do_taskset(struct taskset *ts, size_t setsize, 
+						cpu_set_t *set){
+	/* read the current mask */
+	if (ts->pid) {
+		if (sched_getaffinity(ts->pid, ts->setsize, ts->set) < 0)
+			err_affinity(ts->pid, 1);
+		print_affinity(ts, FALSE);
+	}
+
+	if (ts->get_only)
+		return;
+
+	/* set new mask */
+	if (sched_setaffinity(ts->pid, setsize, set) < 0)
+		err_affinity(ts->pid, 1);
+
+	/* re-read the current mask */
+	if (ts->pid) {
+		if (sched_getaffinity(ts->pid, ts->setsize, ts->set) < 0)
+			err_affinity(ts->pid, 0);
+		print_affinity(ts, TRUE);
+	}
+}
+\end{cpp}
+
+Először beolvassa az affinitás értéket, majd közvetlenül megvalósítja a processz affinitását, a sched\_setaffinity rendszerhívással.
+A sikeres processzor elszigetelést ellenörizhetjük a htop programmal, amint egy nagyobb terhelést valósítottunk meg a számítógépünkön.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=1.5]{images/tasksetHtop.png}
+\caption{Izolált processzorhoz való processz rendelés}
+\label{fig:taskset}
+\end{figure}
+
+A másik módszer egy kicsit egyszerűbb, az elszigetelt cpu magokat megtalálhatjük a /sys/devices/system/cpu/isolated fájlban, vagy arra is van lehetőségünk hogy, az ellentétét listázzuk ami a /sys/devices/system/cpu/present fájlban található.
+
 \Section{Ütemező módosítása}
 A feladat a Linux processz ütemező optimalizálása, különféle használati módokra.
-Ehhez módosításokat kell hogy végezzek az ütemezőn, amit megtehetek úgy hogy, konkrétan a forráskódot írom át, ezután újra lefordítom a kernelt és megfigyelem a módosítások hatásait.
+Ennek eléréséhez megtehetem hogy, módosításokat végzek az ütemezőn, amit elvégezhetek úgy hogy, konkrétan a forráskódot írom át, ezután újra lefordítom a kernelt és megfigyelem a módosítások hatásait.
 A probléma hogy ez a folyamat hosszadalmas lehet, emiatt kerestem más módszereket.
 Megfigyeltem hogy a több változó is elérhető az ütemező hangolására, így nincs szükség arra hogy újakat vezessek be.
 
@@ -18,7 +164,7 @@ $ sudo sysctl -w sched_latency_ns=VALUE
 \end{python}%$
 A sysctl interfész segítségével lekérdezhetem, módosíthatom a kernel változók aktuális értékeikeit és figyelmeztet arra is hogy, az adott változó értékét ne állítsam az intervallum végpontjain túllépő értékekre.
 Az ütemező használati módokra történő optimalizálási kísérletemben, a sysctl interfészen keresztül elérhető változók játszanak fő szerepet. Az ütemezőhöz tartozó változók, amik a sysctl segítségével elérhetők a következők.
-%felsorolás
+
 \begin{itemize}
 \item sched\_latency\_ns
 
@@ -109,6 +255,14 @@ void initTestVariables(char *testName, int *sampleCount, int *interval)
 \end{cpp}
 
 Az utóbbi két input átugorható enter megnyomásával, ekkor alapértelmezett öt mintát fog venni és öt részre fogja szétszedni az intervallumokat.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=2.0]{images/parameter-testInit.png}
+\caption{Parameter-test program tesztnév megadás}
+\label{fig:parameter-testInit}
+\end{figure}
+
 A tesztnév megadásnál fontos a veriószám megadás, mivel a tesztekből újabb változatok kerülnek fel a openbenchmark.org-ra és minden verzióhoz új jegyzéket készít a PTS program a /var/lib/phoronix-test-suite/test-profiles/pts directory-ba.
 Minden teszthez tartozik egy jegyzék, amiben több xml kiterjesztésű fájl is megtalálható, ezek közül fontos kiemelni a test-definition.xml-t amiben a teszthez tartozó konfigurációs beállítások találhatók meg.
 A kezdeti paraméterek megadását követően, a teszt előkészületeihez ér a program, itt történik meg a teszt név ellenörzése, elérhető teszt konfigurációk listázása, kiválasztása és a batch-benchmark benchmark indítási módszer konfigurálása. 
