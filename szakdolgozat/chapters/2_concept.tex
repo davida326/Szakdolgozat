@@ -3,7 +3,7 @@
 \Section{Az ütemezési probléma}
 %TODO referencia könyvből: Mastering Linux Kernel Development: A kernel developer's reference manual
 
-Minden operációs rendszer hatékonysága arányos azzal a képességével, amely a processzek fair ütemezését végzi. A processz ütemező, a kernel központi eleme, ő az aki eldönti hogy mikor és mennyi időre bírtokolhatja egy folyamat a processzort. Ideális esetben, a processzeknek időszeletekre van szükségük a futáshoz, az ütemezőknek lényegében a processzor időszeleteit kell tisztességesen felosztaniuk a folyamatok között.
+Minden operációs rendszer hatékonysága arányos azzal a képességével, amely a processzek fair ütemezését végzi. A processz ütemező, a kernel központi eleme, ő az aki eldönti, hogy mikor és mennyi időre bírtokolhatja egy folyamat a processzort. Ideális esetben, a processzeknek időszeletekre van szükségük a futáshoz, az ütemezőknek lényegében a processzor időszeleteit kell tisztességesen felosztaniuk a folyamatok között.
 
 Egy ütemező algoritmusnak ki kell elégitenie, néhány kritériumot:
 \begin{itemize}
@@ -50,22 +50,22 @@ Processzoronként, két listát tart nyilván amiben tárolódnak a futásra ké
 
 Mindig az aktív listából választja ki a legfontosabb processzt futásra. Miután futott egy időszeletnyit, ez a processz, átkerül az expired run queue-ba, egy új dinamikusan számolt prioritással.
 Emiatt ahogy haladunk előre az időben az active run queue-ból folyamatosan fogynak el a processzek.  Amikor az active run queue végzett a processzekkel, a két lista felcserélődik és folyatatódik a végrehajtás az új listával.
-Annak érdekében hogy meglehessen különböztetni a batch és az interactive processzeket, egy úgynevezett "bonus" valtozót tartunk nyilván, ami a dinamikus prioritás számításnál fog előkerülni. Ennek az értéke 0 és 10 között mozoghat.
+Annak érdekében, hogy meglehessen különböztetni a batch és az interactive processzeket, egy úgynevezett \texttt{bonus} valtozót tartunk nyilván, ami a dinamikus prioritás számításnál fog előkerülni. Ennek az értéke 0 és 10 között mozoghat.
 \begin{cpp}
 dynamic priority = MAX(100, MIN(static priority - bonus + 5, 139))
 \end{cpp}
-Amikor a bonus változó értéke kisebb mint 5, arra utal hogy kevesebb interakciót fog végezni a felhasználóval, így több cpu lázas szakasza lesz a processznek élete során. Ilyenek tipikusan a batch processzek.
-Ha a bonus változó értéke nagyobb mint 5 lesz, valószínűleg a processz élete során sok interakció fog végezni a felhasználóval. Ez inkább az interactive processzekre jellemző.
+Amikor a \texttt{bonus} változó értéke kisebb mint 5, arra utal, hogy kevesebb interakciót fog végezni a felhasználóval, így több cpu lázas szakasza lesz a processznek élete során. Ilyenek tipikusan a batch processzek.
+Ha a bonus változó értéke nagyobb mint 5 lesz, valószínűleg a processz élete során sok interakció fog végezni a felhasználóval. Ez inkább az interaktív processzekre jellemző.
 
-\noindent\textit{Batch Process} 
+\noindent\texttt{Batch Process} 
 
 \setlength{\leftskip}{1cm}
 
-\noindent Nem igényelnek felhasználóval történő interakciót, általában a háttérben futnak. Ezeknek a processzeknek nincs szükségük arra hogy reszponzívak legyenek, tipikusan ilyenek a programozási nyevlek fordítói, adatbázis motorok és tudományos számítások.
+\noindent Nem igényelnek felhasználóval történő interakciót, általában a háttérben futnak. Ezeknek a processzeknek nincs szükségük arra, hogy reszponzívak legyenek, tipikusan ilyenek a programozási nyelvek fordítói, adatbázis motorok és tudományos számítások.
 
 \setlength{\leftskip}{0pt}
 
-\noindent\textit{Interactive Process}
+\noindent\texttt{Interactive Process}
 
 \setlength{\leftskip}{1cm}
 
@@ -91,10 +91,14 @@ else
 %TODO referencia könyvből: Linux Kernel Development 3rd Edition 51.oldal
 \Section{A linux ütemező felépítése}
 
-A linux operációs rendszer elsődlegesen asztali gépekhez lett tervezve, ennek ellenére hamar multi-dimenziós operációs rendszerré nőtte ki magát, széles körben használták beágyazott rendszerek, mainframe-eken, szuperszámítógépeken és szoba méretű szervereken is. Különböző platformok is befogadták, mint például valós idejű rendszerek, SMP, virtualizáció. Az ilyen változatos platformok miatt, alakultak ki a típusai a processzeknek. Egy asztali rendszeren, többnyire magas interaktivitású processzeket kell ütemezni, amik I/O igényesek, a valós idejű rendszereken pedig inkább  determinisztikus processzek jellemzőbbek. A különböző típusú processzeket, egymástól eltérő heurisztikus módszerekkel ütemezhetjük fair módon.
+A GNU/Linux operációs rendszer elsődlegesen asztali gépekhez lett tervezve, ennek ellenére hamar multi-dimenziós operációs rendszerré nőtte ki magát, széles körben használják beágyazott rendszerek, szervereken, mainframe-eken és szuperszámítógépeken is. Különböző platformok is befogadták, mint például valós idejű rendszerek, SMP, virtualizáció. Az ilyen változatos platformok miatt, alakultak ki a típusai a processzeknek. Egy asztali rendszeren, többnyire magas interaktivitású processzeket kell ütemezni, amik I/O igényesek, a valós idejű rendszereken pedig inkább  determinisztikus processzek jellemzőbbek. A különböző típusú processzeket, egymástól eltérő heurisztikus módszerekkel ütemezhetjük fair módon.
 
 \SubSection{Ütemezési osztályok}
-A linux ütemező moduláris, emiatt lehetővé teszi hogy különböző algoritmusok ütemezzenek, különböző típusú processzeket. Ezt a modularitást, ütemező osztályoknak nevezzük. Belső kialakitássa igen ügyesen kezeli a különböző processz típusokat, egy két rétegű modelt használ. Az első réteg egy Generic Scheduler(általános ütemező), ami absztrakt műveleteket határoz meg, ez egy belépési függvény az ütemező számára. A második réteg maga az ütemező osztály, amiben a tényleges ütemezési műveleteket tartalmazza, itt történik a különböző  processz osztályok ütemezése.
+A Linux ütemező moduláris, emiatt lehetővé teszi, hogy különböző algoritmusok ütemezzenek különböző típusú processzeket. Ezt a modularitást, ütemező osztályoknak nevezzük. Belső kialakitássa igen ügyesen kezeli a különböző processz típusokat két rétegű modell felhasználásával.
+\begin{itemize}
+	\item Az első réteg egy Generic Scheduler(általános ütemező), ami absztrakt műveleteket határoz meg, ez egy belépési függvény az ütemező számára.
+	\item A második réteg maga az ütemező osztály, amiben a tényleges ütemezési műveleteket tartalmazza, itt történik a különböző  processz osztályok ütemezése.
+\end{itemize} 
 
 \begin{figure}[h]
 \centering
@@ -103,9 +107,9 @@ A linux ütemező moduláris, emiatt lehetővé teszi hogy különböző algorit
 \label{fig:Generic Sheduler and Scheduler Classes}
 \end{figure}
 
-Ez a modell lehetővé teszi, hogy az Generic Scheduler elvont maradjon minden ütemező osztály megvalósítási részleteitől. Így a normál processzek ütemezéséért, az egyik ütemező osztály felel, amíg determinisztikus végrehajtást igénylő processzekért, mint a valós idejű folyamatok, egy másik osztály. Ez az architechtúra lehetővé teszi azt is hogy, akár új ütemező osztályt vezessünk be.
+Ez a modell lehetővé teszi, hogy az Generic Scheduler elvont maradjon minden ütemező osztály megvalósítási részleteitől. Így a normál processzek ütemezéséért, az egyik ütemező osztály felel, amíg determinisztikus végrehajtást igénylő processzekért, mint a valós idejű folyamatok, egy másik osztály. Ez az architechtúra lehetővé teszi azt is, hogy akár új ütemező osztályt vezessünk be.
 
-A Generic Scheduler egy absztrakt interface-t definiál a sched\_class struktúrán keresztül:
+A Generic Scheduler egy absztrakt interface-t definiál a (\texttt{/kernel/sched/sched.h}-ban lévő) \texttt{sched\_class} struktúrán keresztül:
 %TODO referencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/sched.h#L1743
 \begin{cpp}
 struct sched_class {
@@ -184,7 +188,7 @@ struct sched_class {
 \end{cpp}
  
 Minden ütemező osztálynak prioritása van. 
-Az általános ütemező, végigiterál az ütemező osztályokon és azt a legnagyobb prioritással rendelkező osztályt fogja választani, amiben található futtatható processz. A megválasztott ütemezési osztály fogja eldönteni hogy melyik processz kerülhet végrehajtásra.
+Az általános ütemező, végigiterál az ütemező osztályokon és azt a legnagyobb prioritással rendelkező osztályt fogja választani, amiben található futtatható processz. A megválasztott ütemezési osztály fogja eldönteni, hogy melyik processz kerülhet végrehajtásra.
 
 A kernel 5.8.x verziójában, három ütemezési osztály található, ezek névszerint: 
 \begin{itemize}
@@ -192,10 +196,11 @@ A kernel 5.8.x verziójában, három ütemezési osztály található, ezek név
 	 \item Real-time class
 	 \item Deadline class
 \end{itemize}
-A következő kódrészletek megmutatják, külön-külön az osztályok hogyan definálják a sched\_class absztrakt struktúrát.
+A következő kódrészletek megmutatják, hogy az osztályok külön-külön hogyan definálják a \texttt{sched\_class} absztrakt struktúrát.
+
 
 %TODO referencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/fair.c#L11126
-Completely Fair Scheduler class(/kernel/sched/fair.c):
+Completely Fair Scheduler class(\texttt{/kernel/sched/fair.c}):
 \begin{cpp}
 const struct sched_class fair_sched_class = {
 	.next			= &idle_sched_class,
@@ -214,7 +219,7 @@ const struct sched_class fair_sched_class = {
 \end{cpp}
 
 %TODO referencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/rt.c#L24321
-Real-time Scheduler class(/kernel/sched/rt.c):
+Real-time Scheduler class (\texttt{/kernel/sched/rt.c}):
 \begin{cpp}
 const struct sched_class rt_sched_class = {
 	.next			= &fair_sched_class,
@@ -232,7 +237,7 @@ const struct sched_class rt_sched_class = {
 \end{cpp}
 
 %TODO referencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/deadline.c#L2433
-Deadline Scheduler class(/kernel/sched/deadline.c):
+Deadline Scheduler class (\texttt{/kernel/sched/deadline.c}):
 \begin{cpp}
 const struct sched_class dl_sched_class = {
 	.next			= &rt_sched_class,
@@ -253,37 +258,36 @@ const struct sched_class dl_sched_class = {
 
 \SubSection{Ütemezési politikák(Scheduling policy)}
 
-A CFS osztály három ütemezési politikát implementál
+A CFS osztály három ütemezési politikát (\texttt{Scheduling policy}-t) implementál
 \begin{itemize}
-	\item SCHED\_OTHER(tradicionálisan  SCHED\_NORMAL) - Alapértelmezett ütemezési algoritmus, amit a normál processzek nagytöbbsége is használ.
+	\item \texttt{SCHED\_OTHER}(tradicionálisan  \texttt{SCHED\_NORMAL}) - Alapértelmezett ütemezési algoritmus, amit a normál processzek nagytöbbsége is használ.
 
-    \item SCHED\_BATCH - Közel sem hajt végre olyan sok preempciót mint az átlagos taszkok, ezáltal lehetővé téve azt hogy a taszkok tovább fussanak, de ennek az ára az interaktivitás csökkenése.
+    \item \texttt{SCHED\_BATCH} - Közel sem hajt végre olyan sok preempciót mint az átlagos taszkok, ezáltal lehetővé téve azt, hogy a taszkok tovább fussanak, de ennek az ára az interaktivitás csökkenése.
         
-	\item SCHED\_IDLE - Ezt az ütemezési politikát, kis intenzitású processzek esetén használják. Ezzel még a nice $+19$-től kisebb prioritást szabhatunk a processzünknek.
+	\item \texttt{SCHED\_IDLE} - Ezt az ütemezési politikát, kis intenzitású processzek esetén használják. Ezzel még a \texttt{nice} $+19$-től kisebb prioritást szabhatunk a processzünknek.
 \end{itemize}
-A valós idejű ütemezési osztály implementálja a SCHED\_FIFO és SCHED\_RR politikákat, ezek a POSIX által lettek meghatározva.
+A valós idejű ütemezési osztály implementálja a \texttt{SCHED\_FIFO} és \texttt{SCHED\_RR} politikákat, ezek a POSIX által lettek meghatározva.
 \begin{itemize}
-	\item SCHED\_FIFO - Időkritikus, valós idejű processzek ütemezésénél használják. A nevében is benne van, FIFO jellegű azaz First-In First-out, az elsőnek érzekett processz kerül először kiszolgálásra. 
+	\item \texttt{SCHED\_FIFO} - Időkritikus, valós idejű processzek ütemezésénél használják. A nevében is benne van, FIFO jellegű azaz First-In First-out, az elsőnek érzekett processz kerül először kiszolgálásra. 
 
-	\item SCHED\_RR - SCHED\_FIFO-hez hasonló, szintén valós idejű processzekhez használják. A Kerge Rigó ütemezési algoritmust használja.
+	\item \texttt{SCHED\_RR - SCHED\_FIFO}-hez hasonló, szintén valós idejű processzekhez használják. A Kerge Rigó ütemezési algoritmust használja.
 \end{itemize}
 
-A SCHED\_DEADLINE politika, a sched\_dl ütemezési osztályban található.  Earliest Deadline First (EDF) ütemezési algoritmus implementációja.
+A \texttt{SCHED\_DEADLINE} ütemezési politika, a \texttt{sched\_dl} ütemezési osztályban található.  Earliest Deadline First (EDF) ütemezési algoritmus implementációja.
 
 \SubSection{Runqueues}
 
-Hagyományosan a runqueue, az az adatstruktúra ami tárolja az összes processzt, akik a cpu-ért versenyeznek.
-Minden processzor maghoz, külön runqueue tartozik. 
-Az Generic Scheduler réteg egy absztrakt runqueue-t implementál, olyan elemekkel amik egy runqueue interface-nek felelnek meg.
-Ez a struktura ki lett bővítve néhány pointerrel, amik a különböző osztályok futási soraikra mutatnak. Ez azt jelenti hogy a különböző ütemezési osztályok futási soraik, mind bele vannak ágyazva a fő runqueue struktúrába. Ezáltal minden ütemező osztálynak lehetősége van megválasztani, a saját runqueue adat struktúráját. 
-
+Hagyományosan a \texttt{runqueue}, az az adatstruktúra ami tárolja az összes processzt, akik a CPU-ért versenyeznek.
+Minden processzor maghoz, külön \texttt{runqueue} tartozik. 
+A Generic Scheduler réteg egy absztrakt \texttt{runqueue}-t implementál, olyan elemekkel amik egy \texttt{runqueue} interface-nek felelnek meg.
+Ez a struktura ki lett bővítve néhány pointerrel, amik a különböző osztályok futási soraikra mutatnak. Ez azt jelenti, hogy a különböző ütemezési osztályok futási soraik, mind bele vannak ágyazva a fő \texttt{runqueue} struktúrába. Ezáltal minden ütemező osztálynak lehetősége van megválasztani, a saját \texttt{runqueue} adat struktúráját. 
 
 \SubSection{Processz Prioritási szintek és azok módosítása}
 
-Annak az eldöntése hogy melyik processz kerül legközelebb végrehajtásra, függ a prioritástól. Minden processz el van látva egy prioritás értékkel ami lehet dinamikus prioritás vagy statikus prioritás.
+Annak az eldöntése, hogy melyik processz kerül legközelebb végrehajtásra, függ a prioritástól. Minden processz el van látva egy prioritás értékkel ami lehet dinamikus prioritás vagy statikus prioritás.
 
-Dinamikus prioritásnak nevezzük azt amit a kernel normál folyamatoknál alkalmaz. Ehhez az értékhez figyelembe veszi a processz nice értékét, az elmúlt időben megfigyelt tevékenységét (CPU vagy I/O lázas processz) és hogy mennyi időt töltött várakozással, illetve  végrehajtással.
-A normál processzekhez alapértelmezett prioritását meg tudjuk változtatni a nice, illetve a renice paranccsal.
+Dinamikus prioritásnak nevezzük azt amit a kernel normál folyamatoknál alkalmaz. Ehhez az értékhez figyelembe veszi a processz \texttt{nice} értékét, az elmúlt időben megfigyelt tevékenységét (CPU vagy I/O lázas processz), és hogy mennyi időt töltött várakozással, illetve  végrehajtással.
+A normál processzekhez alapértelmezett prioritását meg tudjuk változtatni a \texttt{nice}, illetve a \texttt{renice} paranccsal.
 
 \begin{python}
 $ nice -n N ./a.out 
@@ -291,9 +295,9 @@ $ nice -n N ./a.out
 
 
 Ahol az N értéke +19 és -20 között mozoghat.
-Nagyobb nice érték azt jelzi hogy mennyire vagyunk "nagylelkűek" a többi programhoz, azáltal hogy őket előre engedjük.
+Nagyobb \texttt{nice} érték azt jelzi, hogy mennyire vagyunk "nagylelkűek" a többi programhoz azáltal, hogy őket előre engedjük.
 
-A processzek nice értékeiket lekérdezhetjük a ps programmal.
+A processzek \texttt{nice} értékeiket lekérdezhetjük a ps programmal.
 \begin{python}
 $ ps -Al
 \end{python}%$
@@ -316,10 +320,10 @@ SCHED_DEADLINE min/max priority	: 0/0
 A linux kernel szemszögéből, a processz prioritásokat skálázása 0-tól, 139-ig történik. A valós idejű processzek 0-tól 99-ig kapnak prioritást, amíg a normál folyamatok pedig 100-tól, 139-ig.
 
 
-Normál processzek esetén 120-as a statikus prioritás, ezt az értéket módosíthatjuk, a nice illetve a renice-paranccsal.
-Ez a nice érték -20 és +19 között mozoghat, attól függően hogy mennyire szeretnénk nagylelkűek lenni, a többi processzel szemben.
+Normál processzek esetén 120-as a statikus prioritás, ezt az értéket módosíthatjuk, a \texttt{nice} illetve a \texttt{renice}-paranccsal.
+Ez a \texttt{nice} érték -20 és +19 között mozoghat, ami attól függ, hogy mennyire szeretnénk nagylelkűek lenni, a többi processzel szemben.
 
-A processzeknek lekérdezhetjük, illetve megváltoztathatjuk az ütemezési politikáikat szintén a chrt program segítségével. A példánkban a processzünk pidje 31475.
+A processzeknek lekérdezhetjük, illetve megváltoztathatjuk az ütemezési politikáikat szintén a \texttt{chrt} program segítségével. A példánkban a processzünk \texttt{pid}-je 31475.
 
 \noindent Az ütemezési polika lekérdezése:
 \begin{python}
@@ -332,18 +336,19 @@ pid 31475 current scheduling priority: 0
 \begin{python}
 $ chrt -rr -p 99 31475
 $ chrt -p 31475
-pid 31475 current scheduling policy: SCHED_RR
-pid 31475 current scheduling priority: 99
+\texttt{pid} 31475 current scheduling policy: \texttt{SCHED_RR}
+\texttt{pid} 31475 current scheduling priority: 99
 \end{python}%$
 
-Real-time processzek esetén, a prioritási szinteik ellentétesek a normál processzekéhez képest. A legfontosabb prioritási szint a 99-es és a legkevésbé fontos pedig az 1-es.
+Valós idejű (Real-time) processzek esetén, a prioritási szintjeik ellentétesek a normál processzekéhez képest. A legfontosabb prioritási szint a 99-es és a legkevésbé fontos pedig az 1-es.
 %TODO referencia: https://access.redhat.com/solutions/3742421
-DeadLine processzek is ugyanilyen egyszerűen készíthetők a chrt programmal.
+
+DeadLine processzek is ugyanilyen egyszerűen készíthetők a \texttt{chrt} programmal.
 Itt viszont ki kell bővítenünk három paraméterrel a programunkat.
 \begin{itemize}
 \item Runtime: A feladatra kijelölt végrehajtási idő.
 \item Deadline: A periódus megkezdése után milyen gyorsan kell elindítani a futási időt
-\item Period:  Milyen gyakran hajtják végre a futási időt
+\item Period:  Milyen gyakran kerül végrehajtásra
 \end{itemize}
 A kernel megköveteli, hogy a következők igazak legyenek:
 \begin{equation}
@@ -351,29 +356,29 @@ RUNTIME <= DEADLINE <= PERIOD
 \end{equation}
 Bármelyik paraméter elhagyása az alábbiakat eredményezi.
 \begin{itemize}
-\item A futásidő elhagyása azt eredményezi hogy, futási időt a határidő értékére állítja.
+\item A futásidő elhagyása azt eredményezi, hogy futási időt a határidő értékére állítja.
 \item A határidő elmulasztása azt eredményezi, hogy a határidőt a periódus értékére kell beállítani.
 \item A periódus elmulasztása a periódust, a határidő értékére kell állítani.
 \end{itemize}
-\noindent Ezzel a három plusz paraméterrel, így néz ki a chrt program paraméterezése:
+\noindent Ezzel a három plusz paraméterrel, így néz ki a \texttt{chrt} program paraméterezése:
 \begin{python} 
-$ sudo chrt -d --sched-runtime 1000000 --sched-deadline 5000000 
-		--sched-period 5000000 0 ./test
+$ sudo chrt -d --sched-runtime 1ms --sched-deadline 5ms 
+		--sched-period 5ms 0 ./test
 \end{python}%$
 
 \SubSection{Completely Fair Scheduler}
 
 
-A Completely Fair Scheduler azaz a CFS, váltotta le a korábbi $O(1)$ -s ütemezőt a linux kernel 2.6.23 verzióban.
+A Completely Fair Scheduler (azaz a CFS), váltotta le a korábbi $O(1)$ -s ütemezőt a linux kernel 2.6.23 verzióban.
 Az összes dinamikus prioritású folyamatot a CFS osztály kezeli. Általános célú Unix rendszerekben, normál processzekből fordul elő a legtöbb, ebből is következik hogy a CFS ütemező osztály a legelfoglaltabb.
-A CFS nem támaszkodik a hagyományos időszeletekre a processzor kiosztásakor, hanem inkább a virtuális futásidő (vruntime) fogalmát vezeti be.
-A vruntime változó tárolja el a virtuális futás idejét egy processznek, ami igazából a tényleges futási idő normálizálva, a futtatható processzek darabszámával.
+A CFS nem támaszkodik a hagyományos időszeletekre a processzor kiosztásakor, hanem inkább a virtuális futásidő (\texttt{vruntime}) fogalmát vezeti be.
+A \texttt{vruntime} változó tárolja el a virtuális futás idejét egy processznek, ami igazából a tényleges futási idő normálizálva, a futtatható processzek darabszámával.
 A virtual runtime mértékegysége a nanoszekundum. (1 nanoszekundum = $\frac{1}{1,000,000,000}$ másodperc)
-A virtual runtime segítségével szeretnénk megközelíteni az ideális multitasking processzort, amit a CFS próbál modellezni. Egy egyszerű szabályt követ az algoritmus ami pedig az hogy, mindig válassza a legkisebb vruntime-al rendelkező taszkot. A CFS egy piros-fekete fát használ, a listában lévő futtatható taskok kezelésére és hogy egyszerűen megtalálhassa a legkisebb vruntime-mal rendelkező taskot.
+A virtual runtime segítségével szeretnénk megközelíteni az ideális multitasking processzort, amit a CFS próbál modellezni. Egy egyszerű szabályt követ az algoritmus ami pedig az, hogy mindig válassza a legkisebb vruntime-al rendelkező taszkot. A CFS egy piros-fekete fát használ, a listában lévő futtatható taskok kezelésére, hogy egyszerűen megtalálhassa a legkisebb vruntime-mal rendelkező taskot.
 A piros-fekete fa, amelyet Linux alatt rbtree-nek hívnak, egy saját magát kiegyensúlyozó bináris fa.
 A fában a csomópontok egy-egy futásra kész taszkot reprezentálnak. A taszkok elhelyezkedése a fában a virtuális futásidejükhöz mérten történik. 
-A fa bal oldalában helyezkednek el a kisebb vruntime-mal rendelkező taszkok.
-A balszélső csomópontban mindig az a taszk található amelyik a legkevesebb a vruntime-mal rendelkezik.
+A fa bal oldalában helyezkednek el a kisebb \texttt{vruntime}-mal rendelkező taszkok.
+A balszélső csomópontban mindig az a taszk található amelyik a legkevesebb a \texttt{vruntime}-mal rendelkezik.
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{images/redBlackTree.png}
@@ -381,7 +386,7 @@ A balszélső csomópontban mindig az a taszk található amelyik a legkevesebb 
 \label{fig:rb_tree}
 \end{figure}
 
-\noindent A piros-fekete fák önkiegyensúlyozók maradnak azáltal hogy, betartanak öt tulajdonságot:
+\noindent A piros-fekete fák önkiegyensúlyozók maradnak azáltal, hogy betartanak öt tulajdonságot:
 
 \begin{enumerate}
 	\item Egy csúcs vagy fekete vagy piros.
@@ -391,8 +396,8 @@ A balszélső csomópontban mindig az a taszk található amelyik a legkevesebb 
 	\item Minden csúcsból a belőle leszármazó levelekbe vezető egyszerű utakon ugyanannyi fekete csúcsot érintünk.
 \end{enumerate}
 
-Amikor egy taszk futásra kész állapotba kerül, meghívódik a \textit{enqueue\_task\_fair()}  függvény, ami hatására bekerül a piros-fekete fába. Amint a taszk kilépett ebből az állapotból, az ütemező \textit{dequeue\_task\_fair()} segítségével eltávolítja a fából.
-A következő kódrészletben látható hogy milyen függvényeket használ az ütemező a runqueue kezeléséhez.
+Amikor egy taszk futásra kész állapotba kerül, meghívódik a \texttt{enqueue\_task\_fair()}  függvény, ami hatására bekerül a piros-fekete fába. Amint a taszk kilépett ebből az állapotból, az ütemező \texttt{dequeue\_task\_fair()} segítségével eltávolítja a fából.
+A következő kódrészletben látható, hogy milyen függvényeket használ az ütemező a \texttt{runqueue} kezeléséhez.
 
 \begin{cpp}
 /*
@@ -444,8 +449,8 @@ const struct sched_class fair_sched_class = {
 };
 \end{cpp}
 
-A vruntime váltózó értékének kiszámításához, a CFS nem csak a nice értéket használja fel hanem a process load weight változóját is. A nice értékben történő lépegetés egyesével felfelé, minusz 10\% CPU időszeletet fog eredményezni, és minden lépés lefelé pedig plusz 10\%-ot. 
-A processz load weight változójának kiszámolásához a kernel fenttart egy tömböt amit \textit{sched\_prio\_to\_weight}-nek neveztek el. Itt megtalálható hogy melyik nice értékhez, milyen súly érték tartozik.
+A \texttt{vruntime} váltózó értékének kiszámításához, a CFS nem csak a \texttt{nice} értéket használja fel hanem a process load weight változóját is. A \texttt{nice} értékben történő lépegetés egyesével felfelé, minusz 10\% CPU időszeletet fog eredményezni, és minden lépés lefelé pedig plusz 10\%-ot. 
+A processz load weight változójának kiszámolásához a kernel fenttart egy tömböt amit \textit{sched\_prio\_to\_weight}-nek neveztek el. Itt megtalálható, hogy melyik \texttt{nice} értékhez, milyen súly érték tartozik.
 %TODO referencia a forráskódból: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/core.c#L8182
 \begin{cpp}
 const int sched_prio_to_weight[40] = {
@@ -460,44 +465,56 @@ const int sched_prio_to_weight[40] = {
 };
 \end{cpp}
 
-\noindent Ez súly változó, a processz struktúrában \textit{struct load\_weight load}-ként szerepel
+A \texttt{nice} szintek multiplikatívak, minden egyes \texttt{nice} érték módosulás, egy 10\%-os változást fog eredményezni. Ez azt jelenti, hogy amikor egy CPU intenzív folyamat \texttt{nice} szintje nulláról, egyre változik, a neki járó CPU idő körülbelül 10\%-al növekszik.
+Ez a 10\%-os effekt ugyanúgy érvényes a \texttt{nice} érték csökkénésére is, viszont ekkor 10\%-al kevesebb CPU időt fog kapni, az adott processz.
+Ehhez egy 1.25 hatvány alapot használ, így ha egy taszk +10\%-ot kap és egy másik -10\%-ot, a kettő között a relatív távolság körülbelül 25\%.
+A \texttt{sched\_prio\_to\_weight} tömb értékei kicsit eltérnek a kezdetleges változatától, amelyben az értékek még nagyon közel álltak azokhoz az eredményekhez, amelyeket megkaphatunk a következő kisebb képlet segítségével.
 
-Egy processz vruntime változó értékét a futással töltött idejéből(\textit{delta\_exec}), processz súlyából(\textit{se->load}), illetve a nice értékéből (\textit{NICE\_0\_LOAD}) kapjuk meg.
+\begin{equation}
+\frac{1024}{(1.25)^{nice}}
+\end{equation}
+
+Ez a tömb még 2007-ben lett lecserélve a jelenlegi változatra. 
+Megfigyelhető az is, hogyha a képletbe behelyettesítünk, nem kapunk pontos értékeket, ezért az új változatnál, bevezetésre került egy delta, így a legrosszabb esetben a numerikus hiba kisebb, mint $\frac{1}{100000000}$.
+
+\noindent A súly változó, a processz struktúrában \textit{struct load\_weight load}-ként szerepel.
+
+Egy processzhez tartozó, \texttt{vruntime} változó értéket, a futással töltött idejéből (\textit{delta\_exec}), processz súlyából (\textit{se->load}), illetve a \texttt{nice} értékéből (\textit{NICE\_0\_LOAD}) kapjuk meg.
 \begin{equation} \label{eq:2}
 vruntime += \frac{delta\_exec}{se->load}*NICE\_0\_LOAD
 \end{equation}
 
-Láthattuk hogyan történik a processzek megválasztása a CFS ütemezőben, de azt még nem hogy mennyi ideig futhatnak.
+Láthattuk hogyan történik a processzek megválasztása a CFS ütemezőben, de azt még nem, hogy mennyi ideig futhatnak.
 Ez az úgynevezett időszelet itt teljesen dinamikus számolódik.
 A CFS próbál követni egy modelt, amiben ideális és tökéletes a multitask ütemezés. Ebben a rendszerben, minden processz, $1/n$ részét kapná a processzor erőforrásnak, ahol az $n$ a processzek számát jelöli. 
-Tegyük fel hogy a van egy processzorunk és négy processzünk.
-Egy általános Unix rendszerben a végrehajtása úgy történne, ennek a négy processznek hogy az A process futna 1 ms-t, miután végzett következik a B, szintén fut 1 ms-t és így tovább, egymást követően. A processzor 100\%-ban annak a processznek dolgozott, aki épp végrehajtásban volt.
+Tegyük fel, hogy a van egy processzorunk és négy processzünk.
+Egy általános Unix rendszerben a végrehajtása úgy történne, ennek a négy processznek, hogy az A process futna 1 ms-t, miután végzett következik a B, szintén fut 1 ms-t és így tovább, egymást követően. A processzor 100\%-ban annak a processznek dolgozott, aki épp végrehajtásban volt.
 Az ideális modelben a négy processz egyszerre futna 4ms-t, a processzor erőforrását pedig felosztanánk négy részre, így mindenki kapna 25\% -ot. Ilyen processzor sajnos nem létezik.
 
 Az időszelet minden processz számára külön kalkulálódik, az alábbi képlet alapján.
 \begin{equation}
 slice = \frac{se->load.weight}{cfs\_rq->load.weight}*period
 \end{equation}
-Ahol se->load.weight az egyes processzek súlyaikat jelölik, cfs\_rq->load.weight pedig a runqueue-ban található összes task súly tényezője. A period nem egy konstans szám, ahhoz képest változik az értéke hogy mennyi task található a runqueue-ban. 
-Az ütemező először megnézi hogy az alábbi, egyenelőtlenség teljesül-e:
+Ahol se->load.weight az egyes processzek súlyaikat jelölik, cfs\_rq->load.weight pedig a \texttt{runqueue}-ban található összes task súly tényezője. A period nem egy konstans szám, ahhoz képest változik az értéke, hogy mennyi task található a \texttt{runqueue}-ban. 
+Az ütemező először megnézi, hogy az alábbi egyenlőtlenség teljesül-e
 \begin{equation}
 nr\_running > \frac{sysctl\_sched\_latency}{sysctl\_sched\_min\_granularity}
 \end{equation}
-Ahol az nr\_running jelöli a runqueue-ban található taszkok számát. Ha ez az egyenlőtlenség nem teljesül, az ütemező tudni fogja hogy túl sok a taszk, ezért hogy mindenkinek biztosítson elegendő időt, egy bizonyos alsó határt fog felhasználni a következő képpen.
+ahol az nr\_running jelöli a \texttt{runqueue}-ban található taszkok számát. Ha ez az egyenlőtlenség nem teljesül, az ütemező tudni fogja, hogy túl sok a taszk, ezért hogy mindenkinek biztosítson elegendő időt, egy bizonyos alsó határt fog felhasználni a következőképpen.
 \begin{equation}
-period =  nr\_running * sysctl\_sched\_min\_granularity
+period =  nr\_running * sysctl\_sched\_min\_granularity.
 \end{equation}
 Ez az alsó határ, az úgynevezett \textit{min\_granularity}.
 
 
 \SubSection{Csoportos ütemezés}
 
-Annak érdekében hogy az ütemezés fair módon történjen, a CFS-t úgy tervezték hogy minden processz számára garantáljon legalább egy futást a processzoron egy bizonyos időn belül, amit úgy neveznek hogy ütemezési periódus.
-A CFS ezt ütemezési periódus feldarabolja időszeletekre és ezeket osztjszét a taszkokhoz tartozó szálak között, így próbálja meg elkerülni a kiéhezés problémát. 
-Tegyük fel hogy az A taszk tíz szálon szeretne futni és a B taszk pedig öt szálon. Ekkor a CFS kiosztja az időszeleteket a szálaknak igazságosan, ez pedig ahhoz vezet hogy, az A taszk és a hozzá tartozó szálai több időszeletet kapnak, ez pedig nem igazságos a B processzel szemben.
-Ebből kifolyólag az is megtörténhet hogyha, az A processz még több szálon szeretne futni, így a B processz mindig csak minimális időszeletet fog kapni.(Ami 1 ms) Annak érdekében hogy mindenkivel szembe igazságosak legyünk, A és B processzeknek egyforma időszeletet kell adnia az ütemezőnek. Ez azt jelenti hogy A és B processz 50\%-50\% időszeleteket kapnak és ezt a részt felosztják a szálak között, tehát az A processznek mind a tíz szála külön-külön 5\%-ot fognak megkapni.
-Annak érdekében hogy, ezt az igazságtalan időszelet kiosztást elkerüljük, a CFS csoportos ütemezést használ. Itt konkrétan a csoport kapja meg a processzor időt, és nem a szálak külön-külön.
-A CFS taszk csoportok, a sched\_entity strúktúra egy része, és minden csoport megfeleltethető egy ütemezési entitásnak.
+Annak érdekében, hogy az ütemezés fair módon történjen, a CFS-t úgy tervezték, hogy minden processz számára garantáljon legalább egy futást a processzoron egy bizonyos időn belül, amit úgy neveznek, hogy ütemezési periódus.
+A CFS ezt ütemezési periódus feldarabolja időszeletekre, és ezeket osztja szét a taszkokhoz tartozó szálak között, így próbálja meg elkerülni a kiéhezés problémát. 
+Tegyük fel, hogy az A taszk tíz szálon szeretne futni, és a B taszk pedig öt szálon. Ekkor a CFS kiosztja az időszeleteket a szálaknak igazságosan, ez pedig ahhoz vezet, hogy az A taszk és a hozzá tartozó szálai több időszeletet kapnak, ez pedig nem igazságos a B processzel szemben.
+Ebből kifolyólag az is megtörténhet, hogy az A processz még több szálon szeretne futni, így a B processz mindig csak minimális időszeletet fog kapni(Ami 1 ms). Annak érdekében, hogy mindenkivel szembe igazságosak legyünk, A és B processzeknek egyforma időszeletet kell adnia az ütemezőnek. Ez azt jelenti, hogy A és B processz 50\%-50\% időszeleteket kapnak, és ezt a részt felosztják a szálak között, tehát az A processznek mind a tíz szála külön-külön 5\%-ot fognak megkapni.
+Annak érdekében, hogy ezt az igazságtalan időszelet kiosztást elkerüljük, a CFS csoportos ütemezést használ. Itt konkrétan a csoport kapja meg a processzor időt, és nem a szálak külön-külön.
+A CFS taszk csoportok, a \texttt{sched\_entity} strúktúra egy része, és minden csoport megfeleltethető egy ütemezési entitásnak.
 
 \begin{figure}[h!]
 \centering
@@ -507,29 +524,29 @@ A CFS taszk csoportok, a sched\_entity strúktúra egy része, és minden csopor
 \end{figure}
 
 \Section{Kernel modulok}
+
 %TODO referencia könyvből: The Linux Kernel Module Programming Guide. Peter Jay Salzman Michael Burian Ori Pomerantz. Copyright © 2001 Peter Jay Salzman.  
 %TODO referencia könyvből: Understanding the Linux Kernel, Third Edition by Daniel P. Bovet and Marco Cesati
-Egy modul gyakorlatilag instrukciók sorozata, amit igény szerint, ki és be lehet tölteni a kernel-be. Kibővíti a kernel funkcionalitását, anélkül hogy újra keljen indítani a rendszert. Minden magasabb szintű kernel komponens, mint például fájlrendszerek, I/O eszköz driver, hálózati rétegek, stb, meg lehet írni modulként és be lehet tölteni a kernel-be.
+Egy modul gyakorlatilag instrukciók sorozata, amit igény szerint, ki és be lehet tölteni a kernel-be. Kibővíti a kernel funkcionalitását, anélkül hogy újra kelljen indítani a rendszert. Minden magasabb szintű kernel komponenst (mint például fájlrendszerek, I/O eszköz driver, hálózati rétegek) meg lehet írni modulként, és be lehet tölteni a kernel-be.
+Az éppen aktuálisan betöltött moduljainkat, le tudjuk kérdezni az \texttt{\# lsmod} paranccsal, ami a \texttt{/proc/modules} fájl tartalmát listázza.
 
-\noindent Az éppen aktuálisan betöltött moduljainkat, le tudjuk kérdezni az \texttt{\# lsmod} paranccsal, ami a \texttt{/proc/modules} fájl tartalmát listázza.
-
-A modulok ELF objektumként tárolódnak a fájlrendszeren, amik a kernelhez vannak linkelve, ezt a linkelést az \texttt{\# insmod} paranccsal tudjuk elvégezni.
+A modulok ELF objektumként tárolódnak a fájlrendszeren, amik a kernelhez vannak linkelve, ezt a linkelést az \texttt{insmod} paranccsal tudjuk elvégezni.
 A modulok egy duplán láncolt listában tárolódnak.
-Ha ebből a listából el szeretnénk távolítani egy modult(unlink), az \texttt{\# rmmod} programot használhatjuk, ami a következő műveleteket végzi el:
+Ha ebből a listából el szeretnénk távolítani egy modult(unlink), az \texttt{rmmod} programot használhatjuk, ami a következő műveleteket végzi el:
 \begin{enumerate}
 	\item Beolvassa a parancssorból annak a modulnak a nevét, amit el kívánunk távolítani.
-	\item Megnyitja a \texttt{/proc/modules} fájlt és leellenőrzi hogy a modul, ténylegesen linkelve van-e a listába.
+	\item Megnyitja a \texttt{/proc/modules} fájlt és leellenőrzi, hogy a modul, ténylegesen linkelve van-e a listába.
 	\item Meghívja a \texttt{delete\_modul()} rendszerhívást és továbbadja neki a modul nevét.
 	\item Terminálódik.
 \end{enumerate} 
 
-Minden kernel modulnak kell hogy legyen legalább két eljárása, az egyik ilyen \texttt{init\_module()}.
+Minden kernel modulnak kell hogy legyen legalább két eljárása, az egyik ilyen az \texttt{init\_module()}.
 Ez egy inicializációs eljárás, az \texttt{init\_module()} hívódik meg amikor beszúrjuk a modult az \texttt{insmod} paranccsal.
 A másik a \texttt{cleanup\_module()}, ami pedig az eltávolítás során(\texttt{rmmod}) hívódik meg.
 A 2.3.13.-as kernel verzióban bevezettek egy újítást, ami szerint, mi határozhatjuk meg az eljárások neveit. Ehhez használjuk a \texttt{module\_init()} és a \texttt{module\_exit()} makrókat. Tipikusan, az \texttt{init\_module()}-ban írjuk meg a programunkat, ami lehet hogy kicserél egy kernel függvényt a miénkre vagy regisztrál valamilyen kezelőt a kernel-hez. A \texttt{cleanup\_module()}-nak pedig az lenne a feladata, hogy visszavonja a módosításokat, amit az \texttt{init\_module()} elvégzett.
 %TODO referencia: https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-init-again.html
 
-A prink() függvénynek, nem a felhasználóval történő kommunikáció a fő szerepe, mégha én a mostani példában arra is használom. Ez egy naplózási eszköz(log) a kernel számára, amivel valamilyen fontos információt vagy hibaüzenetet továbbít. Az üzeneteknek, különböző fontossági szintjük van. Ezeket a szinteket hívjuk console\_loglevel-nek, ami egy kernelbeli változó, aminek a szintjeit 0-7 ig fogjuk megnézni. 
+A \texttt{printk()} függvénynek, nem a felhasználóval történő kommunikáció a fő szerepe(annak ellenére, hogy az aktuálisan ilyen célból került felhasználásra). Ez egy naplózási eszköz(log) a kernel számára, amivel valamilyen fontos információt vagy hibaüzenetet továbbít. Az üzeneteknek, különböző fontossági szintjük van. Ezeket a szinteket hívjuk console\_loglevel-nek, ami egy kernelbeli változó, aminek a szintjeit 0-7 ig fogjuk megnézni. 
 %TODO referencia: https://www.kernel.org/doc/html/latest/core-api/printk-basics.html
 \begin{enumerate}
 \setcounter{enumi}{-1}
@@ -549,9 +566,3 @@ $ cat /proc/sys/kernel/printk
 \end{cpp}
 %$
 Ezek a számok, az aktuális, alapértelmezett, minimális és boot-time-default log szinteket mutatják.
-
-
-
-
-
-

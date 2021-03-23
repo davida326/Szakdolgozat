@@ -1,51 +1,58 @@
-\Chapter{Komponensek}
+\Chapter{Felhasznált eszközök és technológiák}
 
 %TODO https://www.phoronix-test-suite.com/
 %TODO https://www.phoronix-test-suite.com/documentation/phoronix-test-suite.pdf
 \Section{Phoronix Test Suite}
-Annak érdekében hogy az ütemezőn végzett módosításaim hatásait megfigyelhessem, szükségem van teszt programokra. A teszt1 programokból kapott adatok alapján tudok javaslatokat tenni hogy, milyen mértékben módosítsam az ütemező paramétereket, bizonyos felhasználási módokhoz mérten.
+
+Annak érdekében, hogy az ütemezőn végzett módosításaim hatásait megfigyelhessem, szükségem van teszt programokra. A teszt1 programokból kapott adatok alapján tudok javaslatokat tenni, hogy milyen mértékben módosítsam az ütemező paramétereket, bizonyos felhasználási módokhoz mérten.
 A teszteléshez Phoronix Test Suite (PTS) programot választottam.
 A Phoronix Test Suite a rendelkezésre álló legátfogóbb tesztelési és benchmarking platform, elérhető GNU/Linux, Solaris, MacOS, Windows és BSD operációs rendszeren.
-A PTS lehetővé teszi hogy, a tesztek a telepítésétől, a végrehajtásig és jelentés készítésig teljesen automatikus módon történjenek.
+A PTS lehetővé teszi, hogy a tesztek a telepítésétől, a végrehajtásig és jelentés készítésig teljesen automatikus módon történjenek.
 Minden tesztet könyven reprodukálhatónak és használhatónak szántak.
 A Phoronix Test Suite nyílt forráskódú, GNU GPL licenszel.
 Több mint 400 teszt elérhető, az OpenBenchmarking.org-on keresztül. keresztül.
 
 
 \SubSection{OpenBenchmarking.org}
+
 Az OpenBenchmarking.org egy nyílt, együttműködő tesztelési platform, amely a Phoronix Test Suite programot bővíti ki, az automatizált tesztek teljes integrációval a Phoronix Test Suite teszt kliensbe.
 Ezáltal az OpenBenchmarking.org egy repository-ként szolgál ahol a tesztek, teszt-profilok és az eredmények tárolódnak.
 Az OpenBenchmarking.org a megkönnyíti a teszt eredményeink összehasonlítását mások által elért eredményekkel.
-Minden Phoronix Test Suite program felhasználónak megengedett hogy feltöltse a tesztben elért eredményét az OpenBenchmarking.org-ra.
+Minden Phoronix Test Suite program felhasználónak megengedett, hogy feltöltse a tesztben elért eredményét az OpenBenchmarking.org-ra.
 
 
 \SubSection{Sample Pi Program}
+
 A  Sample Pi Program, egy egyszerű C++ programozási nyelven megírt program, ami a Pi szám számjegyeit számolja ki egészen 8,765,4321 számjegyig. Ehhez egy Leibniz formulát használja fel. A teszt maga a Processzor terhelés kategóriába sorolható, azaz tipikusan egy batch folyamatnak tekinthető ami a háttérben számol. Egyetlen processzként próbálja megterhelni, valamelyik processzor magot. 
 A teszt a végrehajtási időt méri, ezáltal minél hamarabb lefut, annál jobb eredményt számolhatunk el.
 %TODO https://github.com/linux-test-project/ltp/tree/master/utils/benchmark/ebizzy-0.3
 
 \SubSection{Ebizzy}
+
 Ez az ebizzy tesztje, egy olyan program, amely egy webszerver munkaterheléséhez hasonló munkaterheléseket generál. Egyszerre több szálon fut, amik külön-külön nagy mennyiségű memóriát allokálnak és szabadítanak fel, kis időközönként. Ebből kifolyólag hatékonyan, meg tudja terhelni a processzorokat. A rekord per másodperc rátája minél magasabb kell hogy legyen, a rendszerben töltött idő pedig minél kisebb. Én a tesztet 20 másodpercre rögzítettem, így amire figyelnem kell az a rekordszám másodpercenként.
 
 \SubSection{FS-Mark}
+
 Az FS-Mark célja a fájlrendszer teljesítményének tesztelése.
 A teszt képes több módban is futni, a módok a fájlok méretét, darabszámát, illetve a program több szálon való futtatását szabályozzák. 
 Az program az írás részt szinkronban végzi jegyzékekken, meghajtókon keresztül.
 A választható konfigurációs módok közül, én 1000 fájl készítését választottam, 1MB-os mérettel fájlonként.
 
 \SubSection{Stream}
+
 A Stream benchmark egy egyszerű szintetikus benchmark program, amely méri a fenntartható memória sávszélességet (MBps-ben) és a számítási sebességet, egyszerű vector műveletekkel.
 Lényegében ez a teszt, a rendszermemória (RAM) teljesítményét méri.
 A teszten belül négy konfiguráció elérhető, amiből én az egyszerű  "Copy" módszert választottam.
 Itt 16 byte körüli a feltételezett memóriaforgalom iterációnként.
 
 \SubSection{Ctx-clock}
+
 Ctx\_clock egy egyszerű teszt program, a kontextus váltás mérése, órajelciklusokban.
 Tehát itt jobb eredménynek számít, a minél kisebb eredmény elérése a tesztben.
 Ez a benchmark egy tipikus rendszer terheléses tesztek közé sorolható.
 
 \SubSection{Glmark2}
-%ez a leglátványosabb teszt...bla bla
+
 Ez a Linaro glmark2 portjának tesztje, jelenleg az X11 OpenGL 2.0-t használja. A GLmark2 az OpenGL alapvető benchmarkja. Az összes teszt közül, ez a "leglátványosabb", 3D-s alakzatokat mozgat, textúrájukat cseréli, emellett az árnyékokat és fényeket szabályoz is szabályozza.
 Alapvetően a grafikus kártyát próbálja meg terhelni, a benchmark pedig az átlagos Képkocka/Másodperc számot határozza meg.
 
@@ -62,7 +69,7 @@ A Python programok hibakeresése egyszerű: egy hiba vagy rossz bemenet soha nem
 \SubSection{Jupyter-notebook}
 %TODO Referencia: https://jupyter-notebook.readthedocs.io/en/stable/notebook.html
 A jupyter notebook kiterjeszti az interaktív konzol alapú megközelítését minőségileg új irányba, webalapú alkalmazás biztosításával, ami alkalmas a teljes számítási folyamat elvégzésére: kód fejlesztésére, dokumentálására és végrehajtására, valamint az eredmények közlésére.
-Nagyon szimpatikusnak találtam hogy, böngészőn belüli kódszerkesztésnél, automatikus a szintaxis kiemelés, emellett pedig a behúzásokat és a böngésző füleket is szépen kezeli.
+Nagyon szimpatikusnak találtam, hogy böngészőn belüli kódszerkesztésnél, automatikus a szintaxis kiemelés, emellett pedig a behúzásokat és a böngésző füleket is szépen kezeli.
 A számítás eredményének megjelenítése olyan multimédiás ábrázolókat használ mint a HTML, LaTeX, PNG, SVG stb. Például a publikációminőségű ábrák megjeleníthetők a cellákban, a matplotlib könyvtár segítségével. A LaTeX segítségével könnyen beilleszthető bármilyen matematikai képlet/jelölés a markdown cellákba.
 
  A notebook dokumentumai tartalmazzák az interaktív ki és bemeneteket, valamint további szövegeket, amely a kódot kísérik, de nem végrehajtásra szolgálnak. 
