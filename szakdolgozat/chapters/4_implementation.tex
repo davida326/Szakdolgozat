@@ -167,26 +167,15 @@ $ sudo sysctl -w sched_latency_ns=VALUE
 A sysctl interfész segítségével lekérdezhetem, módosíthatom a kernel változók aktuális értékeikeit és figyelmeztet arra is, hogy az adott változó értékét ne állítsam az intervallum végpontjain túllépő értékekre.
 Az ütemező használati módokra történő optimalizálási kísérletemben, a sysctl interfészen keresztül elérhető változók játszanak fő szerepet. Az ütemezőhöz tartozó változók, amik a sysctl segítségével elérhetők a következők.
 
+%https://elixir.bootlin.com/linux/v5.8.5/source/Documentation/scheduler/sched-design-CFS.rst
 \begin{itemize}
 \item \texttt{sched\_latency\_ns}
 
 Ez a paraméter akkor játszik nagy szerepet, hogyha a processzek darabszáma a runqueue-ban, kisebb mint az \texttt{nr\_latency}. Fontos, hogy ez az érték nem összetévesztendő az időszelet méretével mivel, annak a számítását már láthattuk a \ref{eq:2} egyenletben. 
 
-%https://elixir.bootlin.com/linux/v5.8.5/source/Documentation/scheduler/sched-design-CFS.rst
 \item \texttt{sched\_min\_granularity\_ns}
 
 Ez a változó gyakorlatilag nagy processz szám esetén próbál meg egy minimális időszeletet biztosítani a processzek számára. Emiatt feltételezhetjük azt is, hogy végtelen processz szám esetén is, legalább egy milliszekundumot futással tölthet minden folyamat.
-Amikor a processzek száma nagyobb mint az \texttt{nr\_latency}, akkor a \texttt{period} megegyezik a \texttt{sched\_min\_granularity\_ns} és a CFS runqueue-ban lévő processzek szorzatával, ami látható az alábbi kódrészletben is.
-
-\begin{cpp}
-static u64 __sched_period(unsigned long nr_running)
-{
-	if (unlikely(nr_running > sched_nr_latency))
-		return nr_running * sysctl_sched_min_granularity;
-	else
-		return sysctl_sched_latency;
-}
-\end{cpp}
 
 \item \texttt{sched\_wakeup\_granularity\_ns}
 
@@ -429,7 +418,25 @@ Az sklearn.neural\_network.MLPClassifier esetén, három választásunk van.
 
 \end{itemize}
 
-A rejtett réteghez tartozó neuron szám, aktivációs függvény és solver megválasztásához egy grid search technikát alkalmazok.
+A rejtett réteghez tartozó neuron számot, aktivációs függvényt és optimalizálási algoritmust, az adott problémához mérten érdemes megválasztani. A legjobb paraméterek meghatározására készítettem egy halmazt, amibe elhelyeztem az összes aktivációs függvényt, optimalizálási algoritmust és néhány neuron számot, amelyek megfelelők lehetnek a feladat megoldásához.
+
+\begin{python}
+params = {
+            'estimator__activation' : ['identity', 'logistic',
+            			       'tanh', 'relu'],
+            'estimator__solver' : ['lbfgs', 'sgd', 'adam'],
+            'estimator__hidden_layer_sizes': [(1, ),(2, ),(3, ),
+            				      (4, ),(5, ),(6, ),
+            				      (7, ),(8, ),(9, ),
+            				      (10,),(11,),(12,),
+            				      (13,),(14,),(15,),
+            				      (16,),(17,),(18,),
+            				      (19,),(20,),(21,)]
+}
+\end{python}
+
+Erre a \texttt{sklearn.grid\_search.GridSearchCV} függvényt választottam, ami a kapott paraméter készlettel, végig próbálja az összes lehetséges kombinációt, a model betanítására.
+
 %referencia az sklearn GridSearch és Cross Validation-re: https://scikit-learn.org/stable/modules/cross_validation.html
 \begin{figure}[h!]
 \centering
@@ -438,8 +445,17 @@ A rejtett réteghez tartozó neuron szám, aktivációs függvény és solver me
 \label{fig:neuralnetwork}
 \end{figure}
 
-Erre a \texttt{sklearn.grid\_search.GridSearchCV} függvényét választottam, ami egy kimerítő keresést végez, a legjobb paraméterek megtalálásához. A függvény alkalmazásához készítenem kellett egy paraméter készletet, amiben végig próbálja az összes lehetséges kombinációját. Ami azt jelenti, hogy minden próba végén kiértékeli a modelt egy Cross-Validation módszer segítségével. Ezáltal megkaptam azokat a model paramétereket, amivel a legjobban teljesített.
-A modelhez így a tangens hiperbólikusz használtam fel aktivációs függvényként, emellett kilenc rejtett rétegben található neuron és az L-BFGS optimalizáló algoritmust alkalmaztam.
+Minden próba végén kiértékeli a modelt egy Cross-Validation módszer segítségével. A legjobb értéket elért paraméterek, ezután lekérdezhetők a következő képpen.
+
+\begin{python}
+model = GridSearchCV( MultiOutputClassifier(MLPClassifier())
+  ,param_grid=params)
+model.fit(X_train,y_train)
+print(model.best_params_)
+\end{python} 
+
+Az itt látható program kimenete alapján, választottam meg a paramétereket.
+Így a tangens hiperbólikusz függvényt, használtam fel aktivációs függvényként, emellett kilenc neuront és az L-BFGS optimalizáló algoritmust alkalmaztam.
 
 %TODO referencia könyvből: Hands-On Machine Learning with Scikit-Learn and TensorFlow
 Az egyetlen módja, hogy kiderítsem hogyan teljesít a model, ki kell hogy próbáljam új adatokkal. 
@@ -470,7 +486,7 @@ A testType az adott felhasználási módot jelöli, az elérhető felhasználás
 
 A \texttt{resultClass} az eredmény besorolása, kategóriákba. Ezt az értéket mindig 4-re állítom, ezzel próbálom meg elérni, hogy mindig a legjobb értékek közül kapjak paramétereket.
 
-A \texttt{batchProcess} paraméter segítségével beállítható, hogy az adott processzt kívánja-e a felhasználó batch módban futtatni. Ez a processz prioritását és a processzhez tartozó vruntime változó értékének módosítását jelenti. A batchProcess mód beállításhoz 1-re kell állítani a változó értékét, egyébként 0-ra.
+A \texttt{batchProcess} paraméter segítségével beállítható, hogy az adott processzt batch módban fusson-e vagy sem. Ez a processz prioritását és a processzhez tartozó vruntime változó értékének módosítását jelenti. A batchProcess mód beállításhoz 1-re kell állítani a változó értékét, egyébként 0-ra.
 
 A \texttt{serverWorkload} segítségével a felhasználó a futtatni kívánt processzeihez mérten beszabályozhatja az ütemezőt. Amennyiben a processzek amiket futtatni szeretne, szerver szintű terhelési módhoz állnak közel, érdemes ezt a változót 1-re állítani, ellenkező esetben 0-ra.
 

@@ -478,35 +478,74 @@ A \texttt{sched\_prio\_to\_weight} tömb értékei kicsit eltérnek a kezdetlege
 Ez a tömb még 2007-ben lett lecserélve a jelenlegi változatra. 
 Megfigyelhető az is, hogyha a képletbe behelyettesítünk, nem kapunk pontos értékeket, ezért az új változatnál, bevezetésre került egy delta, így a legrosszabb esetben a numerikus hiba kisebb, mint $\frac{1}{100000000}$.
 
-\noindent A súly változó, a processz struktúrában \textit{struct load\_weight load}-ként szerepel.
+A súly változó, a processz struktúrában \textit{struct load\_weight load}-ként szerepel.
+Egy processz \texttt{vruntime} értékét úgy kapjuk meg, hogy a futással töltött idejét (\textit{delta\_exec}) el osztjuk, a processz súlyával (\textit{se->load}), majd ezt beszorozzuk a hozzátartozó \texttt{nice} értékkel (\textit{NICE\_0\_LOAD}).
+\begin{cpp} 
+static void update_curr(struct cfs_rq *cfs_rq)
+{
+	...
 
-Egy processzhez tartozó, \texttt{vruntime} változó értéket, a futással töltött idejéből (\textit{delta\_exec}), processz súlyából (\textit{se->load}), illetve a \texttt{nice} értékéből (\textit{NICE\_0\_LOAD}) kapjuk meg.
-\begin{equation} \label{eq:2}
-vruntime += \frac{delta\_exec}{se->load}*NICE\_0\_LOAD
-\end{equation}
+	curr->vruntime += calc_delta_fair(delta_exec, curr);
+
+	...
+}
+static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
+{
+	if (unlikely(se->load.weight != NICE_0_LOAD))
+		delta = __calc_delta(delta, NICE_0_LOAD, &se->load);
+
+	return delta;
+}
+\end{cpp}
 
 Láthattuk hogyan történik a processzek megválasztása a CFS ütemezőben, de azt még nem, hogy mennyi ideig futhatnak.
-Ez az úgynevezett időszelet itt teljesen dinamikus számolódik.
+Ez az úgynevezett időszelet, itt teljesen dinamikus számolódik.
 A CFS próbál követni egy modelt, amiben ideális és tökéletes a multitask ütemezés. Ebben a rendszerben, minden processz, $1/n$ részét kapná a processzor erőforrásnak, ahol az $n$ a processzek számát jelöli. 
 Tegyük fel, hogy a van egy processzorunk és négy processzünk.
 Egy általános Unix rendszerben a végrehajtása úgy történne, ennek a négy processznek, hogy az A process futna 1 ms-t, miután végzett következik a B, szintén fut 1 ms-t és így tovább, egymást követően. A processzor 100\%-ban annak a processznek dolgozott, aki épp végrehajtásban volt.
 Az ideális modelben a négy processz egyszerre futna 4ms-t, a processzor erőforrását pedig felosztanánk négy részre, így mindenki kapna 25\% -ot. Ilyen processzor sajnos nem létezik.
 
-Az időszelet minden processz számára külön kalkulálódik, az alábbi képlet alapján.
-\begin{equation}
-slice = \frac{se->load.weight}{cfs\_rq->load.weight}*period
-\end{equation}
-Ahol se->load.weight az egyes processzek súlyaikat jelölik, cfs\_rq->load.weight pedig a \texttt{runqueue}-ban található összes task súly tényezője. A period nem egy konstans szám, ahhoz képest változik az értéke, hogy mennyi task található a \texttt{runqueue}-ban. 
-Az ütemező először megnézi, hogy az alábbi egyenlőtlenség teljesül-e
-\begin{equation}
-nr\_running > \frac{sysctl\_sched\_latency}{sysctl\_sched\_min\_granularity}
-\end{equation}
-ahol az nr\_running jelöli a \texttt{runqueue}-ban található taszkok számát. Ha ez az egyenlőtlenség nem teljesül, az ütemező tudni fogja, hogy túl sok a taszk, ezért hogy mindenkinek biztosítson elegendő időt, egy bizonyos alsó határt fog felhasználni a következőképpen.
-\begin{equation}
-period =  nr\_running * sysctl\_sched\_min\_granularity.
-\end{equation}
-Ez az alsó határ, az úgynevezett \textit{min\_granularity}.
+Az időszelet minden processz számára külön kalkulálódik, amit a következő kódrészletből megfigyelhetünk.
 
+\begin{cpp}
+static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
+{
+	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);
+
+	for_each_sched_entity(se) {
+		struct load_weight *load;
+		struct load_weight lw;
+
+		cfs_rq = cfs_rq_of(se);
+		load = &cfs_rq->load;
+
+		if (unlikely(!se->on_rq)) {
+			lw = cfs_rq->load;
+
+			update_load_add(&lw, se->load.weight);
+			load = &lw;
+		}
+		slice = __calc_delta(slice, se->load.weight, load);
+	}
+	return slice;
+}
+\end{cpp}
+
+A számításához, szükségünk van az aktuális processz súlyára (\texttt{se->load.weight}), amit el kell osztanunk a CFS \texttt{runqueue}-ban található processzek összegzett súlyával(\texttt{cfs\_rq->load.weight}) és ezt pedig be kell szorozzuk a \texttt{sched\_period} változó értékével. Az utóbbi nem egy konstans szám, ahhoz képest változik az értéke, hogy mennyi task található a \texttt{runqueue}-ban. Célja a \texttt{sched\_period}-nak, hogy meghatározzon egy intervallumot, amelyet minden taszk képes lesz egyszer, futással tölteni.
+Ennek az értékét a következő képpen kapjuk meg.
+
+\begin{cpp}
+static u64 __sched_period(unsigned long nr_running)
+{
+	if (unlikely(nr_running > sched_nr_latency))
+		return nr_running * sysctl_sched_min_granularity;
+	else
+		return sysctl_sched_latency;
+}
+\end{cpp}
+
+Az ütemező először megnézi, hogy a \texttt{runqueue}-ban található taszkok számát (\texttt{Ez az nr\_running változó.}). 
+Amennyiben ez az érték nagyobb mint a \texttt{sched\_nr\_latency}, az ütemező tudni fogja, hogy túl sok a taszk, ezért hogy mindenkinek biztosítson elegendő időt, egy bizonyos alsó határt fog felhasználni a következőképpen. Ez az alsó határ, az úgynevezett \textit{min\_granularity}. Kis taszkszám esetén pedig a \texttt{sched\_period} értéke, megegyezik a  \texttt{sysctl\_sched\_latency} értékével.
 
 \SubSection{Csoportos ütemezés}
 
