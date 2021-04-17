@@ -84,4 +84,46 @@ Fontos kiemelnem, hogy a módosított változó értékek nem függetlenek egym�
 \label{fig:diskChart}
 \end{figure}
 
+\Section{Tuned profilok összehasonlítása}
+
+A korábban már említett Tuned rendszer hangoló szolgáltatás segítségével, hangolhatunk a rendszerbeállításainkon, kiválasztott profilok szerint.
+A tuned jelenlegi változtában viszonylag sok profil elérhető, különböző felhasználási módokhoz, ezért kiválasztottam néhányat amelyek a következők.
+\begin{itemize}
+\item desktop
+
+Ez a profil egyszerű asztali felhasználási módra próbálja optimalizálni a rendszert.
+Mindemellett engedélyez egy \texttt{scheduler autogroups} opciót, amivel jobb válaszidőt képes elérni, ez főként interaktív folyamatok számára lényeges.
+
+\item latency-performance
+
+Ez egy tipikus szerver profil, ami alacsony késleltetésre van optimalizálva. Kikapcsol mindenféle energiamegtakarítási mehanizmust és a sysctl segítségével javítja a késleltetést.
+
+\item throughput-performance
+
+Ez szintén egy szerver profil, ami a magas áteresztőképességre van optimalizálva.
+Szintén kikapcsolja az energiamegtakarító mehanizmusokat és a sysctl felhasználásával javítja a hálózati I/O és háttértárak teljesítményét, emellett próbálja a deadline ütemezési osztályt is használni.
+\end{itemize}
+
+Ezeket a profilokat hasonlítom össze egymással és egy olyan változattal ahol nem használok tuned optimalizálást (Teljesen általános felhasználási mód).
+Az utóbbit \texttt{none} elnevezéssel fogom jelölni a diagrammokon.
+A teszteléshez a már korábban bemutatott benchmarkok közül fogom felhasználni az sample-programot, ebizzy-t, fs-mark-ot és a ctx-clock-ot.
+A következő ábrákon láthatjuk hogy a desktop profil teljesített a legjobban, a legtöbb teszten.
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{images/sampleProgramAndCtxClock.png}
+\caption{Sample-program és Ctx-Clock benchmark eredmények az említett profilokkal}
+\label{fig:tunedProfilesSampleprogramAndCtxClock}
+\end{figure}
+
+Itt a kisebb értékek számítanak jobbnak és a sárgával jelöltem a legjobb értéket elért profilt.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{images/ebizzyAndFsMark.png}
+\caption{Ebizzy és FS-Mark benchmark eredmények az említett profilokkal}
+\label{fig:tunedProfilesEbizzyAndFsmark}
+\end{figure}
+
+Az ebizzy és fs-mark esetén pedig a nagyobb értékek jelölik a jobb eredményt.
+Egy adott profillal és egy benchmark programmal tíz mintát készítettem és ezeknek vettem az átlagukat.
 
