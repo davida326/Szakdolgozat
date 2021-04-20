@@ -35,25 +35,24 @@ Ez sajnos elég hosszadalmas lehet, emiatt másik megoldást választottam.
 \Section{Processzor magok elszigetelése}
 
 % TODO: Itt kicsit hirtelen a váltás az előző részhez képest.
-
+Szeretnék megemlíteni egy másik optimalizálási lehetőséget, mielőtt a kernel változók módosításába kezdünk. Úgy gondolom, hogy egyszerűen elvégezhető és szép teljesítmény növekedés nyerhető a következő módszerrel.
 %TODO referencia: https://hu.wikipedia.org/wiki/Red_Hat_Enterprise_Linux
-A Red Hat egy nyílt forráskódú szoftverek fejlesztésével foglalkozó vállalat. A Red Hat Enterprise Linux (rövidítve RHEL) egy, a Red Hat által készített, kereskedelmi felhasználásra szánt Linux-disztribúció.
+A Red Hat egy nyílt forráskódú szoftverek fejlesztésével foglalkozó vállalat. A Red Hat Enterprise Linux (rövidítve RHEL), a Red Hat által készített, kereskedelmi felhasználásra szánt Linux-disztribúció.
 %TODO referencia https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/pdf/Performance_Tuning_Guide/Red_Hat_Enterprise_Linux-7-Performance_Tuning_Guide-en-US.pdf
-A Red Hat által kiadott RHEL7 teljesítményre való hangolás útmutatójában, olvashatunk egy olyan módszerről, amellyel elkülöníthetünk processzorokat a ütemezőtől. Ezáltal elérhetjük azt hogy az elkülönített processzorokon csak az általunk kiválasztott processzek futhatnak. Megvalósíthatjuk azt is hogy, egy processzhez több CPU magot rendelünk, így az izolált processzorokon nem lesz sok vetélytársa akivel versengenie kellene, emiatt teljesítménynövekvést tapasztalhatunk.
+A Red Hat által kiadott RHEL7 teljesítményre való hangolás útmutatójában, olvashatunk egy olyan módszerről, amellyel elkülöníthetünk processzorokat a ütemezőtől. Ezáltal elérhetjük azt, hogy az elkülönített processzorokon csak az általunk kiválasztott processzek futhatnak. Megvalósíthatjuk azt is, hogy egy processzhez több CPU magot rendelünk, így az izolált processzorokon nem lesz sok vetélytársa, akivel versengenie kellene az erőforrásért, emiatt teljesítménynövekvést tapasztalhatunk.
 Ezt főként több CPU maggal rendelkező számítógépek esetén érdemes alkalmazni.
 
 Egy processzor mag izolálást többféleképpen is megvalósíthatunk egy GNU/Linux operációs rendszerben.
-Legegyszerűbben úgy érthetjük el, hogyha a bootolási paramétereket módosítjuk. Például a harmadik és a hatodiktól, a nyolcadik processzor mag izolálásához elegendő csak \texttt{/etc/default/grub} fájlt módosítanunk a következő képpen.
+Legegyszerűbben úgy érthetjük el, hogyha a bootolási paramétereket módosítjuk. Például harmadik és a hatodiktól, a nyolcadik processzor magig való, izoláláshoz elegendő csak /etc/default/grub fájlt módosítanunk a következő képpen.
+
 
 \begin{python}
 GRUB_CMDLINE_LINUX_DEFAULT="isolcpus=2,5-7"
 \end{python}
 
-CPU izolációhoz használhatjuk még a \textit{tuna} programot, amivel bármikor végrehajthatjuk ezt a műveletet és nem csak bootoláskor érvényesülnek a változtatások []. Azonban ez a módszer kicsit máshogy működik, mint az \texttt{isolcpus} paraméter, amit az előzőekben láthattunk. A tuna programmal nem tudjuk elérni azt a teljesítmény javítást amit az isolcpus paraméterrel sikerült.
+CPU izolációhoz használhatjuk még a tuna programot, amivel bármikor végrehajthatjuk ezt a műveletet és nem csak bootoláskor érvényesülnek a változtatások. Azonban ez a módszer kicsit máshogy működik mint az isolcpus paraméter, amit láthattunk az előbb. Egy CPU mag izoláció futás alatt azt eredményezi, hogy az aktuális CPU-hoz rendelt processzek, átkerülnek egy másikra és ezután végzi el az elszigetelést.
 
-% TODO: Az utolsó észrevételhez érdemes lehet írni egy rövid indoklást.
-
-Az elszigelt processzorokhoz a taskset program segítségével tudunk manuálisan hozzárendelni processzeket. Amennyiben egy PTS benchmark programot szeretnénk a harmadik processzor maghoz rendelni, azt a következő képpen tehetjük meg.
+Az elszigelt processzorokhoz a taskset program segítségével tudunk manuálisan hozzárendelni processzeket. Amennyiben egy PTS programmal szeretnénk elindítani a stream benchmarkot, a harmadik processzor magon, azt a következő képpen tehetjük meg.
 
 \begin{python}
 $ taskset -c 2 phoronix-test-suite benchmark stream
@@ -62,6 +61,7 @@ $ taskset -c 2 phoronix-test-suite benchmark stream
 A taskset programmal izoláció nélküli processzorokhoz is rendelhetünk processzeket, viszont így nem biztos, hogy annyira jelentős lesz a teljesítmény javulás.
 A RedHat útmutatóban olvashatunk egy \texttt{numactl} programról amivel szintén hasonló eredményt érhetünk el, mint a \texttt{taskset} programmal. Itt viszont van egy probléma, mivel amennyiben elszigetelt processzorhoz szeretnénk rendelni processzt, hibát kapunk.
 A \texttt{numactl} program ugyanis más logikát követ, amit láthatunk a következő kódrészletből.
+
 
 \begin{cpp}
 static struct bitmask *
@@ -165,31 +165,23 @@ A másik lehetőség, a \textit{sysctl} interfészen keresztül történő megad
 \begin{python}
 $ sudo sysctl -w sched_latency_ns=VALUE
 \end{python}%$
+
 A \textit{sysctl} interfész segítségével lekérdezhetem, módosíthatom a kernel változók aktuális értékeikeit és figyelmeztet arra is, hogy az adott változó értékét ne állítsam az intervallum végpontjain túllépő értékekre.
 Az ütemező használati módokra történő optimalizálási kísérletemben, a \textit{sysctl} interfészen keresztül elérhető változók játszanak fő szerepet. Az ütemezőhöz tartozó változók, amik a \textit{sysctl} segítségével elérhetők a következők.
+%https://elixir.bootlin.com/linux/v5.8.5/source/Documentation/scheduler/sched-design-CFS.rst
 \begin{itemize}
 \item \texttt{sched\_latency\_ns}
 
 Ez a paraméter akkor játszik nagy szerepet, hogyha a processzek darabszáma a runqueue-ban, kisebb mint az \texttt{nr\_latency}. Fontos, hogy ez az érték nem összetévesztendő az időszelet méretével mivel, annak a számítását már láthattuk \aref{sec:cfs}. szakaszban. 
 
-%https://elixir.bootlin.com/linux/v5.8.5/source/Documentation/scheduler/sched-design-CFS.rst
 \item \texttt{sched\_min\_granularity\_ns}
 
-Ez a változó gyakorlatilag nagy processz szám esetén próbál meg egy elegendő minimális időszeletet biztosítani a processzek számára. Emiatt feltételezhetjük azt is, hogy végtelen processz szám esetén is, legalább egy milliszekundumot.
-Amikor a processzek száma nagyobb mint az \texttt{nr\_latency}, a \texttt{period} megegyezik \texttt{sched\_min\_granularity\_ns} és a fair runqueue-ban lévő processzek szorzatával, ami látható az alábbi kódrészletben is.
-\begin{cpp}
-static u64 __sched_period(unsigned long nr_running)
-{
-    if (unlikely(nr_running > sched_nr_latency))
-        return nr_running * sysctl_sched_min_granularity;
-    else
-        return sysctl_sched_latency;
-}
-\end{cpp}
+Ez a változó gyakorlatilag nagy processz szám esetén próbál meg egy minimális időszeletet biztosítani a processzek számára. Emiatt feltételezhetjük azt is, hogy végtelen processz szám esetén is, legalább egy milliszekundumot futással tölthet minden folyamat.
 
 \item \texttt{sched\_wakeup\_granularity\_ns}
 
-Ez az opció késlelteti a preempció hatásait és csökkenti a túlütemezést.
+Ez az a minimális idő amelynek el kell telnie, mielőtt a CFS ütemező fontolóra veszi, hogy egy nagyobb \texttt{vruntime} értékkel rendelkező futtatható állapotú folyamattal leváltja, a jelenleg végrehajtás alatt álló taszkot.
+Ez az opció késlelteti a preempció hatásait és csökkenti a túlütemezést. 
 
 \item \texttt{sched\_tunable\_scaling}
 
@@ -211,7 +203,8 @@ Lineáris módosítás, $*ncpus$.
 \item \texttt{sched\_cfs\_bandwidth\_slice\_us}
 
 A CFS bandwidth control szabályozza a futási idő mennyiségét, amelyet a taszk csoportjának sávszélesség-készletéből helyeznek át runqueue-ba. A kis értékek lehetővé teszik a globális sávszélesség aprólékos megosztását a folyamatok között, a nagyobb értékek csökkentik az átviteli költségeket.
-%https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/fair.c
+
+%TODO refrencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/fair.c
 \item \texttt{sched\_child\_runs\_first}
 
 Egy fork rendszerhívás után, a gyerek processz kezd el futni ha ennek a paraméternek az értéke egyre van állítva. Nulla esetén (ami az alapértelmezett beállítás) a szülő processz próbál meg először futni, de előfordulhat, hogy nem sikerül neki.
@@ -219,7 +212,7 @@ Egy fork rendszerhívás után, a gyerek processz kezd el futni ha ennek a param
 \item \texttt{sched\_migration\_cost\_ns}
 
 Az utolsó végrehajtás után eltelt idő, ameddig a feladatot „gyorsítótár-frissnek” tekintik.
-Egy ilyen friss taszk-nál kevésbé valószínű hogy az ütemező átvinné egy másik CPU-ra, szóval a változó értékének növelése, csökkenti ezt az esélyt.
+Egy ilyen friss taszk-nál kevésbé valószínű, hogy az ütemező átvinné egy másik CPU-ra, szóval a változó értékének növelése, csökkenti ezt az esélyt.
 
 \item \texttt{sched\_nr\_migrate}
 
@@ -237,6 +230,7 @@ A CFS ütemező ennyi időt vár, mielőtt odaadná a CPU-t valamelyik valós id
 
 Az a maximális processzor idő amit felhasználhat egy valós idejű taszk.
 \end{itemize}
+
 A felsorolt paraméterek közül a \texttt{sched\_latency\_ns}, \texttt{sched\_wakeup\_granularity\_ns} és a \texttt{sched\_wakeup\_granularity\_ns} kap nagyobb figyelmet a dolgozatban. Ezek mellett még a processzek prioritási szintjét fogom módosítani, amivel a vruntime számításnál találkozhatunk.
 Az utolsó változó pedig a \texttt{vm.swappiness}, amit szintén elérhetünk a \textit{sysctl} interfész segítségével. 
 
@@ -244,6 +238,7 @@ A \texttt{vm.swappiness} egy hangolható kernelparaméter, amely szabályozza, h
 
 A módosítások hatásait benchmark programokkal tervezem mérni, amelyhez a PTS programot fogom felhasználni. Mivel különböző felhasználási módokra tervezem az optimalizálást, így az \texttt{openbenchmarking.org} oldaláról minden kategóriából választottam egy tesztet. 
 Teszt választásnál fő szempont volt a gyors lefutási idő, a teszt müködése, és hogy milyen konfigurációs beállítások elérhetők hozzá. Annak érkében, hogy pontos mérést végezzek a tesztekkel, célszerűnek tartottam azt, hogy minden változó módosításnál több mintát is vegyek.
+
 Mivel kézzel a tesztek indítása és a paraméterek megváltoztatása egyesével elég hosszadalmas lenne, így készítettem erre egy programot.
 
 \Section{A \textit{Parameter-test} program}
@@ -322,6 +317,7 @@ A program célja hogy, a \textit{parameter-test} program által készített JSON
 A program \textit{Jupyter} munkafüzetként készült, emiatt a fájlok \texttt{.ipynb} kiterjesztésüek. Kihasználva a notebook által készíthető cellákat, a legtöbb kódrészlet mellé készítettem leírásokat, úgy gondolom hogy egyszerűbben megérthetők ezekkel, az egyes kódrészletek.
 %a programokat kategóriákba sorolom
 A benchmark program által készített eredmények tesztenként eltérőek, ami főként a különböző felhasználási módból következik. Ezeket az értékeket normalizálnom kell először, mielőtt felhasználnám a model betanításánál. Ehhez \textit{feature scaling}-et alkalmaztam, ami azt jelenti hogy abban az esetben amikor a teszt értékek közül a kisebb érték számít jobbnak a következő képletet használom fel:
+
 \begin{equation}
 x = \frac{max-x}{max-min}.
 \end{equation}
@@ -342,7 +338,7 @@ A program első lépései, a JSON fájlok megnyitása, az értékeken történő
     60 < x& < 80 &: 3 \\
     80 < x& < 100&: 4
 \end{alignat*}
-
+A legrosszabb értékek kategóriája gyakorlatilag $floor(x / 20)$ formában is számítható.
 % TODO: Jó így táblázatos formában. Lehet esetleg említeni, hogy floor(x / 20) formában is számolható.
 
 \item \textit{serverWorkload}
@@ -356,6 +352,7 @@ Minden olyan mérési eredményt, amelynél nem fordult elő swap memória haszn
 \item \textit{batchProcess}
 
 Batch processzek, nem szükséges nagy prioritást állítani, kevesebbszer kerülnek végrehajtásra, viszont ekkor nagyobb időszeletet is kaphatnak. Emiatt hogyha egy processz prioritása nagyobb mint nulla, \textit{batchProcess} kategóriába kerül.
+
 \end{itemize}
 
 A felsorolt kategóriák, fontos részét képezik az adathalmaznak amit kialakítottam. Ebbe az adathalmazba szintén beletartoznak a benchmarkokból származó eredmények, amik átestek a feature scaling-en, illetve a hozzá tartozó kernel változók. Az adathalmazból egy \texttt{DataFrame}-et készítettem, a \textit{Pandas} modul segítségével. Ezáltal egyszerűen átláthatom, lekérdezhezhetek belőle részeket, és ábrázolhatom az adatokat.
@@ -426,7 +423,7 @@ Ezután pedig ismételten előre iterálunk, az új súly értékeket felhaszná
 A rejtett rétegben elhelyezkedő neuronok számának meghatározásához nincs semmiféle varázsképlet, azonban találtam néhány ökölszabályt, amik a következők. 
 %TODO referencia könyvből: Introduction to Neural Networks with Java: page 129
 \begin{itemize}
-\item A rejtett rétegben lévő neuronok száma, a bemeneti és kimeneti rétegek méretei között kell hogy essenek.
+\item A rejtett rétegben lévő neuronok száma, a bemeneti és kimeneti rétegek méretei között kell, hogy essenek.
 \item A rejtett rétegben lévő neuronok száma, legyen a bemeneti réteg méretének kétharmada, amihez hozzáadjuk a kimeneti réteg méretét.
 \item A rejtett rétegben lévő neuronok száma, legyen kevesebb, mint a bemeneti réteg méretének a kétszerese.
 \end{itemize}
@@ -440,7 +437,25 @@ Az \texttt{sklearn.neural\_network.MLPClassifier} esetén, három választásunk
 \item \textit{L-BFGS}, egy  optimalizáló algoritmus a kvázi Newton-módszerek családjából.
 \end{itemize}
 
-A rejtett réteghez tartozó neuron szám, aktivációs függvény és solver megválasztásához egy grid search technikát alkalmazok.
+A rejtett réteghez tartozó neuron számot, aktivációs függvényt és optimalizálási algoritmust, az adott problémához mérten érdemes megválasztani. A legjobb paraméterek meghatározására készítettem egy halmazt, amibe elhelyeztem az összes aktivációs függvényt, optimalizálási algoritmust és néhány neuron számot, amelyek megfelelők lehetnek a feladat megoldásához.
+
+\begin{python}
+params = {
+            'estimator__activation' : ['identity', 'logistic',
+            			       'tanh', 'relu'],
+            'estimator__solver' : ['lbfgs', 'sgd', 'adam'],
+            'estimator__hidden_layer_sizes': [(1, ),(2, ),(3, ),
+            				      (4, ),(5, ),(6, ),
+            				      (7, ),(8, ),(9, ),
+            				      (10,),(11,),(12,),
+            				      (13,),(14,),(15,),
+            				      (16,),(17,),(18,),
+            				      (19,),(20,),(21,)]
+}
+\end{python}
+
+Erre a \texttt{sklearn.grid\_search.GridSearchCV} függvényt választottam, ami a kapott paraméter készlettel, végig próbálja az összes lehetséges kombinációt, a model betanítására.
+
 %referencia az sklearn GridSearch és Cross Validation-re: https://scikit-learn.org/stable/modules/cross_validation.html
 \begin{figure}[h!]
 \centering
@@ -468,6 +483,7 @@ X = df[["testType","resultClass","batchProcess","serverWorkload","swap"]]
 y = df[["latency","min_gran","wakeup_gran","priority","vm.swappiness"]]
 X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2)
 \end{python}
+
 
 Paraméterként meg kell adjam a használati módokat (\texttt{X}), a hozzátartozó kernel változókat (\texttt{y}) és az tesztelési adathalmaz méretét \%-os formában.
 Az \texttt{X} változó gyakorlatilag egy részlet a \texttt{DataFrame}-ből. %, ami látható a következő kódrészletből.
@@ -507,7 +523,7 @@ A model lementéséhez, többféle lehetőség is rendelkezésre áll. Ehhez a \
 
 Két függvényt alkalmazok.
 \begin{itemize}
-	\item Az első a lementést valósítja meg \texttt{joblib.dump()}, ami paraméterként az elkészített modelt kapja meg és hogy milyen néven mentsük el.
+\item Az első a lementést valósítja meg \texttt{joblib.dump()}, ami paraméterként az elkészített modelt kapja meg és hogy milyen néven mentsük el.
 \item A másik a betöltésért felel, itt egyszerűen csak a fájlnévre hivatkozunk.
 \end{itemize}
 Ahogy látható az alábbi kódrészletből, szintaktikailag sem mondható túl bonyolultnak a használata.
@@ -515,4 +531,47 @@ Ahogy látható az alábbi kódrészletből, szintaktikailag sem mondható túl 
 joblib.dump(model,"model.sav") 
 model = joblib.load("model.sav") 
 \end{python}
+
+A a model hatékonyságának megállapítására, három különböző API is rendelkezésünkre áll.
+Ezek a következő pontokban láthatóak.
+
+%TODO referencia: https://scikit-learn.org/stable/modules/model_evaluation.html
+\begin{enumerate}
+\item Estimator score method
+
+Minden modelhez tartozik egy score metódus, ami egy alapértelmezett kiértékelési módszert alkalmaz a problémára, amit éppen meg szeretnénk oldani. 
+Ez érték függ a probléma méretétől, illetve a megoldást végző model becslési algoritmusától is.
+Amennyiben egy klasszifikációs problémáról van szó és ehhez az \texttt{sklearn.neural\_network.MLPClassifier}-t használjuk, ez egy átlagos pontossági értéket fog visszaadni, amely a teszt adatokból, illetve a hozzá tartozó kimenetből származik. Abban az esetben ha több kimenettel is rendelkezik a model, mivel a minták alapján az összes kimenetet meg kell becsülje a model, ezért itt egy részhalmaz pontosságot fogunk kapunk.
+
+\item Scoring parameter
+
+A model hatékonyságának megállapításához egy kereszt validációs eszköz használunk (Pontosan olyat amit láthattunk korábban a model paramétereinek kereséséhez, amihez a \texttt{sklearn.model\_selection.GridSearchCV} metódust használtam fel.) ami egy belső kiértékelési stratégiát vesz igénybe.
+
+\item Metric functions
+
+Az \texttt{sklearn.metrics} modul a becslési hibák kiértékelését szolgáló függvényeket valósítja meg, előre meghatározott célok szerint.
+Ezeket használjuk klasszifikációs problémáknál, ahol a model egy vagy több kimenettel rendelkezik, regressziós problémáknál és klaszterezésnél is.
+\end{enumerate}
+
+A felsoroltak közül a saját problémámhoz mérten, az utóbbit választottam.
+Az \texttt{sklearn.metrics} modulban több függvény is elérhető a teljesítmény mérésére, amelyeknél, mindig a nagyobb visszatérési érték jelöli a jobb eredményt.
+Először becsléseket kellett végeznem a tanító, illetve a validációs mintákon.
+
+\begin{python}
+predictions = model.predict(X_train)
+\end{python}
+
+Ebből a kódrészből láthatjuk, hogy ezt a modelhez tartozó predict függvénnyel lehet végrehajtani. Paraméterként a felhasználási módokat adom át, ez alapján készítek becsléseket a kernel változók és prioritás értékeire. Az így kapott javaslatok és a tényleges felhasználási módok alapján ellenörizhetjük a becslés helyességét. Az értékek ezáltal átalakíthatók bináris formába, egyessel jelölve a helyeset és nullával a helytelent. Ezt az ellenörzést el kell végezzük az összes tanító, illetve validációs mintán.
+Ezáltal eljutottunk a megfelelő formához és kezdhetjük a tanítás hatékonyságának megállapítását.
+A \texttt{sklearn.metrics} modulból az \texttt{accuracy\_score} függvényt választottam, ami gyakorlatilag megegyezik Jaccard index-el.
+%TODO referencia a képletre: https://en.wikipedia.org/wiki/Jaccard_index
+
+A Jaccard index képlete a következő.
+\begin{equation}
+J(A,B) = \frac{|A \cap B|}{|A \cup B|} = \frac{|A \cap B|}{|A| + |B| - |A \cap B|}
+\end{equation}
+
+Két fontos paramétert kell átadnunk a függvénynek, ezek a becsült változók értékei és az elvárt értékek.
+A model 70,9\%-os hatékonyságot ért el a tanító mintákon, ami szerintem elfogadható eredmény, tekintve azt hogy több féle használati módot is próbál figyelembe venni, viszonlyag kevés intervallum szétbontással és mintaszámmal. A későbbiekben úgygondolom érdemes lehet a tesztek futtatása mellett egy erőforrás monitort is alkalmazni(Ami bizonyos időközönként, lementi az adott erőforrás használat állapotot), így a különböző felhasználási módok mégjobban elkülöníthetők lennének egymástól.
+A validációs mintákon is kipróbáltam a modelt, itt 73,1\%-os hatékonyságot ért el a becslésekkel, így tanító mintákhoz képest javulás észlelhető.
 A modell, a teszteredmények és az elkészült programok, mind megtalálhatók a mellékletben és GitHub-on egy publikusan elérhető repozitóriumban.

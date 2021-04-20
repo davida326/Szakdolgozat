@@ -4,6 +4,7 @@
 \Section{Az ütemezési probléma}
 %TODO referencia könyvből: Mastering Linux Kernel Development: A kernel developer's reference manual
 
+%https://users.iit.uni-miskolc.hu/~vinczed/ldapauth/osbsc2019/Operacios-rendszerek-jegyzet.pdf
 Minden operációs rendszer hatékonysága arányos azzal a képességével, amely a processzek igazságosnak tekinthető (\textit{fair}) ütemezését végzi. A processz ütemező, a kernel központi eleme, ő az aki eldönti, hogy mikor és mennyi időre birtokolhatja egy folyamat a processzort. Ideális esetben, a processzeknek időszeletekre van szükségük a futáshoz, az ütemezőknek lényegében a processzor időszeleteit kell tisztességesen felosztaniuk a folyamatok között.
 
 Egy ütemező algoritmusnak többek között a következőkben felsorolt kritériumokat kell teljesíteniük.
@@ -11,8 +12,7 @@ Egy ütemező algoritmusnak többek között a következőkben felsorolt kritér
 	\item Pártatlanság: minden folyamat (processz, taszk, job) korrekt módon (nem feltétlenül egyenrangúan) kapjon CPU-t.
 	\item Hatékonyság: a CPU lehetőleg a legnagyobb százalékban legyen kihasználva a hasznos számításokra nézve.
 	\item Válaszidő: az interaktív felhasználóknak a válaszidőt minimalizálják, (ne vesszék el türelmüket, hiszen a "vakon" nyomogatott gombok tovább lassíthatnak).
-	\item Fordulási idő (\textit{turnaround time}): a kötegelt munkák (job) fordulási idejét minimalizálni
-kell.
+	\item Fordulási idő (\textit{turnaround time}): a kötegelt munkák (job) fordulási idejét minimalizálni kell.
 	\item Teljesítmény: az időegységre eső job-feldolgozás, interaktív munka maximalizálása.
 (Lássuk be, ez különbözik a fent említett hatékonyságtól.)
 \end{itemize}
@@ -37,6 +37,7 @@ Egy futási sort (\textit{runqueue}-t) használt, hogyha a processzek száma kev
 Az $\mathcal{O}(n)$ ütemező különféle problémái miatt, leváltotta az $\mathcal{O}(1)$ ütemező, amit a Linux kernel 2.6 verziójától, 2.6.22 verzióig használták. 
 Konstans idő alatt választott következő processzt futásra, emiatt nagy processz szám mellett is használható volt.
 A folyamatokat, két részre osztotta: Real-time illetve normál processzekre. A valós idejű processzek 0-99-ig kapnak prioritási szinteket, amíg a normál processzek (Batch vagy interactive) 100-139-ig. Itt a 100-as prioritás jelöli a legfontosabb processzt, amíg a 139 a legkevésbé fontosat. Normál processzekhez egy alapértelmezett 120-as statikus prioritást rendeltek. 
+
 %TODO referencia: http://www.cse.iitm.ac.in/~chester/courses/16o_os/slides/7_Scheduling.pdf
 %TODO referencia: https://www.researchgate.net/publication/4376448_Fairness_and_interactive_performance_of_O1_and_CFS_Linux_kernel_schedulers
 
@@ -54,7 +55,10 @@ Processzoronként, két listát tart nyilván, amiben tárolódnak a futásra k�
 Mindig az aktív listából választja ki a legfontosabb processzt futásra. Miután futott egy időszeletnyit, ez a processz, átkerül az expired run queue-ba, egy új dinamikusan számolt prioritással.
 Emiatt, ahogy haladunk előre az időben az \textit{Active run queue}-ból folyamatosan fogynak el a processzek.  Amikor az \textit{Active run queue} végzett a processzekkel, a két lista felcserélődik és folyatatódik a végrehajtás az új listával.
 Annak érdekében, hogy meg lehessen különböztetni a batch és az interactive processzeket, egy úgynevezett "bonus" valtozót tartunk nyilván, ami a dinamikus prioritás számításnál fog előkerülni. Ennek az értéke 0 és 10 között mozoghat.
-% TODO: A bonus változó egész érték?
+
+% TODO: A bonus változó egész érték? 
+% TODO: David: Igen, a bonus változó egész érték.
+
 \begin{cpp}
 dynamic priority = MAX(100, MIN(static priority - bonus + 5, 139))
 \end{cpp}
@@ -67,6 +71,9 @@ Amikor az input beérkezik, gyorsan reagálniuk kell, ellenkező esetben a felha
 Az interactive processzek általában nem fejezik be az időszeletüket amit kapnak, ezért nekik nagyobb időszeletet kell biztosítani.
 \end{itemize}
 % TODO: Az utolsó megjegyzés hogy következik? (Nem feltétlenül rossz, csak nem pontosan értem.)
+% TODO:- Az utolsó megjegyzésben azt szerettem volna leírni, hogy az interaktív processzek általában, kisebb részeket töltenek CPU idővel(amikor folyamatosan instrukciókat hajtanak végre) és az idő nagyobb részében I/O ra várakoznak.
+% Annak érdekében hogy ezeket a kis CPU-s sorozatokat egyben befejezzék, nagy időszeletet próbál biztosítani számukra, ez az ütemező.
+% Ez itt a következő {cpp}-s részben is látszik, hogy a 120-as prioritásnál kisebb értékkel rendelkező processzeket(akik nagyon fontosak) nevezzük interaktívnak és nekik az időszeletüket, egy nagyobb szorzóval látjuk el. Ezt az időszeletet valószínűleg nem fogják kihasználni, csak biztosítani szeretnénk számukra hogy a CPUs életidejüket teljesen befejezzék és utána, önmaguktól úgyis lemondanak majd a processzorról. 
 
 Az időszelet meghatározása úgy történik, hogy amelyik processz kevesebb mint 120-as prioritással rendelkezik, nagyobb időszeletet kap, 120-nál nagyobb prioritású processzek pedig kevesebbet. A számítás Python forráskód formájában a következőképpen szemléltethető
 \begin{python}
@@ -105,6 +112,7 @@ A Linux ütemező moduláris, emiatt lehetővé teszi, hogy különböző algori
 Ez a modell lehetővé teszi, hogy a \textit{Generic Scheduler} elvont maradjon minden ütemező osztály megvalósítási részleteitől. Így a normál processzek ütemezéséért, az egyik ütemező osztály felel, amíg determinisztikus végrehajtást igénylő processzekért, mint a valós idejű folyamatok, egy másik osztály. Ez az architechtúra lehetővé teszi azt is hogy, akár új ütemező osztályt vezessünk be.
 
 A \textit{Generic Scheduler} egy absztrakt interfészt definiál a (\texttt{/kernel/sched/sched.h}-ban lévő) \texttt{sched\_class} struktúrán keresztül. A működés megértéséhez egyszerűbb és pontosabb közvetlenül az implementációt tekinteni.
+
 %TODO referencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/sched.h#L1743
 \begin{cpp}
 struct sched_class {
@@ -195,6 +203,7 @@ A következő kódrészletek megmutatják, hogy az osztályok külön-külön ho
 
 %TODO referencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/fair.c#L11126
 Completely Fair Scheduler ütemezési osztályhoz tartozó fontosabb mezők az alábbiak (\texttt{/kernel/sched/fair.c}):
+
 \begin{cpp}
 const struct sched_class fair_sched_class = {
 	.next			= &idle_sched_class,
@@ -214,6 +223,7 @@ const struct sched_class fair_sched_class = {
 
 %TODO referencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/rt.c#L24321
 A Real-time Scheduler ütemezési osztály esetében (\texttt{/kernel/sched/rt.c}):
+
 \begin{cpp}
 const struct sched_class rt_sched_class = {
 	.next			= &fair_sched_class,
@@ -232,6 +242,7 @@ const struct sched_class rt_sched_class = {
 
 %TODO referencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/deadline.c#L2433
 A Deadline Scheduler esetén (\texttt{/kernel/sched/deadline.c}):
+
 \begin{cpp}
 const struct sched_class dl_sched_class = {
 	.next			= &rt_sched_class,
@@ -253,19 +264,25 @@ const struct sched_class dl_sched_class = {
 \SubSection{Ütemezési politikák}
 
 A CFS osztály három ütemezési politikát (\textit{Scheduling policy}-t) implementál.
-\begin{itemize}
-	\item SCHED\_OTHER (tradicionálisan  SCHED\_NORMAL) - Alapértelmezett ütemezési algoritmus, amit a normál processzek nagytöbbsége is használ.
+\begin{itemize}	
+    \item SCHED\_OTHER (tradicionálisan  SCHED\_NORMAL) - Alapértelmezett ütemezési algoritmus, amit a normál processzek nagytöbbsége is használ.
 
     \item SCHED\_BATCH - Közel sem hajt végre olyan sok preempciót mint az átlagos taszkok, ezáltal lehetővé téve azt, hogy a taszkok tovább fussanak, de ennek az ára az interaktivitás csökkenése.
         
-	\item SCHED\_IDLE - Ezt az ütemezési politikát, kis intenzitású processzek esetén használják. Ezzel még a nice $+19$-től kisebb prioritást szabhatunk a processzünknek.
+	  \item \texttt{SCHED\_IDLE} - Ezt az ütemezési politikát, kis intenzitású processzek esetén használják. Ezzel még a \texttt{nice} $+19$-től kisebb prioritást szabhatunk a processzünknek.
 \end{itemize}
-A valós idejű ütemezési osztály implementálja a SCHED\_FIFO és SCHED\_RR politikákat, ezek a POSIX által lettek meghatározva.
+A valós idejű ütemezési osztály implementálja a \texttt{SCHED\_FIFO} és \texttt{SCHED\_RR} politikákat, ezek a POSIX által lettek meghatározva.
 \begin{itemize}
 	\item SCHED\_FIFO - Időkritikus, valós idejű processzek ütemezésénél használják. A nevében is benne van, FIFO jellegű azaz First-In First-Out, az elsőnek érkezett processz kerül először kiszolgálásra. 
-	\item SCHED\_RR - SCHED\_FIFO-hoz hasonló, szintén valós idejű processzekhez használják. A Kerge Rigó (\textit{Round Robin}) ütemezési algoritmust használja.
+	\item SCHED\_RR - SCHED\_FIFO-hoz hasonló, szintén valós idejű processzekhez használják. A \textit{Round Robin} ütemezési algoritmust használja.
 \end{itemize}
 % TODO: Tényleg használják "Kerge Rigó" néven? :)
+% TODO:-Nem igazán használják és nem is szokták fordítani magyarra.
+% Ennek ellenére ez a fordítás megragadt bennem és amikor ezt a részt írtam elfelejtettem hogy nem kellene így írnom, viszont most kijavítottam a normális változatra.
+% TODO: Dr. Vadász Dénes Operációs rendszerek jegyzetében olvastam ezt először, 
+% "2.4.6. Roud-Robin scheduling
+% Egyszerű, korrekt, széleskörben használható, könnyen megvalósítható, elég régi algoritmus
+% ez. Nem szokták magyarra fordítani az elnevezést: elég furcsa lenne a kerge-rigó név!"
 
 A SCHED\_DEADLINE politika, a \texttt{sched\_dl} ütemezési osztályban található. Az EDF (\textit{Earliest Deadline First}) ütemezési algoritmus az implementációja.
 
@@ -323,8 +340,8 @@ pid 31475 current scheduling priority: 0
 \begin{python}
 $ chrt -rr -p 99 31475
 $ chrt -p 31475
-pid 31475 current scheduling policy: SCHED_RR
-pid 31475 current scheduling priority: 99
+\texttt{pid} 31475 current scheduling policy: \texttt{SCHED_RR}
+\texttt{pid} 31475 current scheduling priority: 99
 \end{python}%$
 
 Valós idejű (Real-time) processzek esetén, a prioritási szintjeik ellentétesek a normál processzekéhez képest. A legfontosabb prioritási szint a 99-es és a legkevésbé fontos pedig az 1-es.
@@ -335,9 +352,9 @@ Itt viszont ki kell bővítenünk három paraméterrel a programunkat.
 \begin{itemize}
 \item Runtime: A feladatra kijelölt végrehajtási idő.
 \item Deadline: A periódus megkezdése után milyen gyorsan kell elindítani a futási időt.
-\item Period:  Milyen gyakran hajtják végre a futási időt.
+\item Period:  Milyen gyakran kerül végrehajtásra.
 \end{itemize}
-% TODO: A futási idő indítása kicsit furcsán hangzik itt.
+
 A kernel megköveteli, hogy a következők igazak legyenek:
 \[
 \text{RUNTIME} \leq \text{DEADLINE} \leq \text{PERIOD}.
@@ -350,8 +367,8 @@ Bármelyik paraméter elhagyása az alábbiakat eredményezi.
 \end{itemize}
 \noindent Ezzel a három plusz paraméterrel, így néz ki a \texttt{chrt} program paraméterezése:
 \begin{python} 
-$ sudo chrt -d --sched-runtime 1000000 --sched-deadline 5000000 
-		--sched-period 5000000 0 ./test
+$ sudo chrt -d --sched-runtime 1ms --sched-deadline 5ms 
+		--sched-period 5ms 0 ./test
 \end{python}%$
 
 % TODO: Itt érdemes a mértékegységet is megadni.
@@ -363,6 +380,7 @@ A \textit{Completely Fair Scheduler} váltotta le a korábbi $\mathcal{O}(1)$ ü
 Az összes dinamikus prioritású folyamatot a CFS osztály kezeli. Általános célú Unix rendszerekben, normál processzekből fordul elő a legtöbb, ebből is következik, hogy a CFS ütemező osztály a legelfoglaltabb.
 A CFS nem támaszkodik a hagyományos időszeletekre a processzor kiosztásakor, hanem inkább a virtuális futásidő (vruntime) fogalmát vezeti be.
 A vruntime változó tárolja el a virtuális futás idejét egy processznek, ami igazából a tényleges futási idő normálizálva, a futtatható processzek darabszámával.
+
 A virtual runtime mértékegysége a nanoszekundum ($10^{-9}$ másodperc).
 A virtual runtime segítségével szeretnénk megközelíteni az ideális multitasking processzort, amit a CFS próbál modellezni. Egy egyszerű szabályt követ az algoritmus, ami pedig az, hogy mindig válassza a legkisebb vruntime-al rendelkező taszkot. A CFS egy piros-fekete fát használ, a listában lévő futtatható taskok kezelésére, hogy egyszerűen megtalálhassa a legkisebb vruntime-mal rendelkező taskot.
 A piros-fekete fa, amelyet a Linux kernel esetében \texttt{rbtree}-nek hívnak, egy saját magát kiegyensúlyozó bináris fa.
@@ -377,6 +395,7 @@ A balszélső csomópontban mindig az a taszk található, amelyik a legkevesebb
 \end{figure}
 
 \noindent A piros-fekete fák önkiegyensúlyozók maradnak azáltal hogy, betartják az alábbi öt tulajdonságot.
+
 \begin{enumerate}
 	\item Egy csúcs vagy fekete vagy piros.
 	\item A fa gyökere fekete.
@@ -438,8 +457,8 @@ const struct sched_class fair_sched_class = {
 };
 \end{cpp}
 
-A vruntime váltózó értékének kiszámításához, a CFS nem csak a nice értéket használja fel hanem a process load weight változóját is. A nice értékben történő lépegetés egyesével felfelé, minusz 10\% CPU időszeletet fog eredményezni, és minden lépés lefelé pedig plusz 10\%-ot. 
-A processz load weight változójának kiszámolásához a kernel fenttart egy tömböt amit \textit{sched\_prio\_to\_weight}-nek neveztek el. Itt megtalálható hogy melyik nice értékhez, milyen súly érték tartozik.
+A \texttt{vruntime} váltózó értékének kiszámításához, a CFS nem csak a \texttt{nice} értéket használja fel hanem a process load weight változóját is. A \texttt{nice} értékben történő lépegetés egyesével felfelé, minusz 10\% CPU időszeletet fog eredményezni, és minden lépés lefelé pedig plusz 10\%-ot. 
+A processz load weight változójának kiszámolásához a kernel fenttart egy tömböt amit \textit{sched\_prio\_to\_weight}-nek neveztek el. Itt megtalálható, hogy melyik \texttt{nice} értékhez, milyen súly érték tartozik.
 %TODO referencia a forráskódból: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/core.c#L8182
 \begin{cpp}
 const int sched_prio_to_weight[40] = {
@@ -454,50 +473,94 @@ const int sched_prio_to_weight[40] = {
 };
 \end{cpp}
 
-% TODO: Érdekes lehet megindokolni, hogy miért pont ezek az értékek vannak benne.
+A \texttt{nice} szintek multiplikatívak, minden egyes \texttt{nice} érték módosulás, egy 10\%-os változást fog eredményezni. Ez azt jelenti, hogy amikor egy CPU intenzív folyamat \texttt{nice} szintje nulláról, egyre változik, a neki járó CPU idő körülbelül 10\%-al növekszik.
+Ez a 10\%-os effekt ugyanúgy érvényes a \texttt{nice} érték csökkénésére is, viszont ekkor 10\%-al kevesebb CPU időt fog kapni, az adott processz.
+Ehhez egy 1.25 hatvány alapot használ, így ha egy taszk +10\%-ot kap és egy másik -10\%-ot, a kettő között a relatív távolság körülbelül 25\%.
+A \texttt{sched\_prio\_to\_weight} tömb értékei kicsit eltérnek a kezdetleges változatától, amelyben az értékek még nagyon közel álltak azokhoz az eredményekhez, amelyeket megkaphatunk a következő kisebb képlet segítségével.
 
-\noindent Ez a súly változó, a processz struktúrában \textit{struct load\_weight load}-ként szerepel.
+\begin{equation}
+\frac{1024}{(1.25)^{nice}}
+\end{equation}
 
-Egy processz vruntime változó értékét a futással töltött idejéből(\texttt{delta\_exec}), processz súlyából(\texttt{se->load}), illetve a nice értékéből (\texttt{NICE\_0\_LOAD}) kapjuk meg, felhasználva a \texttt{vruntime} előző értékét.
-%\begin{equation} \label{eq:2}
-%vruntime += \frac{delta\_exec}{se->load}*NICE\_0\_LOAD
-%\end{equation}
-\begin{cpp}
-vruntime += (delta_exec / se->load) * NICE_0_LOAD
+Ez a tömb még 2007-ben lett lecserélve a jelenlegi változatra. 
+Megfigyelhető az is, hogyha a képletbe behelyettesítünk, nem kapunk pontos értékeket, ezért az új változatnál, bevezetésre került egy delta, így a legrosszabb esetben a numerikus hiba kisebb, mint $\frac{1}{100000000}$.
+
+A súly változó, a processz struktúrában \textit{struct load\_weight load}-ként szerepel.
+Egy processz \texttt{vruntime} értékét úgy kapjuk meg, hogy a futással töltött idejét (\textit{delta\_exec}) el osztjuk, a processz súlyával (\textit{se->load}), majd ezt beszorozzuk a hozzátartozó \texttt{nice} értékkel (\textit{NICE\_0\_LOAD}).
+\begin{cpp} 
+static void update_curr(struct cfs_rq *cfs_rq)
+{
+	...
+
+	curr->vruntime += calc_delta_fair(delta_exec, curr);
+
+	...
+}
+static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
+{
+	if (unlikely(se->load.weight != NICE_0_LOAD))
+		delta = __calc_delta(delta, NICE_0_LOAD, &se->load);
+
+	return delta;
+}
 \end{cpp}
 
-Láthattuk, hogy hogyan történik a processzek megválasztása a CFS ütemezőben, de azt még nem, hogy mennyi ideig futhatnak.
-Ez az úgynevezett időszelet itt teljesen dinamikusan számolódik.
+Láthattuk hogyan történik a processzek megválasztása a CFS ütemezőben, de azt még nem, hogy mennyi ideig futhatnak.
+Ez az úgynevezett időszelet, itt teljesen dinamikus számolódik.
 A CFS próbál követni egy modelt, amiben ideális és tökéletes a multitask ütemezés. Ebben a rendszerben, minden processz, $1/n$ részét kapná a processzor erőforrásnak, ahol az $n$ a processzek számát jelöli. 
 Tegyük fel, hogy a van egy processzorunk és négy processzünk.
-Egy általános Unix rendszerben a végrehajtása történhetne úgy, hogy az A process futna 1 ms-t, miután végzett következik a B, szintén fut 1 ms-t és így tovább, egymást követően. A processzor 100\%-ban annak a processznek dolgozott, aki épp végrehajtásban volt.
-Az ideális modellben a négy processz egyszerre futna 4ms-t, a processzor erőforrását pedig felosztanánk négy részre, így mindenki kapna 25\% -ot. Ilyen processzor sajnos nem létezik.
+Egy általános Unix rendszerben a végrehajtása úgy történne, ennek a négy processznek, hogy az A process futna 1 ms-t, miután végzett következik a B, szintén fut 1 ms-t és így tovább, egymást követően. A processzor 100\%-ban annak a processznek dolgozott, aki épp végrehajtásban volt.
+Az ideális modelben a négy processz egyszerre futna 4ms-t, a processzor erőforrását pedig felosztanánk négy részre, így mindenki kapna 25\% -ot. Ilyen processzor sajnos nem létezik.
 
-Az időszelet minden processz számára külön kalkulálódik, az alábbi képlet alapján.
-%\begin{equation}
-%slice = %\frac{se->load.weight}{cfs\_rq->load.weight}*period
-%\end{equation}
+Az időszelet minden processz számára külön kalkulálódik, amit a következő kódrészletből megfigyelhetünk.
+
 \begin{cpp}
-slice = (se->load.weight / cfs_rq->load.weight) * period
+static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
+{
+	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);
+
+	for_each_sched_entity(se) {
+		struct load_weight *load;
+		struct load_weight lw;
+
+		cfs_rq = cfs_rq_of(se);
+		load = &cfs_rq->load;
+
+		if (unlikely(!se->on_rq)) {
+			lw = cfs_rq->load;
+
+			update_load_add(&lw, se->load.weight);
+			load = &lw;
+		}
+		slice = __calc_delta(slice, se->load.weight, load);
+	}
+	return slice;
+}
 \end{cpp}
-ahol \texttt{se->load.weight} az egyes processzek súlyaikat jelölik, \texttt{cfs\_rq->load.weight} pedig a runqueue-ban található összes task súly tényezője. A \texttt{period} nem egy konstans szám, hanem ahhoz képest változik az értéke, hogy mennyi taszk található a runqueue-ban. 
-Az ütemező először megnézi, hogy az alábbi egyenlőtlenség teljesül-e.
-\begin{equation}
-nr\_running > \frac{sysctl\_sched\_latency}{sysctl\_sched\_min\_granularity},
-\end{equation}
-ahol az \textit{nr\_running} jelöli a runqueue-ban található taszkok számát. Ha ez az egyenlőtlenség nem teljesül, az ütemező tudni fogja, hogy túl sok a taszk, ezért hogy mindenkinek biztosítson elegendő időt, egy bizonyos alsó határt fog felhasználni a következőképpen:
-\begin{equation}
-period =  nr\_running \cdot sysctl\_sched\_min\_granularity.
-\end{equation}
-Ez az alsó határ, az úgynevezett \textit{min\_granularity}, az ütemezést ennél kisebb részekre nem érdemes bontani.
+
+A számításához, szükségünk van az aktuális processz súlyára (\texttt{se->load.weight}), amit el kell osztanunk a CFS \texttt{runqueue}-ban található processzek összegzett súlyával(\texttt{cfs\_rq->load.weight}) és ezt pedig be kell szorozzuk a \texttt{sched\_period} változó értékével. Az utóbbi nem egy konstans szám, ahhoz képest változik az értéke, hogy mennyi task található a \texttt{runqueue}-ban. Célja a \texttt{sched\_period}-nak, hogy meghatározzon egy intervallumot, amelyet minden taszk képes lesz egyszer, futással tölteni.
+Ennek az értékét a következő képpen kapjuk meg.
+
+\begin{cpp}
+static u64 __sched_period(unsigned long nr_running)
+{
+	if (unlikely(nr_running > sched_nr_latency))
+		return nr_running * sysctl_sched_min_granularity;
+	else
+		return sysctl_sched_latency;
+}
+\end{cpp}
+
+Az ütemező először megnézi, hogy a \texttt{runqueue}-ban található taszkok számát (\texttt{Ez az nr\_running változó.}). 
+Amennyiben ez az érték nagyobb mint a \texttt{sched\_nr\_latency}, az ütemező tudni fogja, hogy túl sok a taszk, ezért hogy mindenkinek biztosítson elegendő időt, egy bizonyos alsó határt fog felhasználni a következőképpen. Ez az alsó határ, az úgynevezett \textit{min\_granularity}. Kis taszkszám esetén pedig a \texttt{sched\_period} értéke, megegyezik a  \texttt{sysctl\_sched\_latency} értékével.
 
 \SubSection{Csoportos ütemezés}
 
-Annak érdekében, hogy az ütemezés igazságosnak mondható (\textit{fair}) módon történjen, a CFS-t úgy tervezték, hogy minden processz számára garantáljon legalább egy futást a processzoron egy bizonyos időn belül, amit úgy neveznek hogy ütemezési periódus.
-A CFS ezt ütemezési periódus feldarabolja időszeletekre, és ezeket osztja szét a taszkokhoz tartozó szálak között, így próbálja meg elkerülni a kiéhezés problémát.
+Annak érdekében, hogy az ütemezés fair módon történjen, a CFS-t úgy tervezték, hogy minden processz számára garantáljon legalább egy futást a processzoron egy bizonyos időn belül, amit úgy neveznek, hogy ütemezési periódus.
+A CFS ezt ütemezési periódus feldarabolja időszeletekre, és ezeket osztja szét a taszkokhoz tartozó szálak között, így próbálja meg elkerülni a kiéhezés problémát. 
 Tegyük fel, hogy az A taszk tíz szálon szeretne futni, és a B taszk pedig öt szálon. Ekkor a CFS kiosztja az időszeleteket a szálaknak igazságosan, ez pedig ahhoz vezet, hogy az A taszk és a hozzá tartozó szálai több időszeletet kapnak, ez pedig nem igazságos a B processzel szemben.
-Ebből kifolyólag az is megtörténhet, hogyha az A processz még több szálon szeretne futni, így a B processz mindig csak minimális időszeletet fog kapni (ami 1 ms). Annak érdekében, hogy mindenkivel szembe igazságosak legyünk, A és B processzeknek egyforma időszeletet kell adnia az ütemezőnek. Ez azt jelenti, hogy A és B processz 50\%-50\% időszeleteket kapnak, és ezt a részt felosztják a szálak között, tehát az A processznek mind a tíz szála külön-külön 5\%-ot fognak megkapni.
-Annak érdekében hogy, ezt az igazságtalan időszelet kiosztást elkerüljük, a CFS csoportos ütemezést használ. Itt konkrétan a csoport kapja meg a processzor időt, és nem a szálak külön-külön.
+Ebből kifolyólag az is megtörténhet, hogy az A processz még több szálon szeretne futni, így a B processz mindig csak minimális időszeletet fog kapni(Ami 1 ms). Annak érdekében, hogy mindenkivel szembe igazságosak legyünk, A és B processzeknek egyforma időszeletet kell adnia az ütemezőnek. Ez azt jelenti, hogy A és B processz 50\%-50\% időszeleteket kapnak, és ezt a részt felosztják a szálak között, tehát az A processznek mind a tíz szála külön-külön 5\%-ot fognak megkapni.
+Annak érdekében, hogy ezt az igazságtalan időszelet kiosztást elkerüljük, a CFS csoportos ütemezést használ. Itt konkrétan a csoport kapja meg a processzor időt, és nem a szálak külön-külön.
 A CFS taszk csoportok, a \texttt{sched\_entity} strúktúra egy része, és minden csoport megfeleltethető egy ütemezési entitásnak.
 
 \begin{figure}[h!]
@@ -513,6 +576,7 @@ A CFS taszk csoportok, a \texttt{sched\_entity} strúktúra egy része, és mind
 %TODO referencia könyvből: Understanding the Linux Kernel, Third Edition by Daniel P. Bovet and Marco Cesati
 
 Egy modul gyakorlatilag instrukciók sorozata, amit igény szerint, ki- és be lehet tölteni a kernel-be. Kibővíti a kernel funkcionalitását, anélkül hogy újra kelljen indítani a rendszert. Minden magasabb szintű kernel komponenst (mint például fájlrendszerek, I/O eszköz driver, hálózati rétegek) meg lehet írni modulként, és be lehet tölteni a kernel-be.
+
 Az éppen aktuálisan betöltött moduljainkat, le tudjuk kérdezni az \texttt{\# lsmod} paranccsal, ami a \texttt{/proc/modules} fájl tartalmát listázza.
 
 A modulok ELF objektumként tárolódnak a fájlrendszeren, amik a kernelhez vannak linkelve, ezt a linkelést az \texttt{insmod} paranccsal tudjuk elvégezni.
@@ -532,6 +596,7 @@ A 2.3.13.-as kernel verzióban bevezettek egy újítást, ami szerint, mi határ
 %TODO referencia: https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-init-again.html
 
 A \texttt{printk()} függvénynek, nem a felhasználóval történő kommunikáció a fő szerepe (annak ellenére, hogy az aktuálisan ilyen célból került felhasználásra). Ez egy naplózási eszköz (log) a kernel számára, amivel valamilyen fontos információt vagy hibaüzenetet továbbít. Az üzeneteknek, különböző fontossági szintjük van. Ezeket a szinteket hívjuk \texttt{console\_loglevel}-nek, ami egy kernelbeli változó, aminek a szintjeit 0-7-ig a következőket jelentik. 
+
 %TODO referencia: https://www.kernel.org/doc/html/latest/core-api/printk-basics.html
 \begin{enumerate}
 \setcounter{enumi}{-1}
@@ -554,3 +619,29 @@ Ezek a számok, az aktuális, alapértelmezett, minimális és boot-time-default
 
 A kernel modulok fejlesztése, az azzal kapcsolatos tudnivalók a dolgozat szempontjából azért lényegesek, mert ezek segítségével lehet hatékony és elegáns hozzáférést biztosítani az ütemezőhöz.
 A későbbiekben majd látni fogjuk, hogy egy saját fejlesztésű kernel modul segítségével hogyan tudunk az ütemezésre vonatkozó fontos információkat kinyerni a kernelből.
+
+\Section{Rendszert hangoló szolgáltatások}
+
+\SubSection{Tuned}
+Tuned egy rendszer hangoló szolgáltatás amely elérhető GNU/Linux-on.
+A tuned program segítségével, a következő feladatokat végezhetjük el.
+\begin{itemize}
+\item Megfigyelhetjük vele a csatlakoztatott eszközöket, az udev eszközkezelő felhasználásával.
+\item Hangolhatunk a rendszerbeállításainkon, kiválasztott profilok szerint.
+\item Plug-in alapú architektúrájanak köszönhetően, különböző típusú konfigurációs beállításokat módosíthatunk mint például sysctl, sysfs és kernel boot paraméterek.
+\item Támogatja az eszközök gyors csatlakoztatását, és vezérelhető parancssorból vagy a D-Bus-on keresztül, így könnyen integrálhatjuk a meglévő adminisztrációs megoldásokba: például a Cockpit.
+\end{itemize}
+
+A tuned általánosan egy daemon szolgáltatásként működik, azonban létezik egy egyszerű processzként futtatható változata is, ekkor viszont limitáltabb a funkciókészlete.
+A tuned szolgáltatással statikus profilokat alkalmazhatunk, a saját rendszerünkhöz mérten (Készíthetünk saját profilt is).
+Ezeket akár cron segítségével cserélgethetjük bizonyos időközönként.
+Lehetőségünk van még egy dinamikus hangolási mód kiválasztására is, így a tuned szolgáltatás 10 másodpercenként újrahangolja a rendszert.
+
+\SubSection{Tuna}
+
+A tuna egy olyan eszköz, amellyel szabályozhatjuk az egyes ütemezési politikákat, valós idejű prioritásokat és a processzor affinitást. 
+A felhasználók valós időben láthatják, a módosításaik eredményét.
+A tuna programmal lehetőségünk van processzor magok izolációjára, az izolált processzor magokhoz pedig rendelhetünk folyamatokat.
+Grafikus felhasználói felülettel rendelkezik amivel akár megfigyelhetjük a processzor topológiát, ez hasznos lehet problémák kiszűrése esetén.
+Folyamatok hangolása a tradicionális GNU/Linux eszközökkel egyesek szerint ijesztő és bonyolult lehet, nekik ajánlott a tuna program használata. A tuna lecsökkenti a komplexitást és egy stabil eszközt biztosít számukra is, amelyet kezelhetnek parancssorból vagy a grafikus felhasználói felület használatával.
+
