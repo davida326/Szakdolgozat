@@ -1,4 +1,5 @@
 \Chapter{Processz ütemezés}
+\label{ch:scheduling}
 
 \Section{Az ütemezési probléma}
 %TODO referencia könyvből: Mastering Linux Kernel Development: A kernel developer's reference manual
@@ -67,13 +68,14 @@ Az interactive processzek általában nem fejezik be az időszeletüket amit kap
 \end{itemize}
 % TODO: Az utolsó megjegyzés hogy következik? (Nem feltétlenül rossz, csak nem pontosan értem.)
 
-Az időszelet meghatározása úgy történik, hogy amelyik processz kevesebb mint 120-as prioritással rendelkezik, nagyobb időszeletet kap, 120-nál nagyobb prioritású processzek pedig kevesebbet.
-\begin{cpp}
+Az időszelet meghatározása úgy történik, hogy amelyik processz kevesebb mint 120-as prioritással rendelkezik, nagyobb időszeletet kap, 120-nál nagyobb prioritású processzek pedig kevesebbet. A számítás Python forráskód formájában a következőképpen szemléltethető
+\begin{python}
 if priority < 120:
-    time slice = (140 - priority) * 20 milliseconds 
+    time_slice = (140 - priority) * 20
 else
-    time slice = (140 - priority) * 5 milliseconds 
-\end{cpp}
+    time_slice = (140 - priority) * 5
+\end{python}
+ahol az időszelet (\texttt{time\_slice}) értéke ezredmásodpercben van megadva.
 
 %TODO referencia: http://www.cse.iitm.ac.in/~chester/courses/16o_os/slides/7_Scheduling.pdf
 %TODO referencia: https://doc.opensuse.org/documentation/leap/tuning/html/book-sle-tuning/cha-tuning-taskscheduler.html#sec-tuning-taskscheduler-cfs
@@ -102,7 +104,7 @@ A Linux ütemező moduláris, emiatt lehetővé teszi, hogy különböző algori
 
 Ez a modell lehetővé teszi, hogy a \textit{Generic Scheduler} elvont maradjon minden ütemező osztály megvalósítási részleteitől. Így a normál processzek ütemezéséért, az egyik ütemező osztály felel, amíg determinisztikus végrehajtást igénylő processzekért, mint a valós idejű folyamatok, egy másik osztály. Ez az architechtúra lehetővé teszi azt is hogy, akár új ütemező osztályt vezessünk be.
 
-A \textit{Generic Scheduler} egy absztrakt interfészt definiál a (\texttt{/kernel/sched/sched.h}-ban lévő) \texttt{sched\_class} struktúrán keresztül:
+A \textit{Generic Scheduler} egy absztrakt interfészt definiál a (\texttt{/kernel/sched/sched.h}-ban lévő) \texttt{sched\_class} struktúrán keresztül. A működés megértéséhez egyszerűbb és pontosabb közvetlenül az implementációt tekinteni.
 %TODO referencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/sched.h#L1743
 \begin{cpp}
 struct sched_class {
@@ -192,7 +194,7 @@ A kernel 5.8.x verziójában, három ütemezési osztály található, név szer
 A következő kódrészletek megmutatják, hogy az osztályok külön-külön hogyan definálják a \texttt{sched\_class} absztrakt struktúrát.
 
 %TODO referencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/fair.c#L11126
-Completely Fair Scheduler ütemezési osztályhoz tartozó fontosabb mezők (\texttt{/kernel/sched/fair.c}):
+Completely Fair Scheduler ütemezési osztályhoz tartozó fontosabb mezők az alábbiak (\texttt{/kernel/sched/fair.c}):
 \begin{cpp}
 const struct sched_class fair_sched_class = {
 	.next			= &idle_sched_class,
@@ -355,6 +357,7 @@ $ sudo chrt -d --sched-runtime 1000000 --sched-deadline 5000000
 % TODO: Itt érdemes a mértékegységet is megadni.
 
 \SubSection{Completely Fair Scheduler}
+\label{sec:cfs}
 
 A \textit{Completely Fair Scheduler} váltotta le a korábbi $\mathcal{O}(1)$ ütemezőt a linux kernel 2.6.23 verzióban.
 Az összes dinamikus prioritású folyamatot a CFS osztály kezeli. Általános célú Unix rendszerekben, normál processzekből fordul elő a legtöbb, ebből is következik, hogy a CFS ütemező osztály a legelfoglaltabb.
@@ -453,46 +456,49 @@ const int sched_prio_to_weight[40] = {
 
 % TODO: Érdekes lehet megindokolni, hogy miért pont ezek az értékek vannak benne.
 
-\noindent Ez súly változó, a processz struktúrában \textit{struct load\_weight load}-ként szerepel
+\noindent Ez a súly változó, a processz struktúrában \textit{struct load\_weight load}-ként szerepel.
 
-Egy processz vruntime változó értékét a futással töltött idejéből(\textit{delta\_exec}), processz súlyából(\textit{se->load}), illetve a nice értékéből (\textit{NICE\_0\_LOAD}) kapjuk meg.
-\begin{equation} \label{eq:2}
-vruntime += \frac{delta\_exec}{se->load}*NICE\_0\_LOAD
-\end{equation}
+Egy processz vruntime változó értékét a futással töltött idejéből(\texttt{delta\_exec}), processz súlyából(\texttt{se->load}), illetve a nice értékéből (\texttt{NICE\_0\_LOAD}) kapjuk meg, felhasználva a \texttt{vruntime} előző értékét.
+%\begin{equation} \label{eq:2}
+%vruntime += \frac{delta\_exec}{se->load}*NICE\_0\_LOAD
+%\end{equation}
+\begin{cpp}
+vruntime += (delta_exec / se->load) * NICE_0_LOAD
+\end{cpp}
 
-Láthattuk hogyan történik a processzek megválasztása a CFS ütemezőben, de azt még nem, hogy mennyi ideig futhatnak.
-Ez az úgynevezett időszelet itt teljesen dinamikus számolódik.
+Láthattuk, hogy hogyan történik a processzek megválasztása a CFS ütemezőben, de azt még nem, hogy mennyi ideig futhatnak.
+Ez az úgynevezett időszelet itt teljesen dinamikusan számolódik.
 A CFS próbál követni egy modelt, amiben ideális és tökéletes a multitask ütemezés. Ebben a rendszerben, minden processz, $1/n$ részét kapná a processzor erőforrásnak, ahol az $n$ a processzek számát jelöli. 
-Tegyük fel hogy a van egy processzorunk és négy processzünk.
-Egy általános Unix rendszerben a végrehajtása úgy történne, ennek a négy processznek hogy az A process futna 1 ms-t, miután végzett következik a B, szintén fut 1 ms-t és így tovább, egymást követően. A processzor 100\%-ban annak a processznek dolgozott, aki épp végrehajtásban volt.
-Az ideális modelben a négy processz egyszerre futna 4ms-t, a processzor erőforrását pedig felosztanánk négy részre, így mindenki kapna 25\% -ot. Ilyen processzor sajnos nem létezik.
-
-% TODO: A jelöléseket majd át kell gondolni, mert a nyíl operátor furcsa kicsit itt.
+Tegyük fel, hogy a van egy processzorunk és négy processzünk.
+Egy általános Unix rendszerben a végrehajtása történhetne úgy, hogy az A process futna 1 ms-t, miután végzett következik a B, szintén fut 1 ms-t és így tovább, egymást követően. A processzor 100\%-ban annak a processznek dolgozott, aki épp végrehajtásban volt.
+Az ideális modellben a négy processz egyszerre futna 4ms-t, a processzor erőforrását pedig felosztanánk négy részre, így mindenki kapna 25\% -ot. Ilyen processzor sajnos nem létezik.
 
 Az időszelet minden processz számára külön kalkulálódik, az alábbi képlet alapján.
-\begin{equation}
-slice = \frac{se->load.weight}{cfs\_rq->load.weight}*period
-\end{equation}
-Ahol se->load.weight az egyes processzek súlyaikat jelölik, cfs\_rq->load.weight pedig a runqueue-ban található összes task súly tényezője. A period nem egy konstans szám, ahhoz képest változik az értéke hogy mennyi task található a runqueue-ban. 
-Az ütemező először megnézi, hogy az alábbi egyenlőtlenség teljesül-e
+%\begin{equation}
+%slice = %\frac{se->load.weight}{cfs\_rq->load.weight}*period
+%\end{equation}
+\begin{cpp}
+slice = (se->load.weight / cfs_rq->load.weight) * period
+\end{cpp}
+ahol \texttt{se->load.weight} az egyes processzek súlyaikat jelölik, \texttt{cfs\_rq->load.weight} pedig a runqueue-ban található összes task súly tényezője. A \texttt{period} nem egy konstans szám, hanem ahhoz képest változik az értéke, hogy mennyi taszk található a runqueue-ban. 
+Az ütemező először megnézi, hogy az alábbi egyenlőtlenség teljesül-e.
 \begin{equation}
 nr\_running > \frac{sysctl\_sched\_latency}{sysctl\_sched\_min\_granularity},
 \end{equation}
-ahol az nr\_running jelöli a runqueue-ban található taszkok számát. Ha ez az egyenlőtlenség nem teljesül, az ütemező tudni fogja, hogy túl sok a taszk, ezért hogy mindenkinek biztosítson elegendő időt, egy bizonyos alsó határt fog felhasználni a következőképpen:
+ahol az \textit{nr\_running} jelöli a runqueue-ban található taszkok számát. Ha ez az egyenlőtlenség nem teljesül, az ütemező tudni fogja, hogy túl sok a taszk, ezért hogy mindenkinek biztosítson elegendő időt, egy bizonyos alsó határt fog felhasználni a következőképpen:
 \begin{equation}
-period =  nr\_running * sysctl\_sched\_min\_granularity.
+period =  nr\_running \cdot sysctl\_sched\_min\_granularity.
 \end{equation}
-Ez az alsó határ, az úgynevezett \textit{min\_granularity}.
-
+Ez az alsó határ, az úgynevezett \textit{min\_granularity}, az ütemezést ennél kisebb részekre nem érdemes bontani.
 
 \SubSection{Csoportos ütemezés}
 
-Annak érdekében, hogy az ütemezés fair módon történjen, a CFS-t úgy tervezték, hogy minden processz számára garantáljon legalább egy futást a processzoron egy bizonyos időn belül, amit úgy neveznek hogy ütemezési periódus.
+Annak érdekében, hogy az ütemezés igazságosnak mondható (\textit{fair}) módon történjen, a CFS-t úgy tervezték, hogy minden processz számára garantáljon legalább egy futást a processzoron egy bizonyos időn belül, amit úgy neveznek hogy ütemezési periódus.
 A CFS ezt ütemezési periódus feldarabolja időszeletekre, és ezeket osztja szét a taszkokhoz tartozó szálak között, így próbálja meg elkerülni a kiéhezés problémát.
 Tegyük fel, hogy az A taszk tíz szálon szeretne futni, és a B taszk pedig öt szálon. Ekkor a CFS kiosztja az időszeleteket a szálaknak igazságosan, ez pedig ahhoz vezet, hogy az A taszk és a hozzá tartozó szálai több időszeletet kapnak, ez pedig nem igazságos a B processzel szemben.
 Ebből kifolyólag az is megtörténhet, hogyha az A processz még több szálon szeretne futni, így a B processz mindig csak minimális időszeletet fog kapni (ami 1 ms). Annak érdekében, hogy mindenkivel szembe igazságosak legyünk, A és B processzeknek egyforma időszeletet kell adnia az ütemezőnek. Ez azt jelenti, hogy A és B processz 50\%-50\% időszeleteket kapnak, és ezt a részt felosztják a szálak között, tehát az A processznek mind a tíz szála külön-külön 5\%-ot fognak megkapni.
 Annak érdekében hogy, ezt az igazságtalan időszelet kiosztást elkerüljük, a CFS csoportos ütemezést használ. Itt konkrétan a csoport kapja meg a processzor időt, és nem a szálak külön-külön.
-A CFS taszk csoportok, a sched\_entity strúktúra egy része, és minden csoport megfeleltethető egy ütemezési entitásnak.
+A CFS taszk csoportok, a \texttt{sched\_entity} strúktúra egy része, és minden csoport megfeleltethető egy ütemezési entitásnak.
 
 \begin{figure}[h!]
 \centering
@@ -506,12 +512,12 @@ A CFS taszk csoportok, a sched\_entity strúktúra egy része, és minden csopor
 %TODO referencia könyvből: The Linux Kernel Module Programming Guide. Peter Jay Salzman Michael Burian Ori Pomerantz. Copyright © 2001 Peter Jay Salzman.  
 %TODO referencia könyvből: Understanding the Linux Kernel, Third Edition by Daniel P. Bovet and Marco Cesati
 
-Egy modul gyakorlatilag instrukciók sorozata, amit igény szerint, ki és be lehet tölteni a kernel-be. Kibővíti a kernel funkcionalitását, anélkül hogy újra kelljen indítani a rendszert. Minden magasabb szintű kernel komponenst (mint például fájlrendszerek, I/O eszköz driver, hálózati rétegek) meg lehet írni modulként, és be lehet tölteni a kernel-be.
+Egy modul gyakorlatilag instrukciók sorozata, amit igény szerint, ki- és be lehet tölteni a kernel-be. Kibővíti a kernel funkcionalitását, anélkül hogy újra kelljen indítani a rendszert. Minden magasabb szintű kernel komponenst (mint például fájlrendszerek, I/O eszköz driver, hálózati rétegek) meg lehet írni modulként, és be lehet tölteni a kernel-be.
 Az éppen aktuálisan betöltött moduljainkat, le tudjuk kérdezni az \texttt{\# lsmod} paranccsal, ami a \texttt{/proc/modules} fájl tartalmát listázza.
 
 A modulok ELF objektumként tárolódnak a fájlrendszeren, amik a kernelhez vannak linkelve, ezt a linkelést az \texttt{insmod} paranccsal tudjuk elvégezni.
 A modulok egy duplán láncolt listában tárolódnak.
-Ha ebből a listából el szeretnénk távolítani egy modult(unlink), az \texttt{rmmod} programot használhatjuk, ami a következő műveleteket végzi el:
+Ha ebből a listából el szeretnénk távolítani egy modult (\textit{unlink} művelet), az \texttt{rmmod} programot használhatjuk, ami a következő műveleteket végzi el:
 \begin{enumerate}
 	\item Beolvassa a parancssorból annak a modulnak a nevét, amit el kívánunk távolítani.
 	\item Megnyitja a \texttt{/proc/modules} fájlt és leellenőrzi, hogy a modul, ténylegesen linkelve van-e a listába.
@@ -521,16 +527,16 @@ Ha ebből a listából el szeretnénk távolítani egy modult(unlink), az \textt
 
 Minden kernel modulnak kell hogy legyen legalább két eljárása, az egyik ilyen az \texttt{init\_module()}.
 Ez egy inicializációs eljárás, az \texttt{init\_module()} hívódik meg amikor beszúrjuk a modult az \texttt{insmod} paranccsal.
-A másik a \texttt{cleanup\_module()}, ami pedig az eltávolítás során(\texttt{rmmod}) hívódik meg.
+A másik a \texttt{cleanup\_module()}, ami pedig az eltávolítás során (\texttt{rmmod}) hívódik meg.
 A 2.3.13.-as kernel verzióban bevezettek egy újítást, ami szerint, mi határozhatjuk meg az eljárások neveit. Ehhez használjuk a \texttt{module\_init()} és a \texttt{module\_exit()} makrókat. Tipikusan, az \texttt{init\_module()}-ban írjuk meg a programunkat, ami lehet hogy kicserél egy kernel függvényt a miénkre vagy regisztrál valamilyen kezelőt a kernel-hez. A \texttt{cleanup\_module()}-nak pedig az lenne a feladata, hogy visszavonja a módosításokat, amit az \texttt{init\_module()} elvégzett.
 %TODO referencia: https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-init-again.html
 
-A \texttt{printk()} függvénynek, nem a felhasználóval történő kommunikáció a fő szerepe (annak ellenére, hogy az aktuálisan ilyen célból került felhasználásra). Ez egy naplózási eszköz (log) a kernel számára, amivel valamilyen fontos információt vagy hibaüzenetet továbbít. Az üzeneteknek, különböző fontossági szintjük van. Ezeket a szinteket hívjuk console\_loglevel-nek, ami egy kernelbeli változó, aminek a szintjeit 0-7 ig fogjuk megnézni. 
+A \texttt{printk()} függvénynek, nem a felhasználóval történő kommunikáció a fő szerepe (annak ellenére, hogy az aktuálisan ilyen célból került felhasználásra). Ez egy naplózási eszköz (log) a kernel számára, amivel valamilyen fontos információt vagy hibaüzenetet továbbít. Az üzeneteknek, különböző fontossági szintjük van. Ezeket a szinteket hívjuk \texttt{console\_loglevel}-nek, ami egy kernelbeli változó, aminek a szintjeit 0-7-ig a következőket jelentik. 
 %TODO referencia: https://www.kernel.org/doc/html/latest/core-api/printk-basics.html
 \begin{enumerate}
 \setcounter{enumi}{-1}
 	\item KERN\_EMERG \- A rendszerünk már használhatatlan állapotba került.
-	\item KERN\_ALERT \- Az adódott problémákról, gondoskodnunk kell.
+	\item KERN\_ALERT \- Problémák adódtak, amelyek megoldásáról gondoskodnunk kell.
 	\item KERN\_CRIT \- Kritikus események jelentkeztek.
 	\item KERN\_ERR \- Nem kritikus hibák jelzése.
 	\item KERN\_WARNING	\- Figyelmeztetések, amikre oda kell figyeljünk.
@@ -546,7 +552,5 @@ $ cat /proc/sys/kernel/printk
 %$
 Ezek a számok, az aktuális, alapértelmezett, minimális és boot-time-default log szinteket mutatják.
 
-
-
-
-
+A kernel modulok fejlesztése, az azzal kapcsolatos tudnivalók a dolgozat szempontjából azért lényegesek, mert ezek segítségével lehet hatékony és elegáns hozzáférést biztosítani az ütemezőhöz.
+A későbbiekben majd látni fogjuk, hogy egy saját fejlesztésű kernel modul segítségével hogyan tudunk az ütemezésre vonatkozó fontos információkat kinyerni a kernelből.
