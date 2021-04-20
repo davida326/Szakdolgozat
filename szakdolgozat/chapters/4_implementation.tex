@@ -4,7 +4,7 @@
 
 Az optimalizáláshoz szükség van adatokra a processzekről, amelyeket egy kernel modul segítségével könnyedén kinyerhetünk.
 Mint ahogy \aref{ch:scheduling}. fejezetben láthattuk, minden processzhez tartozik egy vruntime változó, ami alapján történik a processzek megválasztása. 
-Kernel modul segítségével a processzek tulajdonságai, mint például a vruntime, prioritás, súly és egyéb információk egyszerűen lekérdezhetők.
+Kernel modul segítségével a processzek tulajdonságai, mint például a \texttt{vruntime}, prioritás, súly és egyéb információk egyszerűen lekérdezhetők.
 A kernelben processzek egy duplán láncolt listában tárolódnak, amit úgy hívnak hogy \textit{Processz tábla}. Minden egyes elem a listában egy \texttt{task\_struct} típusú processz descriptor, amit a \texttt{<linux/sched.h>}-ban defináltak. Egy processzről minden információ elérhető ezen keresztül.
 
 \begin{figure}[h!]
@@ -27,6 +27,7 @@ for_each_process(p)
         printk(KERN_INFO
         "command: %s, pid:%d, priority: %d, weight: %lu, vruntime: %llu",
         p->comm, p->pid, p->prio, p->se.load.weight, p->se.vruntime);
+
 \end{cpp}
 
 Amennyiben az ütemező módosításokat közvetlenül a kernelben szeretnénk elvégezni, a változtatások után újra kell fordítanunk a kernelt.
@@ -34,7 +35,6 @@ Ez sajnos elég hosszadalmas lehet, emiatt másik megoldást választottam.
 
 \Section{Processzor magok elszigetelése}
 
-% TODO: Itt kicsit hirtelen a váltás az előző részhez képest.
 Szeretnék megemlíteni egy másik optimalizálási lehetőséget, mielőtt a kernel változók módosításába kezdünk. Úgy gondolom, hogy egyszerűen elvégezhető és szép teljesítmény növekedés nyerhető a következő módszerrel.
 %TODO referencia: https://hu.wikipedia.org/wiki/Red_Hat_Enterprise_Linux
 A Red Hat egy nyílt forráskódú szoftverek fejlesztésével foglalkozó vállalat. A Red Hat Enterprise Linux (rövidítve RHEL), a Red Hat által készített, kereskedelmi felhasználásra szánt Linux-disztribúció.
@@ -43,8 +43,7 @@ A Red Hat által kiadott RHEL7 teljesítményre való hangolás útmutatójában
 Ezt főként több CPU maggal rendelkező számítógépek esetén érdemes alkalmazni.
 
 Egy processzor mag izolálást többféleképpen is megvalósíthatunk egy GNU/Linux operációs rendszerben.
-Legegyszerűbben úgy érthetjük el, hogyha a bootolási paramétereket módosítjuk. Például harmadik és a hatodiktól, a nyolcadik processzor magig való, izoláláshoz elegendő csak /etc/default/grub fájlt módosítanunk a következő képpen.
-
+Legegyszerűbben úgy érthetjük el, hogyha a bootolási paramétereket módosítjuk. Például a harmadik és a hatodiktól, a nyolcadik processzor mag izolálásához elegendő csak \texttt{/etc/default/grub} fájlt módosítanunk a következő képpen.
 
 \begin{python}
 GRUB_CMDLINE_LINUX_DEFAULT="isolcpus=2,5-7"
@@ -61,7 +60,6 @@ $ taskset -c 2 phoronix-test-suite benchmark stream
 A taskset programmal izoláció nélküli processzorokhoz is rendelhetünk processzeket, viszont így nem biztos, hogy annyira jelentős lesz a teljesítmény javulás.
 A RedHat útmutatóban olvashatunk egy \texttt{numactl} programról amivel szintén hasonló eredményt érhetünk el, mint a \texttt{taskset} programmal. Itt viszont van egy probléma, mivel amennyiben elszigetelt processzorhoz szeretnénk rendelni processzt, hibát kapunk.
 A \texttt{numactl} program ugyanis más logikát követ, amit láthatunk a következő kódrészletből.
-
 
 \begin{cpp}
 static struct bitmask *
@@ -142,14 +140,13 @@ A sikeres processzor elszigetelést ellenörizhetjük a \texttt{htop} programmal
 \begin{figure}[h!]
 \centering
 \includegraphics[width=\textwidth]{images/tasksetHtop.png}
-\caption{Izolált processzorhoz való processz rendelés}
+\caption{Processz hozzárendelése egy izolált processzorhoz}
 \label{fig:taskset}
 \end{figure}
 
 A másik módszer egy kicsit egyszerűbb, az elszigetelt CPU magokat megtalálhatjük a \texttt{/sys/devices/system/cpu/isolated} fájlban, vagy arra is van lehetőségünk, hogy az ellentétét listázzuk ami a \texttt{/sys/devices/system/cpu/present} fájlban található.
 
 \Section{Ütemező módosítása}
-
 Az alapvető cél a Linux processz ütemező optimalizálása, különféle használati módokra.
 Ennek eléréséhez megtehetem, hogy módosításokat végzek az ütemezőn, amit elvégezhetek úgy hogy, konkrétan a forráskódot írom át, ezután újra lefordítom a kernelt és megfigyelem a módosítások hatásait.
 A probléma, hogy a fejlesztési folyamat így nehézkes lehet, emiatt kerestem más módszereket.
@@ -161,18 +158,19 @@ Az értékek módosítását megadhatjuk direkt:
 \begin{python}
 $ echo $value > /proc/sys/kernel/sched_min_granularity_ns
 \end{python}%$
+
 A másik lehetőség, a \textit{sysctl} interfészen keresztül történő megadás:
 \begin{python}
 $ sudo sysctl -w sched_latency_ns=VALUE
 \end{python}%$
-
 A \textit{sysctl} interfész segítségével lekérdezhetem, módosíthatom a kernel változók aktuális értékeikeit és figyelmeztet arra is, hogy az adott változó értékét ne állítsam az intervallum végpontjain túllépő értékekre.
 Az ütemező használati módokra történő optimalizálási kísérletemben, a \textit{sysctl} interfészen keresztül elérhető változók játszanak fő szerepet. Az ütemezőhöz tartozó változók, amik a \textit{sysctl} segítségével elérhetők a következők.
+
 %https://elixir.bootlin.com/linux/v5.8.5/source/Documentation/scheduler/sched-design-CFS.rst
 \begin{itemize}
 \item \texttt{sched\_latency\_ns}
 
-Ez a paraméter akkor játszik nagy szerepet, hogyha a processzek darabszáma a runqueue-ban, kisebb mint az \texttt{nr\_latency}. Fontos, hogy ez az érték nem összetévesztendő az időszelet méretével mivel, annak a számítását már láthattuk \aref{sec:cfs}. szakaszban. 
+Ez a paraméter akkor játszik nagy szerepet, hogyha a processzek darabszáma a runqueue-ban, kisebb mint az \texttt{nr\_latency}. Fontos, hogy ez az érték nem összetévesztendő az időszelet méretével mivel, annak a számítását már láthattuk a \aref{sec:cfs}. szakaszban. 
 
 \item \texttt{sched\_min\_granularity\_ns}
 
@@ -185,7 +183,7 @@ Ez az opció késlelteti a preempció hatásait és csökkenti a túlütemezést
 
 \item \texttt{sched\_tunable\_scaling}
 
-Ez megadja, hogy a hangoló az ütemező paramétereket milyen mértékben befolyásolhatja. Ehhez három féle opció is rendelkezésre áll.
+Az ütemező hangoló paramétereket milyen mértékben befolyásolhatja, ehhez három féle opció is rendelkezésre áll.
 \begin{enumerate}
 \item \texttt{SCHED\_TUNABLESCALING\_NONE}
 
@@ -193,7 +191,7 @@ Itt nem történik módosítás, marad az eggyel való szorzás.
 \item \texttt{SCHED\_TUNABLESCALING\_LOG}
 
 Logaritmikus módosítás $*1+ilog(ncpus)$
-Ahol az \texttt{ncpus} a cpu-k számát jelöli.
+Ahol az ncpus a cpu-k számát jelöli.
 
 \item \texttt{SCHED\_TUNABLESCALING\_LINEAR}
 
@@ -203,42 +201,35 @@ Lineáris módosítás, $*ncpus$.
 \item \texttt{sched\_cfs\_bandwidth\_slice\_us}
 
 A CFS bandwidth control szabályozza a futási idő mennyiségét, amelyet a taszk csoportjának sávszélesség-készletéből helyeznek át runqueue-ba. A kis értékek lehetővé teszik a globális sávszélesség aprólékos megosztását a folyamatok között, a nagyobb értékek csökkentik az átviteli költségeket.
-
 %TODO refrencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/fair.c
 \item \texttt{sched\_child\_runs\_first}
 
-Egy fork rendszerhívás után, a gyerek processz kezd el futni ha ennek a paraméternek az értéke egyre van állítva. Nulla esetén (ami az alapértelmezett beállítás) a szülő processz próbál meg először futni, de előfordulhat, hogy nem sikerül neki.
+Egy fork rendszerhívás után, a gyerek processz kezd el futni először ha, ennek a paraméternek az értéke egyre van állítva. Nulla esetén (ami az alapértelmezett beállítás) a szülő processz próbál meg először futni, de előfordulhat, hogy nem sikerül neki.
 
 \item \texttt{sched\_migration\_cost\_ns}
 
 Az utolsó végrehajtás után eltelt idő, ameddig a feladatot „gyorsítótár-frissnek” tekintik.
 Egy ilyen friss taszk-nál kevésbé valószínű, hogy az ütemező átvinné egy másik CPU-ra, szóval a változó értékének növelése, csökkenti ezt az esélyt.
-
 \item \texttt{sched\_nr\_migrate}
 
 Az a maximális taszk szám, amit a kiegyensúlyozási eljárás során kezel az ütemező.
-
 \item \texttt{sched\_rr\_timeslice\_ms}
 
 Az időszelet mérete, amit futással tölthet mielőtt preemptálja az ütemező és a taszk lista végére kerül.
-
 \item \texttt{sched\_rt\_period\_us}
 
 A CFS ütemező ennyi időt vár, mielőtt odaadná a CPU-t valamelyik valós idejű taszknak újra.
-
 \item \texttt{sched\_rt\_runtime\_us}
 
 Az a maximális processzor idő amit felhasználhat egy valós idejű taszk.
 \end{itemize}
-
 A felsorolt paraméterek közül a \texttt{sched\_latency\_ns}, \texttt{sched\_wakeup\_granularity\_ns} és a \texttt{sched\_wakeup\_granularity\_ns} kap nagyobb figyelmet a dolgozatban. Ezek mellett még a processzek prioritási szintjét fogom módosítani, amivel a vruntime számításnál találkozhatunk.
 Az utolsó változó pedig a \texttt{vm.swappiness}, amit szintén elérhetünk a \textit{sysctl} interfész segítségével. 
 
 A \texttt{vm.swappiness} egy hangolható kernelparaméter, amely szabályozza, hogy a kernel mennyire kedvez a swap memóriának a RAM felett. A változó intervalluma 0-100 ig terjed, magasabb érték agresszív kilapozást eredményez, amíg a nullánál pedig mondhatni teljesen ki lesz kapcsolva a swap memória használata. Az összes ütemezőhöz kapcsoló hangolható paraméter tesztelése túl sok időt vehet igénybe, feltéve azt, hogy minden beállítással szeretnék futtatni egy tesztet és egyes paraméterek intervallumai sem mondhatók túl kicsinek. Ezért a kiválasztott paramétereim intervallumát négy részre fogom szétszedni, annak érdekében, hogy a tesztek hamarabb lefussanak, így több időt tudok szánni a kapott adatok elemzésére.
 
 A módosítások hatásait benchmark programokkal tervezem mérni, amelyhez a PTS programot fogom felhasználni. Mivel különböző felhasználási módokra tervezem az optimalizálást, így az \texttt{openbenchmarking.org} oldaláról minden kategóriából választottam egy tesztet. 
-Teszt választásnál fő szempont volt a gyors lefutási idő, a teszt müködése, és hogy milyen konfigurációs beállítások elérhetők hozzá. Annak érkében, hogy pontos mérést végezzek a tesztekkel, célszerűnek tartottam azt, hogy minden változó módosításnál több mintát is vegyek.
-
+Teszt választásnál fő szempont volt a gyors lefutási idő, a teszt müködése és hogy milyen konfigurációs beállítások elérhetők hozzá. Annak érkében, hogy pontos mérést végezzek a tesztekkel, célszerűnek tartottam azt, hogy minden változó módosításnál több mintát is vegyek.
 Mivel kézzel a tesztek indítása és a paraméterek megváltoztatása egyesével elég hosszadalmas lenne, így készítettem erre egy programot.
 
 \Section{A \textit{Parameter-test} program}
@@ -247,8 +238,6 @@ A program, C programozási nyelven \texttt{ncurses} és \texttt{xml} library-k h
 A feladata, hogy módosítsa a kernel paramétereket, illetve a prioritást, az adott beállítással elindítson, adott darabszámot a tesztből és az eredményeket lementse, majd ezeket a lépéseket minden iterációban megismételje emberi beavatkozás nélkül.
 
 Azért a C programozási nyelvet válaszotttam a megvalósítására, mert a processz prioritási tulajdonságok, illetve a \textit{sysctl} interfész is egyszerűen kezelhető vele.
-
-A programhoz \texttt{ncurses} függvénykönyvtárat használtam, így kialakíthattam rajta egy menü interfészt, anélkül hogy egy grafikus felületet kellett volna indítanom. Ez azért volt számomra fontos mert, szerettem volna egy szerverhez hasonlítani, ahol nincs féltétlenül szükség grafikus interfészre. Tesztek indítása előtt, ügyeltem arra hogy felesleges processzek ne fussanak a háttérben, illetve újakat addig nem hoztam létre amíg az aktuális teszt be nem fejeződött. Ezzel próbáltam elérni azt, hogy csak paraméter módosítások változtassák a benchmark eredményeimet.
 
 \SubSection{A program felépítése}
 
@@ -269,8 +258,8 @@ Az utóbbi két input átugorható enter megnyomásával, ekkor alapértelmezett
 
 A tesztnév megadásnál fontos a veriószám megadás, mivel a tesztekből újabb változatok kerülnek fel a \texttt{openbenchmark.org}-ra és minden verzióhoz új jegyzéket készít a PTS program a /var/lib/phoronix-test-suite/test-profiles/pts directory-ba.
 Minden teszthez tartozik egy jegyzék, amiben több \texttt{xml} kiterjesztésű fájl is megtalálható, ezek közül fontos kiemelni a \texttt{test-definition.xml}-t amiben a teszthez tartozó konfigurációs beállítások találhatók meg.
-
 A kezdeti paraméterek megadását követően, a teszt előkészületeihez ér a program, itt történik meg a teszt név ellenörzése, elérhető teszt konfigurációk listázása, kiválasztása és a \textit{batch-benchmark} benchmark indítási módszer konfigurálása. 
+
 \begin{cpp}
 void preparations(char *testName)
 \end{cpp}
@@ -284,7 +273,7 @@ A PTS programban két féle képpen lehet beállításokat megadni úgy, hogy ne
 \begin{cpp}
 PRESET\_OPTIONS="stream.run-type=Add"
 \end{cpp}
-\item A másik módszer, amit a \textit{parameter-test} programban implementáltam, a konkrét konfigurációkat tartalmazó fájlt nyitom meg, és állítok be egy alapértelmezett értéket minden egyes opcióhoz. Ez a fájl a \texttt{/var/lib/phoronix-test-suite/} \texttt{test-profiles/pts/}tesztnév-verziószám\texttt{/} jegyzékben található \\ \texttt{test-definition.xml}. Sajnos néhány esetben előfordul hogy egy teszthez a PTS program valós időben lekérdezi az \texttt{openbenchmarking.org}-ról az opciókat és csak a beállítás nevét találjuk meg. Ebben az esetben is rákérdez a parameter-test program az opció beállítására, de a lehetséges választásokat csak az \\ \texttt{openbenchmarking.org}-on tekinthetjük meg. 
+\item A másik módszer, amit a \textit{parameter-test} programban implementáltam, a konkrét konfigurációkat tartalmazó fájlt nyitom meg, és állítok be egy alapértelmezett értéket minden egyes opcióhoz. Ez a fájl a \texttt{/var/lib/phoronix-test-suite/} \texttt{test-profiles/pts/}tesztnév-verziószám\texttt{/} jegyzékben található \\ \texttt{test-definition.xml}. Sajnos néhány esetben előfordul hogy egy teszthez a PTS program valós időben lekérdezi az \texttt{openbenchmarking.org}-ról az opciókat és csak a beállítás nevét találjuk meg. Ebben az esetben is rákérdez a parameter-test program az opció beállítására, de a lehetséges választásokat csak az \\ \texttt{openbenchmarking.org}-on tekinthetjük meg.
 \end{enumerate}
 A beállítás mindkét módszerrel müködik, azonban számos olyan benchmark program szerepel a PTS programban, amihez egyáltalán nem is tartozik beállítható konfiguráció. A program a fájl írása után elmenti a módosításokat és sikeres írás után, következik a batch-benchmark konfiguráció. 
 Ez a fájl a \texttt{/etc/phoronix-test-suite.xml}, amelyben a \texttt{<BatchMode>} node-ban található értékeket szükséges megfelelően testre szabnunk. Amennyiben ez a lépés elmaradna, a PTS program megállítaná a benchmark programot, hogy bekérje az értékeket. Ezzel el is értünk a teszt indításához, ennél a pontnál a szükséges beállításokat már elvégezte a program.
@@ -294,6 +283,8 @@ void startTest(int interval, int sampleCount, char *testName);
 A főbb paraméterek átadása meghatározza a kimeneti fájl nevét, amibe belefűzi a dátumot (év, hónap, nap, óra, perc, másodperc), így több teszt is futtatható egymást követően, anélkül hogy felülírnák egymást.
 Ezt követően a kernel változók inicializálásra kerülnek, mind a saját intervallumának a legkisebb értékét veszi fel. A program a ciklusmagban, készít egy menüt, amibe kiírja a teszt nevét, a teszt sorszámát és az utolsó öt eredményt, amit a teszt az aktuális beállításokkal produkált. A menü kirajzolása után elindul az első benchmark, a kívánt mintaszámmal és konfigurációs beállításokkal. Amikor a benchmark befejeződött, az eredményt eltárolja a \texttt{/var/lib/phoronix-test-suite/test-results/myresult/composite.xml} fájlban, \\ amelyből a program kiolvassa az eredményt, amit továbbít az eredmény fájlba, az aktuális kernel változókkal együtt. Ezt az eredményt továbbítja az eredmények oszlopba is, így a felhasználó is követheti az eredmények változását.
 
+\noindent A program kiolvassa az eredményt, amit továbbít az eredmény fájlba, az aktuális kernel változókkal együtt. Ezt az eredményt megjeleníti az eredmények oszlopba, így a felhasználó is követheti az eredmények változását.
+
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=3.0]{images/parameter-test.png}
@@ -302,22 +293,20 @@ Ezt követően a kernel változók inicializálásra kerülnek, mind a saját in
 \end{figure}
 
 Végül a menü ablakot törli és újrarajzolja a következő iterációban.
-Amikor a teszt végzett, az összes kernel változó végigpróbálásával, a fájlt lezárja és visszaállítja a változókat az eredeti értékükre.
+Amikor a teszt végzett az összes kernel változó végigpróbálásával, a fájlt lezárja és visszaállítja a változókat az eredeti értékükre.
 Az így kapott fájl formátuma JSON típusú, amely előnyös a későbbi elemzés szempontjából.
 
 \Section{\textit{SchedulerTuneML} program}
+% \SubSection{\textit{SchedulerTuneML} program implentációja}
 
 A \textit{SchedulerTuneML} program Python programozási nyelven készítettem, több különböző modul felhasználásával.
 A program célja hogy, a \textit{parameter-test} program által készített JSON fájlokat feldolgozza. A fájlból kinyert adatokat elemzi, besorolja őket csoportokba, diagrammokat készít ezekből és javaslatokat tesz a kernel változók értékeinek beállítására, az adott felhasználási módhoz viszonyítva.
 
-% \SubSection{\textit{SchedulerTuneML} program implentációja}
-
 \SubSection{Adatok előkészítése az elemzéshez}
 
 A program \textit{Jupyter} munkafüzetként készült, emiatt a fájlok \texttt{.ipynb} kiterjesztésüek. Kihasználva a notebook által készíthető cellákat, a legtöbb kódrészlet mellé készítettem leírásokat, úgy gondolom hogy egyszerűbben megérthetők ezekkel, az egyes kódrészletek.
-%a programokat kategóriákba sorolom
-A benchmark program által készített eredmények tesztenként eltérőek, ami főként a különböző felhasználási módból következik. Ezeket az értékeket normalizálnom kell először, mielőtt felhasználnám a model betanításánál. Ehhez \textit{feature scaling}-et alkalmaztam, ami azt jelenti hogy abban az esetben amikor a teszt értékek közül a kisebb érték számít jobbnak a következő képletet használom fel:
 
+A benchmark program által készített eredmények tesztenként eltérőek, ami főként a különböző felhasználási módból következik. Ezeket az értékeket normalizálnom kell először, mielőtt felhasználnám a model betanításánál. Ehhez \textit{feature scaling}-et alkalmaztam, ami azt jelenti hogy abban az esetben amikor a teszt értékek közül a kisebb érték számít jobbnak a következő képletet használom fel:
 \begin{equation}
 x = \frac{max-x}{max-min}.
 \end{equation}
@@ -339,7 +328,6 @@ A program első lépései, a JSON fájlok megnyitása, az értékeken történő
     80 < x& < 100&: 4
 \end{alignat*}
 A legrosszabb értékek kategóriája gyakorlatilag $floor(x / 20)$ formában is számítható.
-% TODO: Jó így táblázatos formában. Lehet esetleg említeni, hogy floor(x / 20) formában is számolható.
 
 \item \textit{serverWorkload}
 
@@ -347,20 +335,17 @@ A Linux kernel dokumentációjában olvashatunk az ütemezőt behangolhatjuk, sz
 Mivel a szerver szintű terheléseknél, sűrűbben fordulnak elő batch processzek, azaz akik életük nagyrészét inkább számításokkal töltik és náluk előnyösebb nagyobb időszeleteket használni. Ezt az eredményt pedig elérhetjük ennek a változó módosításával. Így amikor nagyobb értéket vesz fel a \texttt{sched\_min\_granularity\_ns} mint az alapbeállítás, serverWorkload kategóriába kerül.
 \item \textit{swap} 
 
-A swap csoport gyakorlatilag a swap memória igényt jelzi. 
+A \texttt{swap} csoport gyakorlatilag a swap memória igényt jelzi. 
 Minden olyan mérési eredményt, amelynél nem fordult elő swap memória használat, nullával láttam el, ellenkező esetben pedig egyessel.
 \item \textit{batchProcess}
 
 Batch processzek, nem szükséges nagy prioritást állítani, kevesebbszer kerülnek végrehajtásra, viszont ekkor nagyobb időszeletet is kaphatnak. Emiatt hogyha egy processz prioritása nagyobb mint nulla, \textit{batchProcess} kategóriába kerül.
-
 \end{itemize}
 
 A felsorolt kategóriák, fontos részét képezik az adathalmaznak amit kialakítottam. Ebbe az adathalmazba szintén beletartoznak a benchmarkokból származó eredmények, amik átestek a feature scaling-en, illetve a hozzá tartozó kernel változók. Az adathalmazból egy \texttt{DataFrame}-et készítettem, a \textit{Pandas} modul segítségével. Ezáltal egyszerűen átláthatom, lekérdezhezhetek belőle részeket, és ábrázolhatom az adatokat.
 Az így kapott \texttt{DataFrame} segítségével fogom megkísérelni egy neurális hálózat betanítását. 
 %TODO referencia könyvből: Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow: Concepts, Tools, and Techniques to Build Intelligent Systems 2nd Edition
-
 \SubSection{A gépi tanulás megvalósítása}
-
 A gépi tanulásra egy lehetséges definíció a következő.
 
 \begin{quote}
@@ -372,7 +357,7 @@ anélkül, hogy kifejezetten beprogramozták volna.''
 A gépi tanulásnál számos területe létezik. Az aktuális probléma megoldására felügyelt tanítást alkalmaztam. Ez azt jelenti, hogy az adathalmazban az egyes mintáknál, megtalálhatók a jellegek (\textit{features}), illetve az elvárt eredmények is (\textit{labels}).
 
 Mivel a kernel változók intervallumait négy részre szedtem szét a teszteléseknél, így erre egy klasszifikációs algoritmust használok fel.
-A modelt az adott problémához mérten kell felépíteni, amihez fontos hogy optimálisan válasszuk meg rejtett rétegek, illetve a neuronok számát.
+A modelt az adott problémához mérten kell felépíteni, amihez fontos, hogy optimálisan válasszuk meg rejtett rétegek, illetve a neuronok számát.
 Esetemben, a model öt bemenettel, illetve öt kimenettel rendelkezik, és egy rejtett réteget választottam a topológia kialakításához (\ref{fig:neuralnetwork}. ábra).
 
 \begin{figure}[h!]
@@ -386,7 +371,6 @@ Alapvetően ezek a mesterséges neuronok, fogalmilag biológiai idegsejtekből s
 Minden neuron több bemenettel rendelkezik és egyetlen kimenettel, amit több neuronnak is képes továbbítani.
 
 \noindent A neuron által kiszámított kimeneti érték \aref{fig:neuron}. ábrán látható módon határozható meg.
-
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.5]{images/neuron.png}
@@ -402,16 +386,16 @@ A következő aktivációs függvények közül választhatunk, az \textit{sklea
 \item \texttt{identity}, $f(x) = x$
 
 Egy egyszerű lineáris függvény, értékkészlete $\mathbb{R}$.
-\item \texttt{logistic}, $f(x) = \frac{1}{1+e^{-x}}$
+\item \texttt{logistic} - $f(x) = \frac{1}{1+e^{-x}}$
 
-Logisztikus vagy Szigmoid függvény, ami eg S alakot ír le. Az oka amiért előszeretettel használjuk ezt a függvényt az hogy, az értékkészlete pont 0 és 1 között található. Ez különösen azoknál a modelleknél alkalmazzák, ahol a valószínűséget kimenetként kell megjósolnunk.
-\item \texttt{tanh}, $f(x) = \frac{e^{x}-e^{-x}}{e^{x}+e^{-x}}$
+Logisztikus vagy Szigmoid függvény, ami eg S alakot ír le. Az oka amiért előszeretettel használjuk ezt a függvényt az, hogy az értékkészlete pont 0 és 1 között található. Ez különösen azoknál a modelleknél alkalmazzák, ahol a valószínűséget kimenetként kell megjósolnunk.
+\item \texttt{tanh} - $f(x) = \frac{e^{x}-e^{-x}}{e^{x}+e^{-x}}$
 
 A tangens hiperbólikusz függvény nagyon hasonló a szigmoidhoz, de jobb nála. Az értékkészlete -1-től 1-ig tart, és ő is S alakú függvény.
 A negatív részének nagy előnye van, mivel ezt vehetjük úgymond erősen negatívnak, azaz egy erős "nem" kimenetnek. Jellemzően klasszifikációs modelleknél használják ezt a függvényt.
-\item \texttt{relu} (\textit{Rectified Linear Unit}), $f(x) = max(0,x)$
+\item \texttt{relu} (Rectified Linear Unit) - $f(x) = max(0,x)$
 
-% A ReLU jelenleg a világon a leggyakrabban használt aktivációs függvény.
+%A ReLU jelenleg a világon a leggyakrabban használt aktivációs függvény.
 Az $f(x)$ függvény értéke nullát vesz fel, minden olyan esetben amikor $x$ értéke nulla vagy kisebb mint nulla és $f(x)$ értéke megegyezik $x$ értékével, ha $x$ nagyobb mint nulla.
 A függvény értékkészlete $[0,\infty)$.
 \end{itemize}
@@ -434,7 +418,7 @@ Az \texttt{sklearn.neural\_network.MLPClassifier} esetén, három választásunk
 \begin{itemize}
 \item \textit{ADAM}, ami egy sztochasztikus gradiens alapú optimalizáló algoritmusra utal, amelyet még Kingma, Diederik és Jimmy Ba javasolt.
 \item \textit{sgd} (stochastic gradient descent), amely a negatív gradiens irányába tesz lépéseket a célfüggvényhez.
-\item \textit{L-BFGS}, egy  optimalizáló algoritmus a kvázi Newton-módszerek családjából.
+\item \textit{L-BFGS}, egy  optimalizáló algoritmus a kvázi Newton-módszerek családjából
 \end{itemize}
 
 A rejtett réteghez tartozó neuron számot, aktivációs függvényt és optimalizálási algoritmust, az adott problémához mérten érdemes megválasztani. A legjobb paraméterek meghatározására készítettem egy halmazt, amibe elhelyeztem az összes aktivációs függvényt, optimalizálási algoritmust és néhány neuron számot, amelyek megfelelők lehetnek a feladat megoldásához.
@@ -454,8 +438,8 @@ params = {
 }
 \end{python}
 
-Erre a \texttt{sklearn.grid\_search.GridSearchCV} függvényt választottam, ami a kapott paraméter készlettel, végig próbálja az összes lehetséges kombinációt, a model betanítására.
-
+\SubSection{Optimális paraméterek keresése}
+A paraméterezés kapcsán az \texttt{sklearn.grid\_search.GridSearchCV} függvényt választottam, ami egy kimerítő keresést végez, a legjobb paraméterek megtalálásához. A függvény alkalmazásához készítenem kellett egy paraméter készletet, amiben végig próbálja az összes lehetséges kombinációját. Ami azt jelenti hogy, minden próba végén kiértékeli a modelt egy Cross-Validation módszer segítségével. Ezáltal megkaptam azokat a model paramétereket, amivel a legjobban teljesített.
 %referencia az sklearn GridSearch és Cross Validation-re: https://scikit-learn.org/stable/modules/cross_validation.html
 \begin{figure}[h!]
 \centering
@@ -464,17 +448,23 @@ Erre a \texttt{sklearn.grid\_search.GridSearchCV} függvényt választottam, ami
 \label{fig:neuralnetwork}
 \end{figure}
 
-\SubSection{Optimális paraméterek keresése}
+Minden próba végén kiértékeli a modelt egy Cross-Validation módszer segítségével. A legjobb értéket elért paraméterek, ezután lekérdezhetők a következő képpen.
 
-A paraméterezés kapcsán az \texttt{sklearn.grid\_search.GridSearchCV} függvényt választottam, ami egy kimerítő keresést végez, a legjobb paraméterek megtalálásához. A függvény alkalmazásához készítenem kellett egy paraméter készletet, amiben végig próbálja az összes lehetséges kombinációját. Ami azt jelenti hogy, minden próba végén kiértékeli a modelt egy Cross-Validation módszer segítségével. Ezáltal megkaptam azokat a model paramétereket, amivel a legjobban teljesített.
-A modelhez így a tangens hiperbólikusz használtam fel aktivációs függvényként, emellett kilenc rejtett rétegben található neuron és az L-BFGS optimalizáló algoritmust alkalmaztam.
+\begin{python}
+model = GridSearchCV( MultiOutputClassifier(MLPClassifier())
+  ,param_grid=params)
+model.fit(X_train,y_train)
+print(model.best_params_)
+\end{python} 
+
+Az itt látható program kimenete alapján, választottam meg a paramétereket.
+Így a tangens hiperbólikusz függvényt, használtam fel aktivációs függvényként, emellett kilenc neuront és az L-BFGS optimalizáló algoritmust alkalmaztam.
 
 %TODO referencia könyvből: Hands-On Machine Learning with Scikit-Learn and TensorFlow
 Az egyetlen módja, hogy kiderítsem hogyan teljesít a modell, ki kell hogy próbáljam új adatokkal. 
 Ezt megtehetem úgy hogy késznek nyilvánítom a programot tanítás után és a felhasználók amikor majd kipróbálják, kiderül hogy sikerült. Ez az ötlet ugyan müködhet, de amennyiben a model rosszul lett felépítve meglehet hogy nagyon rosszul teljesít és a felhasználóknak nem fogja elnyerni a tetszésüket. Egy okosabb módszer a rendelkezésre álló adathalmazt, szétszedni két részre. Az első halmazban találhatók a tanító minták, amikkel a modell betanítását fogom végezni. A második halmaz ellenörzésre szolgál, ahol a mintákkal csak tesztelem a modell teljesítményét.
 Ezeket \textit{training} és \textit{testing set}-nek is szokás nevezni, az utóbbi felhasználásával kiderülhet a hibaarány mérete, amit szokás általánosítási hibának is nevezni. Ez az érték megmondja, hogy a model mennyire fog jól teljesíteni olyan mintákon, amelyeket még nem látott korábban.
 Amennyiben a model rosszul teljesített a tanító és az ellenörző mintákat tartalmazó adathalmazon egyaránt, fennállhat az alul tanulás problémája, erre egy megoldás lehet az hogyha komplexebb modelt tervezünk. Abban az esetben, ha jól teljesített a tanító mintákon, viszont rosszul az eddig még nem látottakon, előfordulhat hogy a model túl tanult. A cél a kettő között helyezkedik el, így erre nagy figyelmet kell model készítés során.
-
 Gyakori, hogy az adatok 80\% -át használják fel tanításra, és a maradék 20\% -ot tesztelésre. Ez azonban az adatkészlet méretétől függ, amennyiben az adathalmazunk 10 millió példányt tartalmaz, elég lehet az adatok 1\% -át felhasználni tesztelésre, 100 000 példány valószínűleg több, mint
 elég ahhoz, hogy jó becslést kapjunk az általánosítási hibáról. Az én esetemben az adathalmazomban 6144 minta található, emiatt én az adatok 80\%-át fogom felhasználni tanításra és a maradékot pedig a modell tesztelésére fordítom. Erre a célra az \texttt{sklearn.model\_selection.train\_test\_split} függvényt fogom felhasználni. 
 
@@ -483,7 +473,6 @@ X = df[["testType","resultClass","batchProcess","serverWorkload","swap"]]
 y = df[["latency","min_gran","wakeup_gran","priority","vm.swappiness"]]
 X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2)
 \end{python}
-
 
 Paraméterként meg kell adjam a használati módokat (\texttt{X}), a hozzátartozó kernel változókat (\texttt{y}) és az tesztelési adathalmaz méretét \%-os formában.
 Az \texttt{X} változó gyakorlatilag egy részlet a \texttt{DataFrame}-ből. %, ami látható a következő kódrészletből.
@@ -520,13 +509,13 @@ A hagyományos model létrehozása során elég csak az \texttt{MLPClassifier}-t
 %TODO referencia a joblib-hez: https://scikit-learn.org/stable/modules/model_persistence.html
 Annak érdekében, hogy a tesztelés gördülékenyebben menjen, a modelt előre betanítottam, így futtatáskor nincs szükség újra és újra elvégezni a tanítást.
 A model lementéséhez, többféle lehetőség is rendelkezésre áll. Ehhez a \texttt{joblib} modult választottam, mivel sokkal hatékonyabb olyan objektumoknál, amik nagyobb méretű NumPy tömböket tartalmaznak és a \textit{sklearn} oldalán is ennek a használatát javasolják.
-
 Két függvényt alkalmazok.
 \begin{itemize}
-\item Az első a lementést valósítja meg \texttt{joblib.dump()}, ami paraméterként az elkészített modelt kapja meg és hogy milyen néven mentsük el.
+	\item Az első a lementést valósítja meg \texttt{joblib.dump()}, ami paraméterként az elkészített modelt kapja meg és hogy milyen néven mentsük el.
 \item A másik a betöltésért felel, itt egyszerűen csak a fájlnévre hivatkozunk.
 \end{itemize}
 Ahogy látható az alábbi kódrészletből, szintaktikailag sem mondható túl bonyolultnak a használata.
+
 \begin{python}
 joblib.dump(model,"model.sav") 
 model = joblib.load("model.sav") 
@@ -575,3 +564,4 @@ Két fontos paramétert kell átadnunk a függvénynek, ezek a becsült változ�
 A model 70,9\%-os hatékonyságot ért el a tanító mintákon, ami szerintem elfogadható eredmény, tekintve azt hogy több féle használati módot is próbál figyelembe venni, viszonlyag kevés intervallum szétbontással és mintaszámmal. A későbbiekben úgygondolom érdemes lehet a tesztek futtatása mellett egy erőforrás monitort is alkalmazni(Ami bizonyos időközönként, lementi az adott erőforrás használat állapotot), így a különböző felhasználási módok mégjobban elkülöníthetők lennének egymástól.
 A validációs mintákon is kipróbáltam a modelt, itt 73,1\%-os hatékonyságot ért el a becslésekkel, így tanító mintákhoz képest javulás észlelhető.
 A modell, a teszteredmények és az elkészült programok, mind megtalálhatók a mellékletben és GitHub-on egy publikusan elérhető repozitóriumban.
+
