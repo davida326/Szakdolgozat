@@ -469,7 +469,7 @@ A \texttt{sched\_prio\_to\_weight} tömb értékei kicsit eltérnek a kezdetlege
 \end{equation}
 
 Ez a tömb még 2007-ben lett lecserélve a jelenlegi változatra. 
-Megfigyelhető az is, hogyha a képletbe behelyettesítünk, nem kapunk pontos értékeket, ezért az új változatnál, bevezetésre került egy delta, így a legrosszabb esetben a numerikus hiba kisebb, mint $\frac{1}{100000000}$.
+Megfigyelhető az is, hogyha a képletbe behelyettesítünk, nem kapunk pontos értékeket, ezért az új változatnál, bevezetésre került egy delta, így a legrosszabb esetben a numerikus hiba kisebb, mint $10^{-8}$.
 
 A súly változó, a processz struktúrában \textit{struct load\_weight load}-ként szerepel.
 Egy processz \texttt{vruntime} értékét úgy kapjuk meg, hogy a futással töltött idejét (\textit{delta\_exec}) el osztjuk, a processz súlyával (\textit{se->load}), majd ezt beszorozzuk a hozzátartozó \texttt{nice} értékkel (\textit{NICE\_0\_LOAD}).

@@ -64,7 +64,7 @@ A grafikus benchmarkhoz készített \ref{fig:GraphicsAndMemoryParameters}. ábr�
 \end{figure}
 
 A memória és grafikus benchmark közös tulajdonsága az eredmény értékek eloszlása. Mindkét benchmarknál elmondható, hogy az eredmények legnagyobb része a legrosszabb kategóriába került.
-Ezt \aref{fig:GraphicsAndMemoryChart}. torta diagrammokról le is olvashatjuk.
+Ezek az értékek \aref{fig:GraphicsAndMemoryChart}.  kördiagrammokról leolvashatók.
 
 \begin{figure}[h!]
 \centering
@@ -132,3 +132,26 @@ Itt a kisebb értékek számítanak jobbnak és a sárgával jelöltem a legjobb
 Az ebizzy és fs-mark esetén pedig a nagyobb értékek jelölik a jobb eredményt.
 Egy adott profillal és egy benchmark programmal tíz mintát készítettem és ezeknek vettem az átlagukat.
 
+\subsection{Tuned profilok összevetése a \textit{SchedulerTuneML} program felhasználási módjaival}
+
+A \textit{SchedulerTuneML} programban profilok helyett felhasználási módokat lehet szabályozni, ami alapján tudjuk hangolni a rendszerünket. A tuned programban már bemutatott \texttt{desktop} és \texttt{latency-performance} profilokhoz hasonló felhasználási módokat készítettem a \textit{SchedulerTuneML} programmal. A \texttt{desktop} profilhoz hasonlító felhasználási mód kialakításához, több processzormagos felhasználást, nem szerver szintű terhelés, magas prioritást és aktív swap használatot alkalmaztam. A \texttt{latency-performance} profil megközelítéséhez, szerver szintű terhelést, több processzormagos felhasználást, alacsony prioritást választottam, swap használat nélkül.
+
+A különböző profilok és felhasználási módok teljesítményeinek összevetésére, szintén a sample-program, ebizzy, fs-mark és a ctx-clock benchmarkot fogom felhasználni. 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{images/tunedAndSchedulerTuneMLCompareSampleprogramCtxclock.png}
+\caption{Tuned profilok és \textit{SchedulerTuneML} felhasználási módok összevetése (Sample-program és Ctx-clock benchmark)}
+\label{fig:tunedProfilesComparedToSchedulerTuneMlSampleprogramAndCtxClock}
+\end{figure}
+
+Sárgával jelöltem a legjobb értéket elérő hangolási módokat. Az első benchmarknál megfigyelhető, hogy a \textit{SchedulerTuneML} program Szerverhez hasonlító felhasználási módja, nagyon rossz értéket produkált.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{images/tunedAndSchedulerTuneMLCompareEbizzyAndFsMark.png}
+\caption{Tuned profilok és \textit{SchedulerTuneML} felhasználási módok összevetése (Ebizzy és FS-Mark benchmark)}
+\label{fig:tunedProfilesComparedToSchedulerTuneMlEbizzyAndFsMark}
+\end{figure}
+
+Az első benchmarkot követő teszteken, a \textit{SchedulerTuneML} Szerver felhasználási módja érte el a legjobb eredményeket.
