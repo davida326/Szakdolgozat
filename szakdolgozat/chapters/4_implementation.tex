@@ -343,8 +343,8 @@ Batch processzek, nem szükséges nagy prioritást állítani, kevesebbszer ker�
 \end{itemize}
 
 A felsorolt kategóriák, fontos részét képezik az adathalmaznak amit kialakítottam. Ebbe az adathalmazba szintén beletartoznak a benchmarkokból származó eredmények, amik átestek a feature scaling-en, illetve a hozzá tartozó kernel változók. Az adathalmazból egy \texttt{DataFrame}-et készítettem, a \textit{Pandas} modul segítségével. Ezáltal egyszerűen átláthatom, lekérdezhezhetek belőle részeket, és ábrázolhatom az adatokat.
-Az így kapott \texttt{DataFrame} segítségével fogom megkísérelni egy neurális hálózat betanítását. 
-%TODO referencia könyvből: Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow: Concepts, Tools, and Techniques to Build Intelligent Systems 2nd Edition
+Az így kapott \texttt{DataFrame} segítségével fogom megkísérelni egy neurális hálózat betanítását \cite{geron2019hands}. 
+
 \SubSection{A gépi tanulás megvalósítása}
 A gépi tanulásra egy lehetséges definíció a következő.
 
@@ -378,8 +378,8 @@ Minden neuron több bemenettel rendelkezik és egyetlen kimenettel, amit több n
 \label{fig:neuron}
 \end{figure}
 
-Az inputokat beszorozzuk a hozzájuk tartozó súlyokkal, majd ezeket összeadjuk és az így kapott értéket behelyettesítjük az aktivációs függvénybe.
-%TODO referencia: https://towardsdatascience.com/activation-functions-neural-networks-1cbd9f8d91d6
+Az inputokat beszorozzuk a hozzájuk tartozó súlyokkal, majd ezeket összeadjuk és az így kapott értéket behelyettesítjük az aktivációs függvénybe \cite{hassoun1995fundamentals}.
+
 Az aktivációs függvénnyel elérhetjük hogy az érték 0 és 1 között maradjon, vagy néhány esetben -1 és 1 között (függvénytől függ). Ezzel határozzuk meg a neurális hálózat kimenetét, olyan mint hogyha azt mondanánk hogy igen vagy nem (vagyis történik aktiváció vagy sem). 
 A következő aktivációs függvények közül választhatunk, az \textit{sklearn} osztályozó algoritmusához.
 \begin{itemize}
@@ -460,7 +460,6 @@ print(model.best_params_)
 Az itt látható program kimenete alapján, választottam meg a paramétereket.
 Így a tangens hiperbólikusz függvényt, használtam fel aktivációs függvényként, emellett kilenc neuront és az L-BFGS optimalizáló algoritmust alkalmaztam.
 
-%TODO referencia könyvből: Hands-On Machine Learning with Scikit-Learn and TensorFlow
 Az egyetlen módja, hogy kiderítsem hogyan teljesít a modell, ki kell hogy próbáljam új adatokkal. 
 Ezt megtehetem úgy hogy késznek nyilvánítom a programot tanítás után és a felhasználók amikor majd kipróbálják, kiderül hogy sikerült. Ez az ötlet ugyan müködhet, de amennyiben a model rosszul lett felépítve meglehet hogy nagyon rosszul teljesít és a felhasználóknak nem fogja elnyerni a tetszésüket. Egy okosabb módszer a rendelkezésre álló adathalmazt, szétszedni két részre. Az első halmazban találhatók a tanító minták, amikkel a modell betanítását fogom végezni. A második halmaz ellenörzésre szolgál, ahol a mintákkal csak tesztelem a modell teljesítményét.
 Ezeket \textit{training} és \textit{testing set}-nek is szokás nevezni, az utóbbi felhasználásával kiderülhet a hibaarány mérete, amit szokás általánosítási hibának is nevezni. Ez az érték megmondja, hogy a model mennyire fog jól teljesíteni olyan mintákon, amelyeket még nem látott korábban.
