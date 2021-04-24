@@ -1,11 +1,10 @@
 \Chapter{Felhasznált eszközök és technológiák}
 
-%TODO https://www.phoronix-test-suite.com/
 %TODO https://www.phoronix-test-suite.com/documentation/phoronix-test-suite.pdf
 \Section{Phoronix Test Suite}
 
 Annak érdekében, hogy az ütemezőn végzett módosításaim hatásait megfigyelhessem, szükségem van teszt programokra. A \texttt{teszt} programokból kapott adatok alapján tudok javaslatokat tenni arra, hogy milyen mértékben módosítsam az ütemező paramétereket, bizonyos felhasználási módokhoz mérten.
-A teszteléshez \textit{Phoronix Test Suite} (PTS) programot választottam.
+A teszteléshez \textit{Phoronix Test Suite} (PTS) programot választottam \cite{phoronix}.
 A \textit{Phoronix Test Suite} a rendelkezésre álló legátfogóbb tesztelési és benchmarking platform, elérhető GNU/Linux, Solaris, MacOS, Windows és BSD operációs rendszeren.
 A PTS lehetővé teszi hogy, a tesztek a telepítésétől, a végrehajtásig és jelentés készítésig teljesen automatikus módon történjenek.
 Minden tesztet könnyen reprodukálhatónak és használhatónak szántak.
@@ -62,17 +61,17 @@ Alapvetően a grafikus kártyát próbálja meg terhelni, a benchmark pedig az �
 
 \Section{Sysctl interfész}
 
-A \textit{sysctl} segítségével módosíthatjuk a kernel paramétereket futásidőben. Ezek a paraméterek elérhetők a \texttt{/proc/sys/} jegyzékben. Emiatt a \textit{sysctl}-nek szüksége van a \textit{proc} fájlrendszerre. A \textit{sysctl} interfész használható adatok olvasására és írására is egyaránt.
+A \textit{sysctl} segítségével módosíthatjuk a kernel paramétereket futásidőben. Ezek a paraméterek elérhetők a \texttt{/proc/sys/} jegyzékben. Emiatt a \textit{sysctl}-nek szüksége van a \textit{proc} fájlrendszerre. A \textit{sysctl} interfész használható adatok olvasására és írására is egyaránt \cite{rubini1997kernel}.
 
 \Section{Python}
 
 %TODO Referencia: python.org/doc/essays/blurb/
 Az ütemezőn végzett módosításokból és benchmarkok programokból származó adataim feldolgozását Python programozási nyelv segítségével végzem.
 A Python egy interpreteres, objektum-orientált, magas szintű programozási nyelv, dinamikus szemantikával.
-A Python interpreter és a kiterjedt szabványkönyvtár, forrásként vagy bináris formátumban díjmentesen elérhető az összes főbb platformra, és szabadon terjeszthető.
+A Python interpreter és a kiterjedt szabványkönyvtár, forrásként vagy bináris formátumban díjmentesen elérhető az összes főbb platformra, és szabadon terjeszthető \cite{van2007python}.
 % A Python programok hibakeresése egyszerű: egy hiba vagy rossz bemenet soha nem okoz szegmentálási hibát.
 
-\SubSection{Jupyter-notebook}
+\SubSection{Jupyter notebook}
 
 %TODO Referencia: https://jupyter-notebook.readthedocs.io/en/stable/notebook.html
 A \textit{Jupyter notebook} kiterjeszti az interaktív konzol alapú megközelítését minőségileg új irányba, web alapú alkalmazás biztosításával, amely alkalmas a teljes számítási folyamat elvégzésére: kód fejlesztésére, dokumentálására és végrehajtására, valamint az eredmények közlésére.
@@ -109,7 +108,7 @@ Dolgozatomban a matplotlib csomagnak a \texttt{pyplot} részét használtam, az 
 \SubSection{Pandas}
 
 %TODO referencia: https://pandas.pydata.org/docs/getting_started/index.html#intro-to-pandas
-A \textit{Pandas} egy gyors, hatékony, rugalmas és könnyen használható nyílt forráskódú adatelemzési és manipulációs eszköz, ami a Python programozási nyelv tetejére épült.
+A \textit{Pandas} egy gyors, hatékony, rugalmas és könnyen használható nyílt forráskódú adatelemzési és manipulációs eszköz, ami a Python programozási nyelv tetejére épült \cite{mckinney2011pandas}.
 
 A NumPy indexelő operátorok és az attribútum operátorok gyors és könnyű hozzáférést biztosít a pandas adatstruktúráihoz. \textit{Series} adatstruktúrák egyszerűen alakíthatók Numpy ndarray típusra.
 Amennyiben táblázatos adatokkal szeretnénk dolgozni, mint például táblázatokban vagy adatbázisokban tárolt adatokkal, a pandas egy megfelelő eszköz lehet. Segíthet az adatok elemzésében, tisztításában és feldolgozásában. A pandas gyakorlatilag egy keretet ad az adathalmazunknak, ezt \texttt{DataFrame}-nek hívják. A \texttt{DataFrame} egy kétdimenziós adatstruktúra, amely oszlopokban tárolhat különféle típusú adatokat (beleértve a karaktereket, egész számokat, lebegőpontos értékeket, kategorikus adatokat és egyebeket). Hasonlít egy táblázatra, SQL táblára vagy a data.frame-hez az R-ben.
@@ -119,4 +118,4 @@ A pandas segítségével grafikonon is ábrázolhatjuk az adathalmazainkat, amih
 
 %TODO referencia: https://www.tutorialspoint.com/scikit_learn/scikit_learn_introduction.htm
 
-A \textit{Scikit-learn} (Sklearn) az egyik leghasznosabb és legerősebb könyvtár a gépi tanuláshoz Pythonban. Széles válogatást nyújt a gépi tanulás és a statisztikai modellezés hatékony eszközeiből, beleértve a klasszifikációt, a regressziót, a klaszterezést és a dimenziócsökkentést. A könyvtár maga nagyrészt Python nyelven készült, a \textit{NumPy}, a \textit{SciPy} és a \textit{Matplotlib} alapokra épül.
+A \textit{Scikit-learn} (Sklearn) az egyik leghasznosabb és legerősebb könyvtár a gépi tanuláshoz Pythonban. Széles válogatást nyújt a gépi tanulás és a statisztikai modellezés hatékony eszközeiből, beleértve a klasszifikációt, a regressziót, a klaszterezést és a dimenziócsökkentést. A könyvtár maga nagyrészt Python nyelven készült, a \textit{NumPy}, a \textit{SciPy} és a \textit{Matplotlib} alapokra épül \cite{pedregosa2011scikit}.

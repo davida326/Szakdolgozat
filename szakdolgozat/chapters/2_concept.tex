@@ -2,10 +2,10 @@
 \label{ch:scheduling}
 
 \Section{Az ütemezési probléma}
-%TODO referencia könyvből: Mastering Linux Kernel Development: A kernel developer's reference manual
 
-%https://users.iit.uni-miskolc.hu/~vinczed/ldapauth/osbsc2019/Operacios-rendszerek-jegyzet.pdf
-Minden operációs rendszer hatékonysága arányos azzal a képességével, amely a processzek igazságosnak tekinthető (\textit{fair}) ütemezését végzi. A processz ütemező, a kernel központi eleme, ő az aki eldönti, hogy mikor és mennyi időre birtokolhatja egy folyamat a processzort. Ideális esetben, a processzeknek időszeletekre van szükségük a futáshoz, az ütemezőknek lényegében a processzor időszeleteit kell tisztességesen felosztaniuk a folyamatok között.
+% https://users.iit.uni-miskolc.hu/~vinczed/ldapauth/osbsc2019/Operacios-rendszerek-jegyzet.pdf
+
+Minden operációs rendszer hatékonysága arányos azzal a képességével, amely a processzek igazságosnak tekinthető (\textit{fair}) ütemezését végzi. A processz ütemező, a kernel központi eleme, ő az aki eldönti, hogy mikor és mennyi időre birtokolhatja egy folyamat a processzort. Ideális esetben, a processzeknek időszeletekre van szükségük a futáshoz, az ütemezőknek lényegében a processzor időszeleteit kell tisztességesen felosztaniuk a folyamatok között \cite{tanenbaum1999operacios}.
 
 Egy ütemező algoritmusnak többek között a következőkben felsorolt kritériumokat kell teljesíteniük.
 \begin{itemize}
@@ -27,19 +27,14 @@ Jelenleg a Linux kernel 5.8.x verziójában, a normál processzek ütemezését 
 \SubSection{Lineáris idejű ütemezés}
 
 Az $\mathcal{O}(n)$ ütemező, amelyet a Linux kernelben használtak 2.4 és 2.6 verziók között. A müködési elve egyszerűnek mondható, mivel végigiterál az összes futásra kész állapotú processzen, és megválasztja a legmagasabb prioritási értékkel rendelkezőt.
-Ez egy $\mathcal{O}(n)$ műveletigényű algoritmus volt, ahol az $n$ a futtatható processzek számát jelölte. Emiatt nagy processzámnál nem volt elég hatékony és a valós idejű processzek így kiszámíthatlanok lettek.
+Ez egy $\mathcal{O}(n)$ műveletigényű algoritmus volt, ahol az $n$ a futtatható processzek számát jelölte. Emiatt nagy processzámnál nem volt elég hatékony és a valós idejű processzek így kiszámíthatlanok lettek \cite{programmersought}.
 Egy futási sort (\textit{runqueue}-t) használt, hogyha a processzek száma kevesebb volt, mint a processzormagok száma. A maradék processzor egy "tétlen" állapotba került. Emiatt ez az ütemező nem volt túl hatékony erőforrás kihasználásban sem.
-%TODO referencia: http://www.cse.iitm.ac.in/~chester/courses/16o_os/slides/7_Scheduling.pdf
-%TODO referencia: https://www.programmersought.com/article/71614915531/
 
 \SubSection{Konstans idejű ütemezés}
 
 Az $\mathcal{O}(n)$ ütemező különféle problémái miatt, leváltotta az $\mathcal{O}(1)$ ütemező, amit a Linux kernel 2.6 verziójától, 2.6.22 verzióig használták. 
 Konstans idő alatt választott következő processzt futásra, emiatt nagy processz szám mellett is használható volt.
-A folyamatokat, két részre osztotta: Real-time illetve normál processzekre. A valós idejű processzek 0-99-ig kapnak prioritási szinteket, amíg a normál processzek (Batch vagy interactive) 100-139-ig. Itt a 100-as prioritás jelöli a legfontosabb processzt, amíg a 139 a legkevésbé fontosat. Normál processzekhez egy alapértelmezett 120-as statikus prioritást rendeltek. 
-
-%TODO referencia: http://www.cse.iitm.ac.in/~chester/courses/16o_os/slides/7_Scheduling.pdf
-%TODO referencia: https://www.researchgate.net/publication/4376448_Fairness_and_interactive_performance_of_O1_and_CFS_Linux_kernel_schedulers
+A folyamatokat, két részre osztotta: Real-time illetve normál processzekre. A valós idejű processzek 0-99-ig kapnak prioritási szinteket, amíg a normál processzek (Batch vagy interactive) 100-139-ig. Itt a 100-as prioritás jelöli a legfontosabb processzt, amíg a 139 a legkevésbé fontosat. Normál processzekhez egy alapértelmezett 120-as statikus prioritást rendeltek \cite{wong2008fairness, rebeiro2020scheduling}.
 
 Processzoronként, két listát tart nyilván, amiben tárolódnak a futásra kész processzek: \textit{Active run queue}, \textit{Expired run queue} (\ref{fig:activeExpiredRunqueue}. ábra).
 
@@ -50,15 +45,9 @@ Processzoronként, két listát tart nyilván, amiben tárolódnak a futásra k�
 \label{fig:activeExpiredRunqueue}
 \end{figure}
 
-%TODO referencia könyvből:Understanding the Linux Kernel, Third Edition 259
-
 Mindig az aktív listából választja ki a legfontosabb processzt futásra. Miután futott egy időszeletnyit, ez a processz, átkerül az expired run queue-ba, egy új dinamikusan számolt prioritással.
 Emiatt, ahogy haladunk előre az időben az \textit{Active run queue}-ból folyamatosan fogynak el a processzek.  Amikor az \textit{Active run queue} végzett a processzekkel, a két lista felcserélődik és folyatatódik a végrehajtás az új listával.
-Annak érdekében, hogy meg lehessen különböztetni a batch és az interactive processzeket, egy úgynevezett "bonus" valtozót tartunk nyilván, ami a dinamikus prioritás számításnál fog előkerülni. Ennek az értéke 0 és 10 között mozoghat.
-
-% TODO: A bonus változó egész érték? 
-% TODO: David: Igen, a bonus változó egész érték.
-
+Annak érdekében, hogy meg lehessen különböztetni a batch és az interactive processzeket, egy úgynevezett "bonus" valtozót tartunk nyilván, ami a dinamikus prioritás számításnál fog előkerülni. Ennek az értéke 0 és 10 között mozgó egész érték \cite{aas2005understanding}.
 \begin{cpp}
 dynamic priority = MAX(100, MIN(static priority - bonus + 5, 139))
 \end{cpp}
@@ -68,10 +57,10 @@ Ha a bonus változó értéke nagyobb mint 5 lesz, valószínűleg a processz é
 \item \textit{Batch Process}: Nem igényelnek felhasználóval történő interakciót, általában a háttérben futnak. Ezeknek a processzeknek nincs szükségük arra, hogy reszponzívak legyenek, tipikusan ilyenek a programozási nyelvek fordítói, adatbázis motorok és tudományos számítások.
 \item \textit{Interactive Process}: Folytonos interakciót igényelnek a felhasználóval, az életidejük nagy részét gomb leütésekre és egér mozdulatokra történő várakozással töltik.
 Amikor az input beérkezik, gyorsan reagálniuk kell, ellenkező esetben a felhasználó lassúnak fogja találni a rendszert (amit természetesen ezt el szeretnénk kerülni).
-Az interactive processzek általában nem fejezik be az időszeletüket amit kapnak, ezért nekik nagyobb időszeletet kell biztosítani.
+Az interactive processzek általában nem fejezik be az időszeletüket amit kapnak, ezért nekik nagyobb időszeletet kell biztosítani, mivel kisebb részeket töltenek CPU idővel (amikor folyamatosan instrukciókat hajtanak végre) és az idő nagyobb részében I/O ra várakoznak.
 \end{itemize}
-% TODO: Az utolsó megjegyzés hogy következik? (Nem feltétlenül rossz, csak nem pontosan értem.)
-% TODO:- Az utolsó megjegyzésben azt szerettem volna leírni, hogy az interaktív processzek általában, kisebb részeket töltenek CPU idővel(amikor folyamatosan instrukciókat hajtanak végre) és az idő nagyobb részében I/O ra várakoznak.
+
+% Az interaktív processzek általában, kisebb részeket töltenek CPU idővel(amikor folyamatosan instrukciókat hajtanak végre) és az idő nagyobb részében I/O ra várakoznak.
 % Annak érdekében hogy ezeket a kis CPU-s sorozatokat egyben befejezzék, nagy időszeletet próbál biztosítani számukra, ez az ütemező.
 % Ez itt a következő {cpp}-s részben is látszik, hogy a 120-as prioritásnál kisebb értékkel rendelkező processzeket(akik nagyon fontosak) nevezzük interaktívnak és nekik az időszeletüket, egy nagyobb szorzóval látjuk el. Ezt az időszeletet valószínűleg nem fogják kihasználni, csak biztosítani szeretnénk számukra hogy a CPUs életidejüket teljesen befejezzék és utána, önmaguktól úgyis lemondanak majd a processzorról. 
 
@@ -82,12 +71,10 @@ if priority < 120:
 else
     time_slice = (140 - priority) * 5
 \end{python}
-ahol az időszelet (\texttt{time\_slice}) értéke ezredmásodpercben van megadva.
+ahol az időszelet (\texttt{time\_slice}) értéke ezredmásodpercben van megadva \cite{rebeiro2020scheduling, wong2008fairness}.
 
-%TODO referencia: http://www.cse.iitm.ac.in/~chester/courses/16o_os/slides/7_Scheduling.pdf
 %TODO referencia: https://doc.opensuse.org/documentation/leap/tuning/html/book-sle-tuning/cha-tuning-taskscheduler.html#sec-tuning-taskscheduler-cfs
 %TODO referencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/fair.c
-%TODO referencia: https://www.researchgate.net/publication/4376448_Fairness_and_interactive_performance_of_O1_and_CFS_Linux_kernel_schedulers
 %TODO referencia könyvből: Linux Kernel Development 3rd Edition 51.oldal
 
 \Section{A linux ütemező felépítése}
@@ -280,7 +267,7 @@ A valós idejű ütemezési osztály implementálja a \texttt{SCHED\_FIFO} és \
 % TODO:-Nem igazán használják és nem is szokták fordítani magyarra.
 % Ennek ellenére ez a fordítás megragadt bennem és amikor ezt a részt írtam elfelejtettem hogy nem kellene így írnom, viszont most kijavítottam a normális változatra.
 % TODO: Dr. Vadász Dénes Operációs rendszerek jegyzetében olvastam ezt először, 
-% "2.4.6. Roud-Robin scheduling
+% "2.4.6. Round-Robin scheduling
 % Egyszerű, korrekt, széleskörben használható, könnyen megvalósítható, elég régi algoritmus
 % ez. Nem szokták magyarra fordítani az elnevezést: elég furcsa lenne a kerge-rigó név!"
 
@@ -344,8 +331,7 @@ $ chrt -p 31475
 \texttt{pid} 31475 current scheduling priority: 99
 \end{python}%$
 
-Valós idejű (Real-time) processzek esetén, a prioritási szintjeik ellentétesek a normál processzekéhez képest. A legfontosabb prioritási szint a 99-es és a legkevésbé fontos pedig az 1-es.
-%TODO referencia: https://access.redhat.com/solutions/3742421
+Valós idejű (Real-time) processzek esetén, a prioritási szintjeik ellentétesek a normál processzekéhez képest. A legfontosabb prioritási szint a 99-es és a legkevésbé fontos pedig az 1-es \cite{redhat2019deadline}.
 
 DeadLine processzek is ugyanilyen egyszerűen készíthetők a \texttt{chrt} programmal.
 Itt viszont ki kell bővítenünk három paraméterrel a programunkat.
@@ -572,12 +558,9 @@ A CFS taszk csoportok, a \texttt{sched\_entity} strúktúra egy része, és mind
 
 \Section{Kernel modulok}
 
-%TODO referencia könyvből: The Linux Kernel Module Programming Guide. Peter Jay Salzman Michael Burian Ori Pomerantz. Copyright © 2001 Peter Jay Salzman.  
-%TODO referencia könyvből: Understanding the Linux Kernel, Third Edition by Daniel P. Bovet and Marco Cesati
+Egy modul gyakorlatilag instrukciók sorozata, amit igény szerint, ki- és be lehet tölteni a kernel-be. Kibővíti a kernel funkcionalitását, anélkül hogy újra kelljen indítani a rendszert. Minden magasabb szintű kernel komponenst (mint például fájlrendszerek, I/O eszköz driver, hálózati rétegek) meg lehet írni modulként, és be lehet tölteni a kernel-be \cite{salzman2007linux, bovet2005understanding}.
 
-Egy modul gyakorlatilag instrukciók sorozata, amit igény szerint, ki- és be lehet tölteni a kernel-be. Kibővíti a kernel funkcionalitását, anélkül hogy újra kelljen indítani a rendszert. Minden magasabb szintű kernel komponenst (mint például fájlrendszerek, I/O eszköz driver, hálózati rétegek) meg lehet írni modulként, és be lehet tölteni a kernel-be.
-
-Az éppen aktuálisan betöltött moduljainkat, le tudjuk kérdezni az \texttt{\# lsmod} paranccsal, ami a \texttt{/proc/modules} fájl tartalmát listázza.
+Az éppen aktuálisan betöltött moduljainkat, le tudjuk kérdezni az \texttt{lsmod} paranccsal, ami a \texttt{/proc/modules} fájl tartalmát listázza.
 
 A modulok ELF objektumként tárolódnak a fájlrendszeren, amik a kernelhez vannak linkelve, ezt a linkelést az \texttt{insmod} paranccsal tudjuk elvégezni.
 A modulok egy duplán láncolt listában tárolódnak.
