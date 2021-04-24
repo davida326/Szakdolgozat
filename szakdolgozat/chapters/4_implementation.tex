@@ -460,6 +460,8 @@ print(model.best_params_)
 Az itt látható program kimenete alapján, választottam meg a paramétereket.
 Így a tangens hiperbólikusz függvényt, használtam fel aktivációs függvényként, emellett kilenc neuront és az L-BFGS optimalizáló algoritmust alkalmaztam.
 
+A paramétereket kereső program teljes implementációja megtalálható \textit{Jupyter notebook} formájában, GitHub-on egy publikusan elérhető repozitóriumban. Az elkészült fájl neve és kiterjesztése \textit{mlParameterGridSearch.ipynb}.
+
 Az egyetlen módja, hogy kiderítsem hogyan teljesít a modell, ki kell hogy próbáljam új adatokkal. 
 Ezt megtehetem úgy hogy késznek nyilvánítom a programot tanítás után és a felhasználók amikor majd kipróbálják, kiderül hogy sikerült. Ez az ötlet ugyan müködhet, de amennyiben a model rosszul lett felépítve meglehet hogy nagyon rosszul teljesít és a felhasználóknak nem fogja elnyerni a tetszésüket. Egy okosabb módszer a rendelkezésre álló adathalmazt, szétszedni két részre. Az első halmazban találhatók a tanító minták, amikkel a modell betanítását fogom végezni. A második halmaz ellenörzésre szolgál, ahol a mintákkal csak tesztelem a modell teljesítményét.
 Ezeket \textit{training} és \textit{testing set}-nek is szokás nevezni, az utóbbi felhasználásával kiderülhet a hibaarány mérete, amit szokás általánosítási hibának is nevezni. Ez az érték megmondja, hogy a model mennyire fog jól teljesíteni olyan mintákon, amelyeket még nem látott korábban.
@@ -562,5 +564,5 @@ J(A,B) = \frac{|A \cap B|}{|A \cup B|} = \frac{|A \cap B|}{|A| + |B| - |A \cap B
 Két fontos paramétert kell átadnunk a függvénynek, ezek a becsült változók értékei és az elvárt értékek.
 A model 70,9\%-os hatékonyságot ért el a tanító mintákon, ami szerintem elfogadható eredmény, tekintve azt hogy több féle használati módot is próbál figyelembe venni, viszonlyag kevés intervallum szétbontással és mintaszámmal. A későbbiekben úgygondolom érdemes lehet a tesztek futtatása mellett egy erőforrás monitort is alkalmazni(Ami bizonyos időközönként, lementi az adott erőforrás használat állapotot), így a különböző felhasználási módok mégjobban elkülöníthetők lennének egymástól.
 A validációs mintákon is kipróbáltam a modelt, itt 73,1\%-os hatékonyságot ért el a becslésekkel, így tanító mintákhoz képest javulás észlelhető.
-A modell, a teszteredmények és az elkészült programok, mind megtalálhatók a mellékletben és GitHub-on egy publikusan elérhető repozitóriumban.
 
+Az elkészített modelt és az azt tanító, illetve felhasználó program megtalálható a már \textit{mlParameterGridSearch.ipynb} programnál is említett repozitóriumban. A model egy tömörített fájl formájában található meg \textit{model.sav} néven. A program amely a gépi tanulást és a becsléseket végezte, szintén egy \textit{Jupyter notebook}, amelynek a fájlneve \textit{SchedulerTuneML.ipynb}.
