@@ -45,9 +45,9 @@ Processzoronként, két listát tart nyilván, amiben tárolódnak a futásra k�
 \label{fig:activeExpiredRunqueue}
 \end{figure}
 
-Mindig az aktív listából választja ki a legfontosabb processzt futásra. Miután futott egy időszeletnyit, ez a processz, átkerül az expired run queue-ba, egy új dinamikusan számolt prioritással.
+Mindig az aktív listából választja ki a legfontosabb processzt futásra. Miután futott egy időszeletnyit, ez a processz, átkerül az \textit{Expired run queue}-ba, egy új dinamikusan számolt prioritással.
 Emiatt, ahogy haladunk előre az időben az \textit{Active run queue}-ból folyamatosan fogynak el a processzek.  Amikor az \textit{Active run queue} végzett a processzekkel, a két lista felcserélődik és folyatatódik a végrehajtás az új listával.
-Annak érdekében, hogy meg lehessen különböztetni a batch és az interactive processzeket, egy úgynevezett "bonus" valtozót tartunk nyilván, ami a dinamikus prioritás számításnál fog előkerülni. Ennek az értéke 0 és 10 között mozgó egész érték \cite{aas2005understanding}.
+Annak érdekében, hogy meg lehessen különböztetni a \textit{batch} és az \textit{interactive} processzeket, egy úgynevezett "bonus" valtozót tartunk nyilván, ami a dinamikus prioritás számításnál fog előkerülni. Ennek az értéke 0 és 10 között mozgó egész érték \cite{aas2005understanding}.
 \begin{cpp}
 dynamic priority = MAX(100, MIN(static priority - bonus + 5, 139))
 \end{cpp}
@@ -64,7 +64,7 @@ Az interactive processzek általában nem fejezik be az időszeletüket amit kap
 % Annak érdekében hogy ezeket a kis CPU-s sorozatokat egyben befejezzék, nagy időszeletet próbál biztosítani számukra, ez az ütemező.
 % Ez itt a következő {cpp}-s részben is látszik, hogy a 120-as prioritásnál kisebb értékkel rendelkező processzeket(akik nagyon fontosak) nevezzük interaktívnak és nekik az időszeletüket, egy nagyobb szorzóval látjuk el. Ezt az időszeletet valószínűleg nem fogják kihasználni, csak biztosítani szeretnénk számukra hogy a CPUs életidejüket teljesen befejezzék és utána, önmaguktól úgyis lemondanak majd a processzorról. 
 
-Az időszelet meghatározása úgy történik, hogy amelyik processz kevesebb mint 120-as prioritással rendelkezik, nagyobb időszeletet kap, 120-nál nagyobb prioritású processzek pedig kevesebbet. A számítás Python forráskód formájában a következőképpen szemléltethető
+Az időszelet meghatározása úgy történik, hogy amelyik processz kevesebb mint 120-as prioritással rendelkezik, nagyobb időszeletet kap, 120-nál nagyobb prioritású processzek pedig kevesebbet. A számítás Python forráskód formájában a következőképpen szemléltethető:
 \begin{python}
 if priority < 120:
     time_slice = (140 - priority) * 20
@@ -178,7 +178,7 @@ struct sched_class {
 \end{cpp}
  
 Minden ütemező osztálynak prioritása van. 
-Az általános ütemező, végigiterál az ütemező osztályokon és azt a legnagyobb prioritással rendelkező osztályt fogja választani, amiben található futtatható processz. A megválasztott ütemezési osztály fogja eldönteni, hogy melyik processz kerülhet végrehajtásra.
+Az általános ütemező, végigiterál az ütemező osztályokon, és azt a legnagyobb prioritással rendelkező osztályt fogja választani, amiben található futtatható processz. A megválasztott ütemezési osztály fogja eldönteni, hogy melyik processz kerülhet végrehajtásra.
 
 A kernel 5.8.x verziójában, három ütemezési osztály található, név szerint: 
 \begin{itemize}
@@ -284,13 +284,13 @@ Ez a struktúra ki lett bővítve néhány pointerrel, amik a különböző oszt
 
 Annak az eldöntése, hogy melyik processz kerül legközelebb végrehajtásra, függ a prioritástól. Minden processz el van látva egy prioritás értékkel, ami lehet dinamikus prioritás vagy statikus prioritás.
 
-Dinamikus prioritásnak nevezzük azt, amit a kernel normál folyamatoknál alkalmaz. Ehhez az értékhez figyelembe veszi a processz nice értékét, az elmúlt időben megfigyelt tevékenységét (CPU vagy I/O lázas processz), és hogy mennyi időt töltött várakozással, illetve  végrehajtással.
+Dinamikus prioritásnak nevezzük azt, amit a kernel normál folyamatoknál alkalmaz. Ehhez az értékhez figyelembe veszi a processz \textit{nice} értékét, az elmúlt időben megfigyelt tevékenységét (CPU vagy I/O lázas processz), és hogy mennyi időt töltött várakozással, illetve  végrehajtással.
 A normál processzekhez alapértelmezett prioritását meg tudjuk változtatni a \texttt{nice}, illetve a \texttt{renice} paranccsal.
 \begin{python}
 $ nice -n N ./a.out 
 \end{python}%$
 Ebben az \texttt{N} értéke +19 és -20 között mozoghat.
-Nagyobb \textit{nice} érték azt jelzi, hogy mennyire vagyunk "nagylelkűek" a többi programhoz, azáltal, hogy őket előre engedjük.
+A nagyobb \textit{nice} érték azt jelzi, hogy mennyire vagyunk "nagylelkűek" a többi programhoz, azáltal, hogy őket előre engedjük.
 
 A processzek \textit{nice} értékeiket lekérdezhetjük a \texttt{ps} programmal az alábbi formában.
 \begin{python}
@@ -372,7 +372,8 @@ A virtual runtime segítségével szeretnénk megközelíteni az ideális multit
 A piros-fekete fa, amelyet a Linux kernel esetében \texttt{rbtree}-nek hívnak, egy saját magát kiegyensúlyozó bináris fa.
 A fában a csomópontok egy-egy futásra kész taszkot reprezentálnak. A taszkok elhelyezkedése a fában a virtuális futásidejükhöz mérten történik. 
 A fa bal oldalában helyezkednek el a kisebb vruntime-mal rendelkező taszkok.
-A balszélső csomópontban mindig az a taszk található, amelyik a legkevesebb a vruntime-mal rendelkezik.
+A balszélső csomópontban mindig az a taszk található, amelyik a legkevesebb a vruntime-mal rendelkezik. Erre láthatunk egy példát \aref{fig:rb_tree}. ábrán.
+
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{images/redBlackTree.png}
@@ -391,7 +392,7 @@ A balszélső csomópontban mindig az a taszk található, amelyik a legkevesebb
 \end{enumerate}
 
 Amikor egy taszk futásra kész állapotba kerül, meghívódik a \texttt{enqueue\_task\_fair()}  függvény, ami hatására bekerül a piros-fekete fába. Amint a taszk kilépett ebből az állapotból, az ütemező \texttt{dequeue\_task\_fair()} segítségével eltávolítja a fából.
-A következő kódrészletben látható hogy milyen függvényeket használ az ütemező a runqueue kezeléséhez.
+A következő kódrészletben látható, hogy milyen függvényeket használ az ütemező a runqueue kezeléséhez.
 
 \begin{cpp}
 /*
@@ -462,32 +463,30 @@ const int sched_prio_to_weight[40] = {
 A \texttt{nice} szintek multiplikatívak, minden egyes \texttt{nice} érték módosulás, egy 10\%-os változást fog eredményezni. Ez azt jelenti, hogy amikor egy CPU intenzív folyamat \texttt{nice} szintje nulláról, egyre változik, a neki járó CPU idő körülbelül 10\%-al növekszik.
 Ez a 10\%-os effekt ugyanúgy érvényes a \texttt{nice} érték csökkénésére is, viszont ekkor 10\%-al kevesebb CPU időt fog kapni, az adott processz.
 Ehhez egy 1.25 hatvány alapot használ, így ha egy taszk +10\%-ot kap és egy másik -10\%-ot, a kettő között a relatív távolság körülbelül 25\%.
-A \texttt{sched\_prio\_to\_weight} tömb értékei kicsit eltérnek a kezdetleges változatától, amelyben az értékek még nagyon közel álltak azokhoz az eredményekhez, amelyeket megkaphatunk a következő kisebb képlet segítségével.
+A \texttt{sched\_prio\_to\_weight} tömb értékei kicsit eltérnek a kezdetleges változatától, amelyben az értékek még nagyon közel álltak azokhoz az eredményekhez, amelyeket megkaphatunk a következő kisebb képlet segítségével:
 
 \begin{equation}
-\frac{1024}{(1.25)^{nice}}
+\frac{1024}{(1.25)^{nice}}.
 \end{equation}
 
 Ez a tömb még 2007-ben lett lecserélve a jelenlegi változatra. 
 Megfigyelhető az is, hogyha a képletbe behelyettesítünk, nem kapunk pontos értékeket, ezért az új változatnál, bevezetésre került egy delta, így a legrosszabb esetben a numerikus hiba kisebb, mint $10^{-8}$.
 
 A súly változó, a processz struktúrában \textit{struct load\_weight load}-ként szerepel.
-Egy processz \texttt{vruntime} értékét úgy kapjuk meg, hogy a futással töltött idejét (\textit{delta\_exec}) el osztjuk, a processz súlyával (\textit{se->load}), majd ezt beszorozzuk a hozzátartozó \texttt{nice} értékkel (\textit{NICE\_0\_LOAD}).
+Egy processz \texttt{vruntime} értékét úgy kapjuk meg, hogy a futással töltött idejét (\texttt{delta\_exec}) elosztjuk, a processz súlyával (\texttt{se->load}), majd ezt beszorozzuk a hozzátartozó \texttt{nice} értékkel (\texttt{NICE\_0\_LOAD}).
 \begin{cpp} 
 static void update_curr(struct cfs_rq *cfs_rq)
 {
-	...
-
-	curr->vruntime += calc_delta_fair(delta_exec, curr);
-
-	...
+    ...
+    curr->vruntime += calc_delta_fair(delta_exec, curr);
+    ...
 }
 static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
 {
-	if (unlikely(se->load.weight != NICE_0_LOAD))
-		delta = __calc_delta(delta, NICE_0_LOAD, &se->load);
+    if (unlikely(se->load.weight != NICE_0_LOAD))
+        delta = __calc_delta(delta, NICE_0_LOAD, &se->load);
 
-	return delta;
+    return delta;
 }
 \end{cpp}
 
@@ -503,42 +502,42 @@ Az időszelet minden processz számára külön kalkulálódik, amit a következ
 \begin{cpp}
 static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
-	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);
+    u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);
 
-	for_each_sched_entity(se) {
-		struct load_weight *load;
-		struct load_weight lw;
+    for_each_sched_entity(se) {
+        struct load_weight *load;
+        struct load_weight lw;
 
-		cfs_rq = cfs_rq_of(se);
-		load = &cfs_rq->load;
+        cfs_rq = cfs_rq_of(se);
+        load = &cfs_rq->load;
 
-		if (unlikely(!se->on_rq)) {
-			lw = cfs_rq->load;
+        if (unlikely(!se->on_rq)) {
+            lw = cfs_rq->load;
 
-			update_load_add(&lw, se->load.weight);
-			load = &lw;
-		}
-		slice = __calc_delta(slice, se->load.weight, load);
-	}
-	return slice;
+            update_load_add(&lw, se->load.weight);
+            load = &lw;
+        }
+        slice = __calc_delta(slice, se->load.weight, load);
+    }
+    return slice;
 }
 \end{cpp}
 
-A számításához, szükségünk van az aktuális processz súlyára (\texttt{se->load.weight}), amit el kell osztanunk a CFS \texttt{runqueue}-ban található processzek összegzett súlyával(\texttt{cfs\_rq->load.weight}) és ezt pedig be kell szorozzuk a \texttt{sched\_period} változó értékével. Az utóbbi nem egy konstans szám, ahhoz képest változik az értéke, hogy mennyi task található a \texttt{runqueue}-ban. Célja a \texttt{sched\_period}-nak, hogy meghatározzon egy intervallumot, amelyet minden taszk képes lesz egyszer, futással tölteni.
+A számításához, szükségünk van az aktuális processz súlyára (\texttt{se->load.weight}), amit el kell osztanunk a CFS \texttt{runqueue}-ban található processzek összegzett súlyával (\texttt{cfs\_rq->load.weight}) és ezt pedig be kell szorozzuk a \texttt{sched\_period} változó értékével. Az utóbbi nem egy konstans szám, ahhoz képest változik az értéke, hogy mennyi task található a \texttt{runqueue}-ban. Célja a \texttt{sched\_period}-nak, hogy meghatározzon egy intervallumot, amelyet minden taszk képes lesz egyszer, futással tölteni.
 Ennek az értékét a következő képpen kapjuk meg.
 
 \begin{cpp}
 static u64 __sched_period(unsigned long nr_running)
 {
-	if (unlikely(nr_running > sched_nr_latency))
-		return nr_running * sysctl_sched_min_granularity;
-	else
-		return sysctl_sched_latency;
+    if (unlikely(nr_running > sched_nr_latency))
+        return nr_running * sysctl_sched_min_granularity;
+    else
+        return sysctl_sched_latency;
 }
 \end{cpp}
 
-Az ütemező először megnézi, hogy a \texttt{runqueue}-ban található taszkok számát (\texttt{Ez az nr\_running változó.}). 
-Amennyiben ez az érték nagyobb mint a \texttt{sched\_nr\_latency}, az ütemező tudni fogja, hogy túl sok a taszk, ezért hogy mindenkinek biztosítson elegendő időt, egy bizonyos alsó határt fog felhasználni a következőképpen. Ez az alsó határ, az úgynevezett \textit{min\_granularity}. Kis taszkszám esetén pedig a \texttt{sched\_period} értéke, megegyezik a  \texttt{sysctl\_sched\_latency} értékével.
+Az ütemező először megnézi, hogy a \texttt{runqueue}-ban található taszkok számát (Ez az \texttt{nr\_running} változó.). 
+Amennyiben ez az érték nagyobb, mint a \texttt{sched\_nr\_latency}, az ütemező tudni fogja, hogy túl sok a taszk, ezért hogy mindenkinek biztosítson elegendő időt, egy bizonyos alsó határt fog felhasználni a következőképpen. Ez az alsó határ, az úgynevezett \textit{min\_granularity}. Kis taszkszám esetén pedig a \texttt{sched\_period} értéke, megegyezik a  \texttt{sysctl\_sched\_latency} értékével.
 
 \SubSection{Csoportos ütemezés}
 
@@ -548,6 +547,8 @@ Tegyük fel, hogy az A taszk tíz szálon szeretne futni, és a B taszk pedig ö
 Ebből kifolyólag az is megtörténhet, hogy az A processz még több szálon szeretne futni, így a B processz mindig csak minimális időszeletet fog kapni(Ami 1 ms). Annak érdekében, hogy mindenkivel szembe igazságosak legyünk, A és B processzeknek egyforma időszeletet kell adnia az ütemezőnek. Ez azt jelenti, hogy A és B processz 50\%-50\% időszeleteket kapnak, és ezt a részt felosztják a szálak között, tehát az A processznek mind a tíz szála külön-külön 5\%-ot fognak megkapni.
 Annak érdekében, hogy ezt az igazságtalan időszelet kiosztást elkerüljük, a CFS csoportos ütemezést használ. Itt konkrétan a csoport kapja meg a processzor időt, és nem a szálak külön-külön.
 A CFS taszk csoportok, a \texttt{sched\_entity} strúktúra egy része, és minden csoport megfeleltethető egy ütemezési entitásnak.
+
+Áttekintés képpen a \textit{runqueue} és a tasztstruktúra hierarchiáját láthatjuk \aref{fig:structurehierarchi}. ábrán.
 
 \begin{figure}[h!]
 \centering

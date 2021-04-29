@@ -109,10 +109,10 @@ Ez szintén egy szerver profil, ami a magas áteresztőképességre van optimali
 Szintén kikapcsolja az energiamegtakarító mehanizmusokat és a sysctl felhasználásával javítja a hálózati I/O és háttértárak teljesítményét, emellett próbálja a deadline ütemezési osztályt is használni.
 \end{itemize}
 
-Ezeket a profilokat hasonlítom össze egymással és egy olyan változattal ahol nem használok tuned optimalizálást (Teljesen általános felhasználási mód).
+Ezeket a profilokat hasonlítom össze egymással, és egy olyan változattal ahol nem használok tuned optimalizálást, vagyis teljesen általános felhasználási módnak tekintettem.
 Az utóbbit \texttt{none} elnevezéssel fogom jelölni a diagrammokon.
 A teszteléshez a már korábban bemutatott benchmarkok közül fogom felhasználni az sample-programot, ebizzy-t, fs-mark-ot és a ctx-clock-ot.
-A következő ábrákon láthatjuk hogy a desktop profil teljesített a legjobban, a legtöbb teszten.
+\Aref{fig:tunedProfilesSampleprogramAndCtxClock}. és \ref{fig:tunedProfilesEbizzyAndFsmark}. ábrákon láthatjuk, hogy a desktop profil teljesített a legjobban, a legtöbb teszten.
 \begin{figure}[h!]
 \centering
 \includegraphics[width=\textwidth]{images/sampleProgramAndCtxClock.png}
@@ -136,12 +136,12 @@ Egy adott profillal és egy benchmark programmal tíz mintát készítettem és 
 
 A \textit{SchedulerTuneML} programban profilok helyett felhasználási módokat lehet szabályozni, ami alapján tudjuk hangolni a rendszerünket. A tuned programban már bemutatott \texttt{desktop} és \texttt{latency-performance} profilokhoz hasonló felhasználási módokat készítettem a \textit{SchedulerTuneML} programmal. A \texttt{desktop} profilhoz hasonlító felhasználási mód kialakításához, több processzormagos felhasználást, nem szerver szintű terhelés, magas prioritást és aktív swap használatot alkalmaztam. A \texttt{latency-performance} profil megközelítéséhez, szerver szintű terhelést, több processzormagos felhasználást, alacsony prioritást választottam, swap használat nélkül.
 
-A különböző profilok és felhasználási módok teljesítményeinek összevetésére, szintén a sample-program, ebizzy, fs-mark és a ctx-clock benchmarkot fogom felhasználni. 
+A különböző profilok és felhasználási módok teljesítményeinek összevetésére, szintén a sample-program, ebizzy, fs-mark és a ctx-clock benchmarkot fogom felhasználni (\ref{fig:tunedProfilesComparedToSchedulerTuneMlSampleprogramAndCtxClock}. és \ref{fig:tunedProfilesComparedToSchedulerTuneMlEbizzyAndFsMark}. ábra). 
 
 \begin{figure}[h!]
 \centering
 \includegraphics[width=\textwidth]{images/tunedAndSchedulerTuneMLCompareSampleprogramCtxclock.png}
-\caption{Tuned profilok és \textit{SchedulerTuneML} felhasználási módok összevetése (Sample-program és Ctx-clock benchmark)}
+\caption{Tuned profilok és \textit{SchedulerTuneML} felhasználási módok összevetése (sample-program és ctx-clock benchmark)}
 \label{fig:tunedProfilesComparedToSchedulerTuneMlSampleprogramAndCtxClock}
 \end{figure}
 
@@ -154,4 +154,4 @@ Sárgával jelöltem a legjobb értéket elérő hangolási módokat. Az első b
 \label{fig:tunedProfilesComparedToSchedulerTuneMlEbizzyAndFsMark}
 \end{figure}
 
-Az első benchmarkot követő teszteken, a \textit{SchedulerTuneML} Szerver felhasználási módja érte el a legjobb eredményeket.
+Az első benchmarkot követő teszteken a \textit{SchedulerTuneML} Szerver felhasználási módja érte el a legjobb eredményeket.

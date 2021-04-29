@@ -5,7 +5,7 @@
 Az optimalizáláshoz szükség van adatokra a processzekről, amelyeket egy kernel modul segítségével könnyedén kinyerhetünk.
 Mint ahogy \aref{ch:scheduling}. fejezetben láthattuk, minden processzhez tartozik egy vruntime változó, ami alapján történik a processzek megválasztása. 
 Kernel modul segítségével a processzek tulajdonságai, mint például a \texttt{vruntime}, prioritás, súly és egyéb információk egyszerűen lekérdezhetők.
-A kernelben processzek egy duplán láncolt listában tárolódnak, amit úgy hívnak hogy \textit{Processz tábla}. Minden egyes elem a listában egy \texttt{task\_struct} típusú processz descriptor, amit a \texttt{<linux/sched.h>}-ban defináltak. Egy processzről minden információ elérhető ezen keresztül.
+A kernelben processzek egy duplán láncolt listában tárolódnak, amit úgy hívnak hogy \textit{Processz tábla}. Minden egyes elem a listában egy \texttt{task\_struct} típusú processz descriptor, amit a \texttt{<linux/sched.h>}-ban defináltak. Egy processzről minden információ elérhető ezen keresztül (\ref{fig:structurehierarchi}. ábra).
 
 \begin{figure}[h!]
 \centering
@@ -43,13 +43,13 @@ A Red Hat által kiadott RHEL7 teljesítményre való hangolás útmutatójában
 Ezt főként több CPU maggal rendelkező számítógépek esetén érdemes alkalmazni.
 
 Egy processzor mag izolálást többféleképpen is megvalósíthatunk egy GNU/Linux operációs rendszerben.
-Legegyszerűbben úgy érthetjük el, hogyha a bootolási paramétereket módosítjuk. Például a harmadik és a hatodiktól, a nyolcadik processzor mag izolálásához elegendő csak \texttt{/etc/default/grub} fájlt módosítanunk a következő képpen.
+Legegyszerűbben úgy érthetjük el, hogyha a bootolási paramétereket módosítjuk. Például a harmadik és a hatodiktól, a nyolcadik processzor mag izolálásához elegendő csak \texttt{/etc/default/grub} fájlt módosítanunk a következőképpen.
 
 \begin{python}
 GRUB_CMDLINE_LINUX_DEFAULT="isolcpus=2,5-7"
 \end{python}
 
-CPU izolációhoz használhatjuk még a tuna programot, amivel bármikor végrehajthatjuk ezt a műveletet és nem csak bootoláskor érvényesülnek a változtatások. Azonban ez a módszer kicsit máshogy működik mint az isolcpus paraméter, amit láthattunk az előbb. Egy CPU mag izoláció futás alatt azt eredményezi, hogy az aktuális CPU-hoz rendelt processzek, átkerülnek egy másikra és ezután végzi el az elszigetelést.
+CPU izolációhoz használhatjuk még a tuna programot, amivel bármikor végrehajthatjuk ezt a műveletet és nem csak bootoláskor érvényesülnek a változtatások. Azonban ez a módszer kicsit máshogy működik mint az \texttt{isolcpus} paraméter, amit láthattunk az előbb. Egy CPU mag izoláció futás alatt azt eredményezi, hogy az aktuális CPU-hoz rendelt processzek, átkerülnek egy másikra és ezután végzi el az elszigetelést.
 
 Az elszigelt processzorokhoz a taskset program segítségével tudunk manuálisan hozzárendelni processzeket. Amennyiben egy PTS programmal szeretnénk elindítani a stream benchmarkot, a harmadik processzor magon, azt a következő képpen tehetjük meg.
 
@@ -65,77 +65,77 @@ A \texttt{numactl} program ugyanis más logikát követ, amit láthatunk a köve
 static struct bitmask *
 __numa_parse_cpustring(const char *s, struct bitmask *allowed_cpus_ptr)
 {
-	int invert = 0, relative=0;
-	int conf_cpus = numa_num_configured_cpus();
-	char *end;
-	struct bitmask *mask;
+    int invert = 0, relative=0;
+    int conf_cpus = numa_num_configured_cpus();
+    char *end;
+    struct bitmask *mask;
 
-	mask = numa_allocate_cpumask();
+    mask = numa_allocate_cpumask();
 
-	if (s[0] == 0)
-		return mask;
-	if (*s == '!') {
-		invert = 1;
-		s++;
-	}
-	if (*s == '+') {
-		relative++;
-		s++;
-	}
-	do {
-		unsigned long arg;
-		int i;
+    if (s[0] == 0)
+        return mask;
+    if (*s == '!') {
+        invert = 1;
+        s++;
+    }
+    if (*s == '+') {
+        relative++;
+        s++;
+    }
+    do {
+        unsigned long arg;
+        int i;
 
-		if (!strcmp(s,"all")) {
-			copy_bitmask_to_bitmask(allowed_cpus_ptr, mask);
-			s+=4;
-			break;
-		}
-		arg = get_nr(s, &end, allowed_cpus_ptr, relative);
-		if (end == s) {
-			numa_warn(W_cpuparse,
-			 "unparseable cpu description `%s'\n", s);
-			goto err;
-		}
-		if (!numa_bitmask_isbitset(allowed_cpus_ptr, arg)) {
-			numa_warn(W_cpuparse, 
-			"cpu argument %s is out of range\n", s);
-			goto err;
-		}
-		...
+        if (!strcmp(s, "all")) {
+            copy_bitmask_to_bitmask(allowed_cpus_ptr, mask);
+            s+=4;
+            break;
+        }
+        arg = get_nr(s, &end, allowed_cpus_ptr, relative);
+        if (end == s) {
+            numa_warn(W_cpuparse,
+             "unparseable cpu description `%s'\n", s);
+            goto err;
+        }
+        if (!numa_bitmask_isbitset(allowed_cpus_ptr, arg)) {
+            numa_warn(W_cpuparse, 
+            "cpu argument %s is out of range\n", s);
+            goto err;
+        }
+        ...
 \end{cpp}
 
-Először kiolvassa a CPU affinitás-maszkot, és ezzel ellenörzi, hogy a megadott CPU-lista érvényes-e és csak akkor végzi el a processz CPU-hoz való rendelését, amikor ez érvényes.
+Először kiolvassa a CPU affinitás-maszkot, és ezzel ellenőrzi, hogy a megadott CPU-lista érvényes-e és csak akkor végzi el a processz CPU-hoz való rendelését, amikor ez érvényes.
 Ezzel szemben a \texttt{taskset} programnak kicsit egyszerűbb a logikája.
 
 \begin{cpp}
 static void do_taskset(struct taskset *ts, size_t setsize, 
-						cpu_set_t *set){
-	/* read the current mask */
-	if (ts->pid) {
-		if (sched_getaffinity(ts->pid, ts->setsize, ts->set) < 0)
-			err_affinity(ts->pid, 1);
-		print_affinity(ts, FALSE);
-	}
+                       cpu_set_t *set){
+    /* read the current mask */
+    if (ts->pid) {
+        if (sched_getaffinity(ts->pid, ts->setsize, ts->set) < 0)
+            err_affinity(ts->pid, 1);
+        print_affinity(ts, FALSE);
+    }
 
-	if (ts->get_only)
-		return;
+    if (ts->get_only)
+        return;
 
-	/* set new mask */
-	if (sched_setaffinity(ts->pid, setsize, set) < 0)
-		err_affinity(ts->pid, 1);
+    /* set new mask */
+    if (sched_setaffinity(ts->pid, setsize, set) < 0)
+        err_affinity(ts->pid, 1);
 
-	/* re-read the current mask */
-	if (ts->pid) {
-		if (sched_getaffinity(ts->pid, ts->setsize, ts->set) < 0)
-			err_affinity(ts->pid, 0);
-		print_affinity(ts, TRUE);
-	}
+    /* re-read the current mask */
+    if (ts->pid) {
+        if (sched_getaffinity(ts->pid, ts->setsize, ts->set) < 0)
+            err_affinity(ts->pid, 0);
+        print_affinity(ts, TRUE);
+    }
 }
 \end{cpp}
 
 Először beolvassa az affinitás értéket, majd közvetlenül megvalósítja a processz affinitását, a \texttt{sched\_setaffinity} rendszerhívással.
-A sikeres processzor elszigetelést ellenörizhetjük a \texttt{htop} programmal, amint egy nagyobb terhelést valósítottunk meg a számítógépünkön.
+A sikeres processzor elszigetelést ellenörizhetjük a \texttt{htop} programmal, amint egy nagyobb terhelést valósítottunk meg a számítógépünkön (\ref{fig:taskset}. ábra).
 
 \begin{figure}[h!]
 \centering
@@ -191,7 +191,7 @@ Itt nem történik módosítás, marad az eggyel való szorzás.
 \item \texttt{SCHED\_TUNABLESCALING\_LOG}
 
 Logaritmikus módosítás $*1+ilog(ncpus)$
-Ahol az \texttt{ncpus} a cpu-k számát jelöli.
+Ahol az \texttt{ncpus} a CPU-k számát jelöli.
 
 \item \texttt{SCHED\_TUNABLESCALING\_LINEAR}
 
@@ -229,7 +229,7 @@ Az utolsó változó pedig a \texttt{vm.swappiness}, amit szintén elérhetünk 
 A \texttt{vm.swappiness} egy hangolható kernelparaméter, amely szabályozza, hogy a kernel mennyire kedvez a swap memóriának a RAM felett. A változó intervalluma 0-100 ig terjed, magasabb érték agresszív kilapozást eredményez, amíg a nullánál pedig mondhatni teljesen ki lesz kapcsolva a swap memória használata. Az összes ütemezőhöz kapcsoló hangolható paraméter tesztelése túl sok időt vehet igénybe, feltéve azt, hogy minden beállítással szeretnék futtatni egy tesztet és egyes paraméterek intervallumai sem mondhatók túl kicsinek. Ezért a kiválasztott paramétereim intervallumát négy részre fogom szétszedni, annak érdekében, hogy a tesztek hamarabb lefussanak, így több időt tudok szánni a kapott adatok elemzésére.
 
 A módosítások hatásait benchmark programokkal tervezem mérni, amelyhez a PTS programot fogom felhasználni. Mivel különböző felhasználási módokra tervezem az optimalizálást, így az \texttt{openbenchmarking.org} oldaláról minden kategóriából választottam egy tesztet. 
-Teszt választásnál fő szempont volt a gyors lefutási idő, a teszt müködése és hogy milyen konfigurációs beállítások elérhetők hozzá. Annak érkében, hogy pontos mérést végezzek a tesztekkel, célszerűnek tartottam azt, hogy minden változó módosításnál több mintát is vegyek.
+Teszt választásnál fő szempont volt a gyors lefutási idő, a teszt müködése, és hogy milyen konfigurációs beállítások elérhetők hozzá. Annak érkében, hogy pontos mérést végezzek a tesztekkel, célszerűnek tartottam azt, hogy minden változó módosításnál több mintát is vegyek.
 Mivel kézzel a tesztek indítása és a paraméterek megváltoztatása egyesével elég hosszadalmas lenne, így készítettem erre egy programot.
 
 \Section{A \textit{Parameter-test} program}
@@ -241,7 +241,7 @@ Azért a C programozási nyelvet válaszotttam a megvalósítására, mert a pro
 
 \SubSection{A program felépítése}
 
-A program először inicializálja az \texttt{ncurses} képernyőt, majd ezután meghívja az első fő függvényt, aminek a feladata, hogy bekérje a felhasználótól a teszt nevét verziószámmal együtt. Ezután a mintaszámot, illetve az intervallum szétbontásának számát kéri be.  
+A program először inicializálja az \texttt{ncurses} képernyőt, majd ezután meghívja az első fő függvényt, aminek a feladata, hogy bekérje a felhasználótól a teszt nevét verziószámmal együtt (\ref{fig:parameter-testInit}. ábra). Ezután a mintaszámot, illetve az intervallum szétbontásának számát kéri be.  
 
 \begin{cpp}
 void initTestVariables(char *testName, int *sampleCount, int *interval)
@@ -257,14 +257,14 @@ Az utóbbi két input átugorható enter megnyomásával, ekkor alapértelmezett
 \end{figure}
 
 A tesztnév megadásnál fontos a veriószám megadás, mivel a tesztekből újabb változatok kerülnek fel a \texttt{openbenchmark.org}-ra és minden verzióhoz új jegyzéket készít a PTS program a /var/lib/phoronix-test-suite/test-profiles/pts directory-ba.
-Minden teszthez tartozik egy jegyzék, amiben több \texttt{xml} kiterjesztésű fájl is megtalálható, ezek közül fontos kiemelni a \texttt{test-definition.xml}-t amiben a teszthez tartozó konfigurációs beállítások találhatók meg.
+Minden teszthez tartozik egy jegyzék, amiben több \texttt{xml} kiterjesztésű fájl is megtalálható, ezek közül fontos kiemelni a \texttt{test-definition.xml}-t, amiben a teszthez tartozó konfigurációs beállítások találhatók meg.
 A kezdeti paraméterek megadását követően, a teszt előkészületeihez ér a program, itt történik meg a teszt név ellenörzése, elérhető teszt konfigurációk listázása, kiválasztása és a \textit{batch-benchmark} benchmark indítási módszer konfigurálása. 
 
 \begin{cpp}
 void preparations(char *testName)
 \end{cpp}
 
-A \texttt{sched\_tunable\_scaling} kernel változó alapértelmezett értéke 1, amiről megtudhattuk az elöző pontban hogy, bizonyos mértékben módosítani fogja a beállított kernel változókat a teszt során, emiatt én \texttt{preparations} függvényem elején, ezt az értéket 0-ra állítom. Így biztosítom azt hogy véletlenül se legyen emiatt, benchmarkból származó inkonzisztens értékem.
+A \texttt{sched\_tunable\_scaling} kernel változó alapértelmezett értéke 1, amiről megtudhattuk az elöző pontban hogy, bizonyos mértékben módosítani fogja a beállított kernel változókat a teszt során, emiatt a \texttt{preparations} függvényem elején, ezt az értéket 0-ra állítom. Így biztosítom azt hogy véletlenül se legyen emiatt, benchmarkból származó inkonzisztens értékem.
 Ezt követi a tesztnév-verziószám ellenörzés. Amennyiben nem találja meg a megadott névvel a fájlt, a program hibaüzenettel leáll.
 Abban az esetben, ha létezik a fájl és a hozzá tartozó teszt, a konfigurációs beállításokat meg kell jelenítsem illetve módosítanom kell azokra az értékekere, amelyeket a felhasználó kiválaszt.
 A PTS programban két féle képpen lehet beállításokat megadni úgy, hogy ne szakítsa meg a végrehajtást amiatt, hogy újra bekéri billentyűzetről a megadott opciót.
@@ -283,7 +283,7 @@ void startTest(int interval, int sampleCount, char *testName);
 A főbb paraméterek átadása meghatározza a kimeneti fájl nevét, amibe belefűzi a dátumot (év, hónap, nap, óra, perc, másodperc), így több teszt is futtatható egymást követően, anélkül hogy felülírnák egymást.
 Ezt követően a kernel változók inicializálásra kerülnek, mind a saját intervallumának a legkisebb értékét veszi fel. A program a ciklusmagban, készít egy menüt, amibe kiírja a teszt nevét, a teszt sorszámát és az utolsó öt eredményt, amit a teszt az aktuális beállításokkal produkált. A menü kirajzolása után elindul az első benchmark, a kívánt mintaszámmal és konfigurációs beállításokkal. Amikor a benchmark befejeződött, az eredményt eltárolja a \texttt{/var/lib/phoronix-test-suite/test-results/myresult/composite.xml} fájlban, \\ amelyből a program kiolvassa az eredményt, amit továbbít az eredmény fájlba, az aktuális kernel változókkal együtt. Ezt az eredményt továbbítja az eredmények oszlopba is, így a felhasználó is követheti az eredmények változását.
 
-\noindent A program kiolvassa az eredményt, amit továbbít az eredmény fájlba, az aktuális kernel változókkal együtt. Ezt az eredményt megjeleníti az eredmények oszlopba, így a felhasználó is követheti az eredmények változását.
+\noindent A program kiolvassa az eredményt, amit továbbít az eredmény fájlba, az aktuális kernel változókkal együtt. Ezt az eredményt megjeleníti az eredmények oszlopba, így a felhasználó is követheti az eredmények változását (\ref{fig:parameter-test}. ábra).
 
 \begin{figure}[h!]
 \centering
@@ -292,7 +292,7 @@ Ezt követően a kernel változók inicializálásra kerülnek, mind a saját in
 \label{fig:parameter-test}
 \end{figure}
 
-Végül a menü ablakot törli és újrarajzolja a következő iterációban.
+Végül, a menü ablakot törli és újrarajzolja a következő iterációban.
 Amikor a teszt végzett az összes kernel változó végigpróbálásával, a fájlt lezárja és visszaállítja a változókat az eredeti értékükre.
 Az így kapott fájl formátuma JSON típusú, amely előnyös a későbbi elemzés szempontjából.
 
@@ -300,7 +300,7 @@ Az így kapott fájl formátuma JSON típusú, amely előnyös a későbbi elemz
 % \SubSection{\textit{SchedulerTuneML} program implentációja}
 
 A \textit{SchedulerTuneML} program Python programozási nyelven készítettem, több különböző modul felhasználásával.
-A program célja hogy, a \textit{parameter-test} program által készített JSON fájlokat feldolgozza. A fájlból kinyert adatokat elemzi, besorolja őket csoportokba, diagrammokat készít ezekből és javaslatokat tesz a kernel változók értékeinek beállítására, az adott felhasználási módhoz viszonyítva.
+A program célja, hogy a \textit{parameter-test} program által készített JSON fájlokat feldolgozza. A fájlból kinyert adatokat elemzi, besorolja őket csoportokba, diagrammokat készít ezekből és javaslatokat tesz a kernel változók értékeinek beállítására, az adott felhasználási módhoz viszonyítva.
 
 \SubSection{Adatok előkészítése az elemzéshez}
 
@@ -439,20 +439,21 @@ params = {
 \end{python}
 
 \SubSection{Optimális paraméterek keresése}
-A paraméterezés kapcsán az \texttt{sklearn.grid\_search.GridSearchCV} függvényt választottam, ami egy kimerítő keresést végez, a legjobb paraméterek megtalálásához. A függvény alkalmazásához készítenem kellett egy paraméter készletet, amiben végig próbálja az összes lehetséges kombinációját. Ami azt jelenti hogy, minden próba végén kiértékeli a modelt egy Cross-Validation módszer segítségével. Ezáltal megkaptam azokat a model paramétereket, amivel a legjobban teljesített.
+
+A paraméterezés kapcsán az \texttt{sklearn.grid\_search.GridSearchCV} függvényt választottam, ami egy kimerítő keresést végez, a legjobb paraméterek megtalálásához. A függvény alkalmazásához készítenem kellett egy paraméter készletet, amiben végig próbálja az összes lehetséges kombinációját. Ami azt jelenti hogy, minden próba végén kiértékeli a modelt egy Cross-Validation módszer segítségével (\ref{fig:cross-validation}. ábra). Ezáltal megkaptam azokat a model paramétereket, amivel a legjobban teljesített.
 %referencia az sklearn GridSearch és Cross Validation-re: https://scikit-learn.org/stable/modules/cross_validation.html
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.3]{images/gridSearch.png}
 \caption{Kereszt-validáció, a paraméterek megkeresésére}
-\label{fig:neuralnetwork}
+\label{fig:cross-validation}
 \end{figure}
 
-Minden próba végén kiértékeli a modelt egy Cross-Validation módszer segítségével. A legjobb értéket elért paraméterek, ezután lekérdezhetők a következő képpen.
+Minden próba végén kiértékeli a modelt egy Cross-Validation módszer segítségével. A legjobb értéket elért paraméterek, ezután lekérdezhetők a következőképpen.
 
 \begin{python}
-model = GridSearchCV( MultiOutputClassifier(MLPClassifier())
-  ,param_grid=params)
+model = GridSearchCV(
+    MultiOutputClassifier(MLPClassifier()), param_grid=params)
 model.fit(X_train,y_train)
 print(model.best_params_)
 \end{python} 
@@ -556,13 +557,13 @@ Ezáltal eljutottunk a megfelelő formához és kezdhetjük a tanítás hatékon
 A \texttt{sklearn.metrics} modulból az \texttt{accuracy\_score} függvényt választottam, ami gyakorlatilag megegyezik Jaccard index-el.
 %TODO referencia a képletre: https://en.wikipedia.org/wiki/Jaccard_index
 
-A Jaccard index képlete a következő.
+A Jaccard index képlete a következő:
 \begin{equation}
-J(A,B) = \frac{|A \cap B|}{|A \cup B|} = \frac{|A \cap B|}{|A| + |B| - |A \cap B|}
+J(A,B) = \frac{|A \cap B|}{|A \cup B|} = \frac{|A \cap B|}{|A| + |B| - |A \cap B|}.
 \end{equation}
 
 Két fontos paramétert kell átadnunk a függvénynek, ezek a becsült változók értékei és az elvárt értékek.
-A model 70,9\%-os hatékonyságot ért el a tanító mintákon, ami szerintem elfogadható eredmény, tekintve azt hogy több féle használati módot is próbál figyelembe venni, viszonlyag kevés intervallum szétbontással és mintaszámmal. A későbbiekben úgygondolom érdemes lehet a tesztek futtatása mellett egy erőforrás monitort is alkalmazni(Ami bizonyos időközönként, lementi az adott erőforrás használat állapotot), így a különböző felhasználási módok mégjobban elkülöníthetők lennének egymástól.
+A model 70,9\%-os hatékonyságot ért el a tanító mintákon, ami szerintem elfogadható eredmény, tekintve azt, hogy több féle használati módot is próbál figyelembe venni, viszonlyag kevés intervallum szétbontással és mintaszámmal. A későbbiekben úgy gondolom érdemes lehet a tesztek futtatása mellett egy erőforrás monitort is alkalmazni (ami bizonyos időközönként, lementi az adott erőforrás használat állapotot), így a különböző felhasználási módok mégjobban elkülöníthetők lennének egymástól.
 A validációs mintákon is kipróbáltam a modelt, itt 73,1\%-os hatékonyságot ért el a becslésekkel, így tanító mintákhoz képest javulás észlelhető.
 
 Az elkészített modelt és az azt tanító, illetve felhasználó program megtalálható a már \textit{mlParameterGridSearch.ipynb} programnál is említett repozitóriumban. A model egy tömörített fájl formájában található meg \textit{model.sav} néven. A program amely a gépi tanulást és a becsléseket végezte, szintén egy \textit{Jupyter notebook}, amelynek a fájlneve \textit{SchedulerTuneML.ipynb}.
