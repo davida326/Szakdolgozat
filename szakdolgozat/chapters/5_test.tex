@@ -1,0 +1,157 @@
+\Chapter{Tesztelés}
+
+A fejezet célja, hogy bemutassa és összehasonlítsa a teszteket, illetve az elért eredményeket. Mivel a benchmark programok használati módban eltérnek egymástól, megfigyelhető hogy egyes benchmark programoknál, jelentősebbek a kernel változók módosításainak hatásai.
+Ezeket diagrammok és ábrák formájában összesítem a következőkben.
+
+A benchmark tesztelési környeznek egy hagyományos asztali számítógépet használtam fel, amelynek hardveres és szoftveres specifikációi a következők.
+
+\begin{lstlisting}
+       _,met$$$$$gg.         davida@debian-pc 
+    ,g$$$$$$$$$$$$$$$P.      ---------------- 
+  ,g$$P"     """Y$$.".       OS: Debian GNU/Linux 10 x86_64 
+ ,$$P'              `$$$.    Host: H81-D3 
+',$$P       ,ggs.     `$$b:  Kernel: 5.8.5 
+`d$$'     ,$P"'   .    $$$   Uptime: 2 hours, 25 mins 
+ $$P      d$'     ,    $$P   Packages: 1669 (dpkg) 
+ $$:      $$.   -    ,d$$'   Shell: bash 5.0.3 
+ $$;      Y$b._   _,d$P'     Resolution: 1920x1080 
+ Y$$.    `.`"Y$$$$P"'        WM: i3 
+ `$$b      "-.__             Theme: Adwaita [GTK3] 
+  `Y$$                       Icons: Adwaita [GTK3] 
+   `Y$$.                     Terminal: urxvt 
+     `$$b.                   CPU: Intel i5-4440 (4) 3.300GHz 
+       `Y$$b.                GPU: AMD Radeon R7 265 1024SP 
+          `"Y$b._            GPU: Intel HD Graphics 
+              `"""           Memory: 1358MiB / 7844MiB
+\end{lstlisting}
+A neofetch program választottam erre a feladatra. Úgy gondoltam, hogy ez kellőképpen összegzi az szükséges adatokat. A Neofetch program, egy CLI-s rendszer, információkat megjelenítő eszköz, amelyet BASH-ben írtak [].
+
+\Section{Benchmark tesztek elemzése}
+
+Az \texttt{openbenchmarking.org} oldalon több mint 600 benchmark tesztprogram érhető el kategorizálva. A teszteléshez minden kategóriából választottam programokat, így szerettem volna szimulálni a különböző felhasználási módokat. Figyelembe kellett vegyem a benchmark választásnál azt is, hogy a programok viszonylag gyorsan végezzenek, mivel sok féle kombinációval kellett végrehajtanom ugyanazokat a teszteket. 
+
+\SubSection{CPU intezív tesztek}
+
+Az első felhasználási mód, a CPU-t terhelő benchmarkok kategóriája. Ehhez két tesztet is választottam, névszerint a \textit{sampleprogram}-ot illetve az \textit{ebizzy}-t.
+
+Minden teszthez készítettem néhány diagrammot, amin megfigyelhető, hogy a különböző változók módosításával milyen eredmények születtek (\ref{fig:CpuParameters}. ábra).
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{images/cpuBenchmarkValues.png}
+\caption{CPU benchmark eredményekhez tartozó kernel változók és prioritás értékek}
+\label{fig:CpuParameters}
+\end{figure}
+
+Ahogy látható, a két benchmark teszteredményeit hasonlónak mondhatjuk. Mindkettőnél megfigyelhető egy "hézag", ami elválasztja a jobb és a rossz eredményeket. Az eredmények romlása akkor jelentkezik amikor a \texttt{sched\_wakeup\_granularity\_ns} változóhoz nagyobb értékét állítunk, mint a \texttt{sched\_latency\_ns} fele. Ekkor sajnos a kis időciklusú taszkok nem lesznek képesek versenyezni a többi folyamattal amikor a processzort éppen nagy terhelés alatt áll.
+Az eredmények nagy része a legjobb kategóriába került, ez a \textit{sampleprogram}-nál 53\%, amíg az \textit{ebizzy}-nél pedig 58\%. Ebből következtethetünk arra, hogy a CPU intenzív felhasználási módhoz a legtöbb beállítás a kernel változókon, elfogadható teljesítményt eredményezett.
+
+\SubSection{Rendszert terhelő benchmark}
+
+Ebben a kategóriában nem processzor kimerítés hanemm, inkább a nagy rendszerhívás szám jellemzőbb.
+A született eredmények nagyrésze a legjobb kategóriába került. Így azt mondhatom hogy, a intenzív rendszerterhelés felhasználási módhoz a legtöbb beállítás amit végeztem a kernel változókon, megfelelő teljesítményt eredményez. Minél több eredmény kerül a legjobb kategóriába, az ML program annál könnyebben fog tudni "jobb" értéket javasolni az adott felhasználási módhoz.
+
+\SubSection{Videókártyát és memóriát terhelő benchmarkok}
+
+A grafikus és memória benchmarkok, felhasználási módban és terhelésben is eltérnek egymástól, viszont mégis van bennük egy közös.
+A grafikus benchmarkhoz készített \ref{fig:GraphicsAndMemoryParameters}. ábrán (ami a változó értékeket jeleníti meg és az azokkal elért eredményeket) látható, hogy itt is jelen van a CPU tesztnél már megfigyelt "hézag", a jobb illetve rosszabb értékek között, ami viszont a memória benchmarknál nem jelentkezik.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.35]{images/graphicsAndMemoryBenchmarkValue.png}
+\caption{Grafikus és memória benchmark eredményekhez tartozó kernel változók és prioritás értékek}
+\label{fig:GraphicsAndMemoryParameters}
+\end{figure}
+
+A memória és grafikus benchmark közös tulajdonsága az eredmény értékek eloszlása. Mindkét benchmarknál elmondható, hogy az eredmények legnagyobb része a legrosszabb kategóriába került.
+Ezek az értékek \aref{fig:GraphicsAndMemoryChart}.  kördiagrammokról leolvashatók.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{images/graphicsAndMemoryBenchmarkChart.png}
+\caption{Grafikus és memória benchmarkokból származó értékek}
+\label{fig:GraphicsAndMemoryChart}
+\end{figure}
+
+Így a 3-as, 4-es kategóriába tartozó eredmények ritkának mondhatók. Amennyiben megfigyeljük az adathalmazt, hogy mi is váltotta ki ezeket, észrevehetjük hogy a memória benchmarknál minden "jobb" eredmény eléréséhez szükség volt a szerver szintű terhelési mód beállítására.
+A grafikus benchmarknál sajnos nem találtam szabad szemmel látható összefüggéseket, így a legjobb beállítási értékek megválasztását az ML programra bíztam.
+
+\SubSection{Háttértárat terhelő benchmark}
+
+A háttértárakat terhelő benchmark kategória tipikusan az, ahol a processzek az életük nagyrészét I/O-ra történő várakozzással töltik.
+Az itt kapott eredmények nagy része 1-es illetve 2-es kategóriába került, ezeket vehetjük úgymond átlagos értékeknek (\ref{fig:diskChart}. ábra). Mivel a legtöbb érték a legrosszabb eredmények halmazaiba kerültek, feltételezhetjük hogy néhány beállítás elősegítette a jobb értékek kialakulását. 
+Fontos kiemelnem hogy, a módosított változó értékek nem függetlenek egymástól, emiatt nem feltételezhetjük azt, hogy ha a legjobb értékekeket elért változókat kiválasztjuk, megkapjuk a tökéletes beállítást az ütemező hangolására.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.8]{images/diskBenchmarkValue.png}
+\caption{Háttértárakat terhelő benchmarkból származó értékek.}
+\label{fig:diskChart}
+\end{figure}
+
+\Section{Tuned profilok összehasonlítása}
+
+A korábban már említett Tuned rendszer hangoló szolgáltatás segítségével, hangolhatunk a rendszerbeállításainkon, kiválasztott profilok szerint.
+A tuned jelenlegi változtában viszonylag sok profil elérhető, különböző felhasználási módokhoz, ezért kiválasztottam néhányat amelyek a következők.
+\begin{itemize}
+\item desktop
+
+Ez a profil egyszerű asztali felhasználási módra próbálja optimalizálni a rendszert.
+Mindemellett engedélyez egy \texttt{scheduler autogroups} opciót, amivel jobb válaszidőt képes elérni, ez főként interaktív folyamatok számára lényeges.
+
+\item latency-performance
+
+Ez egy tipikus szerver profil, ami alacsony késleltetésre van optimalizálva. Kikapcsol mindenféle energiamegtakarítási mehanizmust és a sysctl segítségével javítja a késleltetést.
+
+\item throughput-performance
+
+Ez szintén egy szerver profil, ami a magas áteresztőképességre van optimalizálva.
+Szintén kikapcsolja az energiamegtakarító mehanizmusokat és a sysctl felhasználásával javítja a hálózati I/O és háttértárak teljesítményét, emellett próbálja a deadline ütemezési osztályt is használni.
+\end{itemize}
+
+Ezeket a profilokat hasonlítom össze egymással, és egy olyan változattal ahol nem használok tuned optimalizálást, vagyis teljesen általános felhasználási módnak tekintettem.
+Az utóbbit \texttt{none} elnevezéssel fogom jelölni a diagrammokon.
+A teszteléshez a már korábban bemutatott benchmarkok közül fogom felhasználni az sample-programot, ebizzy-t, fs-mark-ot és a ctx-clock-ot.
+\Aref{fig:tunedProfilesSampleprogramAndCtxClock}. és \ref{fig:tunedProfilesEbizzyAndFsmark}. ábrákon láthatjuk, hogy a desktop profil teljesített a legjobban, a legtöbb teszten.
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{images/sampleProgramAndCtxClock.png}
+\caption{Sample-program és Ctx-Clock benchmark eredmények az említett profilokkal}
+\label{fig:tunedProfilesSampleprogramAndCtxClock}
+\end{figure}
+
+Itt a kisebb értékek számítanak jobbnak és a sárgával jelöltem a legjobb értéket elért profilt.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{images/ebizzyAndFsMark.png}
+\caption{Ebizzy és FS-Mark benchmark eredmények az említett profilokkal}
+\label{fig:tunedProfilesEbizzyAndFsmark}
+\end{figure}
+
+Az ebizzy és fs-mark esetén pedig a nagyobb értékek jelölik a jobb eredményt.
+Egy adott profillal és egy benchmark programmal tíz mintát készítettem és ezeknek vettem az átlagukat.
+
+\subsection{Tuned profilok összevetése a \textit{SchedulerTuneML} program felhasználási módjaival}
+
+A \textit{SchedulerTuneML} programban profilok helyett felhasználási módokat lehet szabályozni, ami alapján tudjuk hangolni a rendszerünket. A tuned programban már bemutatott \texttt{desktop} és \texttt{latency-performance} profilokhoz hasonló felhasználási módokat készítettem a \textit{SchedulerTuneML} programmal. A \texttt{desktop} profilhoz hasonlító felhasználási mód kialakításához, több processzormagos felhasználást, nem szerver szintű terhelés, magas prioritást és aktív swap használatot alkalmaztam. A \texttt{latency-performance} profil megközelítéséhez, szerver szintű terhelést, több processzormagos felhasználást, alacsony prioritást választottam, swap használat nélkül.
+
+A különböző profilok és felhasználási módok teljesítményeinek összevetésére, szintén a sample-program, ebizzy, fs-mark és a ctx-clock benchmarkot fogom felhasználni (\ref{fig:tunedProfilesComparedToSchedulerTuneMlSampleprogramAndCtxClock}. és \ref{fig:tunedProfilesComparedToSchedulerTuneMlEbizzyAndFsMark}. ábra). 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{images/tunedAndSchedulerTuneMLCompareSampleprogramCtxclock.png}
+\caption{Tuned profilok és \textit{SchedulerTuneML} felhasználási módok összevetése (sample-program és ctx-clock benchmark)}
+\label{fig:tunedProfilesComparedToSchedulerTuneMlSampleprogramAndCtxClock}
+\end{figure}
+
+Sárgával jelöltem a legjobb értéket elérő hangolási módokat. Az első benchmarknál megfigyelhető, hogy a \textit{SchedulerTuneML} program Szerverhez hasonlító felhasználási módja, nagyon rossz értéket produkált.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{images/tunedAndSchedulerTuneMLCompareEbizzyAndFsMark.png}
+\caption{Tuned profilok és \textit{SchedulerTuneML} felhasználási módok összevetése (Ebizzy és FS-Mark benchmark)}
+\label{fig:tunedProfilesComparedToSchedulerTuneMlEbizzyAndFsMark}
+\end{figure}
+
+Az első benchmarkot követő teszteken a \textit{SchedulerTuneML} Szerver felhasználási módja érte el a legjobb eredményeket.

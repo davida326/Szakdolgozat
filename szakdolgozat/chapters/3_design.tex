@@ -1,0 +1,121 @@
+\Chapter{Felhasznált eszközök és technológiák}
+
+%TODO https://www.phoronix-test-suite.com/documentation/phoronix-test-suite.pdf
+\Section{Phoronix Test Suite}
+
+Annak érdekében, hogy az ütemezőn végzett módosításaim hatásait megfigyelhessem, szükségem van teszt programokra. A \texttt{teszt} programokból kapott adatok alapján tudok javaslatokat tenni arra, hogy milyen mértékben módosítsam az ütemező paramétereket, bizonyos felhasználási módokhoz mérten.
+A teszteléshez \textit{Phoronix Test Suite} (PTS) programot választottam \cite{phoronix}.
+A \textit{Phoronix Test Suite} a rendelkezésre álló legátfogóbb tesztelési és benchmarking platform, elérhető GNU/Linux, Solaris, MacOS, Windows és BSD operációs rendszeren.
+A PTS lehetővé teszi hogy, a tesztek a telepítésétől, a végrehajtásig és jelentés készítésig teljesen automatikus módon történjenek.
+Minden tesztet könnyen reprodukálhatónak és használhatónak szántak.
+
+A Phoronix Test Suite nyílt forráskódú, GNU GPL licenszel.
+Több mint 400 teszt elérhető, az \texttt{OpenBenchmarking.org}-on keresztül.
+A következő alpontokban ennek, és a vizsgálatokhoz tartozó teszteknek a rövid áttekintését láthatjuk.
+
+\SubSection{OpenBenchmarking.org}
+
+Az \texttt{OpenBenchmarking.org} egy nyílt, együttműködő tesztelési platform, amely a Phoronix Test Suite programot bővíti ki, az automatizált tesztek teljes integrációval a Phoronix Test Suite teszt kliensbe.
+Ezáltal az \texttt{OpenBenchmarking.org} egy repository-ként szolgál, ahol a tesztek, teszt-profilok és az eredmények tárolódnak.
+
+Az \texttt{OpenBenchmarking.org} a megkönnyíti a teszt eredményeink összehasonlítását mások által elért eredményekkel.
+Minden Phoronix Test Suite program felhasználónak megengedett hogy feltöltse a tesztben elért eredményét az \texttt{OpenBenchmarking.org}-ra.
+
+\SubSection{Sample Pi Program}
+
+A  Sample Pi Program, egy egyszerű C++ programozási nyelven megírt program, ami a $\pi$ szám számjegyeit számolja ki egészen 8'765'4321 számjegyig. Ehhez a Leibniz formulát használja fel. A teszt maga a processzor terhelés kategóriába sorolható, azaz tipikusan egy batch folyamatnak tekinthető, amely a háttérben számol. Egyetlen processzként próbálja megterhelni valamelyik processzor magot. 
+
+A teszt a végrehajtási időt méri, ezáltal minél hamarabb lefut, annál jobb eredményt számolhatunk el.
+%TODO https://github.com/linux-test-project/ltp/tree/master/utils/benchmark/ebizzy-0.3
+
+\SubSection{Ebizzy}
+
+Az \textit{ebizzy} tesztje, egy olyan program, amely egy webszerver munkaterheléséhez hasonló munkaterheléseket generál. Egyszerre több szálon fut, amik külön-külön nagy mennyiségű memóriát allokálnak és szabadítanak fel, kis időközönként. Ebből kifolyólag hatékonyan, meg tudja terhelni a processzorokat. A rekord per másodperc rátája minél magasabb kell hogy legyen, a rendszerben töltött idő pedig minél kisebb. A vizsgálataimban a tesztet 20 másodpercre rögzítettem, így amire figyelnem kell az a másodpercenkénti rekordszám.
+
+\SubSection{FS-Mark}
+
+Az FS-Mark célja a fájlrendszer teljesítményének tesztelése.
+A teszt képes több módban is futni, a módok a fájlok méretét, darabszámát, illetve a program több szálon való futtatását szabályozzák. 
+Az program az írás részt szinkronban végzi jegyzékekken, meghajtókon keresztül.
+A választható konfigurációs módok közül, én 1000 fájl készítését választottam, 1MB-os mérettel fájlonként.
+
+\SubSection{Stream}
+
+A \textit{Stream} benchmark egy egyszerű szintetikus benchmark program, amely méri a fenntartható memória sávszélességet (MB/s-ben) és a számítási sebességet, egyszerű vector műveletekkel.
+
+Lényegében ez a teszt, a rendszermemória (RAM) teljesítményét méri.
+A teszten belül négy konfiguráció elérhető, amiből az egyszerű "Copy" módszer bizonyult megfelelő választásnak.
+Itt 16 byte körüli a feltételezett memóriaforgalom iterációnként.
+
+\SubSection{Ctx-clock}
+
+\textit{Ctx\_clock} egy egyszerű teszt program, a kontextus váltás mérése, órajelciklusokban.
+
+Tehát itt jobb eredménynek számít, a minél kisebb eredmény elérése a tesztben.
+Ez a benchmark a tipikus rendszer terheléses tesztek közé sorolható.
+
+\SubSection{Glmark2}
+
+Ez a \textit{Linaro glmark2} portjának tesztje, jelenleg az X11 OpenGL 2.0-t használja. A \textit{GLmark2} az OpenGL alapvető benchmarkja. Az összes teszt közül, ez a "leglátványosabb", 3D-s alakzatokat mozgat, textúrájukat cseréli, emellett az árnyékokat és fényeket is szabályozza.
+Alapvetően a grafikus kártyát próbálja meg terhelni, a benchmark pedig az átlagos képkocka/másodperc (\textit{Frame Per Second}) értéket határozza meg.
+
+\Section{Sysctl interfész}
+
+A \textit{sysctl} segítségével módosíthatjuk a kernel paramétereket futásidőben. Ezek a paraméterek elérhetők a \texttt{/proc/sys/} jegyzékben. Emiatt a \textit{sysctl}-nek szüksége van a \textit{proc} fájlrendszerre. A \textit{sysctl} interfész használható adatok olvasására és írására is egyaránt \cite{rubini1997kernel}.
+
+\Section{Python}
+
+%TODO Referencia: python.org/doc/essays/blurb/
+Az ütemezőn végzett módosításokból és benchmarkok programokból származó adataim feldolgozását Python programozási nyelv segítségével végzem.
+A Python egy interpreteres, objektum-orientált, magas szintű programozási nyelv, dinamikus szemantikával.
+A Python interpreter és a kiterjedt szabványkönyvtár, forrásként vagy bináris formátumban díjmentesen elérhető az összes főbb platformra, és szabadon terjeszthető \cite{van2007python}.
+% A Python programok hibakeresése egyszerű: egy hiba vagy rossz bemenet soha nem okoz szegmentálási hibát.
+
+\SubSection{Jupyter notebook}
+
+%TODO Referencia: https://jupyter-notebook.readthedocs.io/en/stable/notebook.html
+A \textit{Jupyter notebook} kiterjeszti az interaktív konzol alapú megközelítését minőségileg új irányba, web alapú alkalmazás biztosításával, amely alkalmas a teljes számítási folyamat elvégzésére: kód fejlesztésére, dokumentálására és végrehajtására, valamint az eredmények közlésére.
+(Nagyon szimpatikusnak találtam, hogy böngészőn belüli kódszerkesztésnél, automatikus a szintaxis kiemelés, emellett pedig a behúzásokat és a böngésző füleket is szépen kezeli.)
+
+A számítás eredményének megjelenítése olyan multimédiás ábrázolókat használ mint a HTML, LaTeX, PNG, SVG stb. Például a publikáció minőségű ábrák megjeleníthetők a cellákban, a \textit{matplotlib} könyvtár segítségével. A LaTeX segítségével könnyen beilleszthető bármilyen matematikai képlet/jelölés a \textit{MarkDown} típusú cellákba.
+
+
+A notebook dokumentumai tartalmazzák az interaktív ki- és bemeneteket, valamint további szövegeket, amely a kódot kísérik, de nem végrehajtásra szolgálnak. 
+Emiatt a notebook fájlok, a munkamenet számítási rekordjainak egy nyilvántartása. Azaz, egy fájlban megtalálható mind a futtatható kód, a magyarázó szöveg a matematikai leírásával és a kapott eredmények grafikus ábrázolásával. A munkafüzetek tulajdonképpen JSON fájlok és \texttt{.ipynb} kiterjesztéssel rendelkeznek.
+
+\SubSection{NumPy}
+
+%TODO Referencia: https://numpy.org/doc/stable/user/whatisnumpy.html
+A \textit{NumPy} a tudományos számítás alapvető csomagja a Python környezetnek.
+Ez egy függvénykönyvtár, amely többdimenziós tömb objektumot, különféle származtatott objektumokat (például maszkolt tömbök és mátrixok) és rutinok széles választékát kínálja a gyors tömb műveleteihez, beleértve a matematikai, logikai, válogatást, kiválasztást, I/O, diszkrét Fourier-transzformációk, alapvető lineáris algebrai, alapvető statisztikai műveletek, véletlenszerű szimuláció és még sok más feladat elvégzéséhez.
+
+A NumPy csomag középpontjában az \texttt{ndarray} objektum áll. Ez homogén adattípusok n-dimenziós tömbjeit foglalja magába, sok művelettel amit a lefordított kódban hajtanak végre a teljesítmény érdekében.
+Áttekintés jelleggel nézzük meg néhány tulajdonságát a NumPy tömböknek!
+\begin{itemize}
+\item A NumPy tömböket rögzített méretekkel hozhatjuk létre, ellentétben a Python listákkal.
+Az \texttt{ndarray} méretének megváltoztatása új tömböt hoz létre, és törli az eredetit.
+\item A NumPy tömb elemeinek ugyanazoknak az adattípusoknak kell lenniük, és így azonos méretűek lesznek a memóriában.
+\item A NumPy tömbök elősegítik a fejlett matematikai és más típusú műveleteket nagy mennyiségű adat esetén.
+\item Egyre több tudományos és matematikai Python-alapú csomag használja a NumPy tömböket, bár ezek általában támogatják a Python-szekvencia bevitelt, a feldolgozás előtt ezeket az inputokat NumPy tömbökké konvertálják, és gyakran NumPy tömböket adnak ki.
+\end{itemize}
+
+\SubSection{Matplotlib}
+
+%TODO referencia: https://matplotlib.org/stable/index.html
+A \textit{Matplotlib} egy átfogó könyvtár statikus, animált és interaktív vizuális elemek létrehozásához a Pythonban.
+Dolgozatomban a matplotlib csomagnak a \texttt{pyplot} részét használtam, az adathalmazaim megjelenítésére és elemzésére. A \texttt{matplotlib.pyplot} olyan funkciók gyűjteménye, amelyek a \texttt{matplotlib}-et úgy működtetik, mint a MATLAB. A függvényekkel itt, tipikusan olyan műveleteket végezhetünk, mint új ábrák készítése, vonalak megjelenítése a grafikonon, az ábrázolt elem cimkékkel való ellátása, stb.
+
+\SubSection{Pandas}
+
+%TODO referencia: https://pandas.pydata.org/docs/getting_started/index.html#intro-to-pandas
+A \textit{Pandas} egy gyors, hatékony, rugalmas és könnyen használható nyílt forráskódú adatelemzési és manipulációs eszköz, ami a Python programozási nyelv tetejére épült \cite{mckinney2011pandas}.
+
+A NumPy indexelő operátorok és az attribútum operátorok gyors és könnyű hozzáférést biztosít a pandas adatstruktúráihoz. \textit{Series} adatstruktúrák egyszerűen alakíthatók Numpy ndarray típusra.
+Amennyiben táblázatos adatokkal szeretnénk dolgozni, mint például táblázatokban vagy adatbázisokban tárolt adatokkal, a pandas egy megfelelő eszköz lehet. Segíthet az adatok elemzésében, tisztításában és feldolgozásában. A pandas gyakorlatilag egy keretet ad az adathalmazunknak, ezt \texttt{DataFrame}-nek hívják. A \texttt{DataFrame} egy kétdimenziós adatstruktúra, amely oszlopokban tárolhat különféle típusú adatokat (beleértve a karaktereket, egész számokat, lebegőpontos értékeket, kategorikus adatokat és egyebeket). Hasonlít egy táblázatra, SQL táblára vagy a data.frame-hez az R-ben.
+A pandas segítségével grafikonon is ábrázolhatjuk az adathalmazainkat, amihez a \textit{matplotlib} csomagot használja. Minden pandas által készített grafikon ábra egy matplotlib objektum.
+
+\SubSection{Scikit-learn}
+
+%TODO referencia: https://www.tutorialspoint.com/scikit_learn/scikit_learn_introduction.htm
+
+A \textit{Scikit-learn} (Sklearn) az egyik leghasznosabb és legerősebb könyvtár a gépi tanuláshoz Pythonban. Széles válogatást nyújt a gépi tanulás és a statisztikai modellezés hatékony eszközeiből, beleértve a klasszifikációt, a regressziót, a klaszterezést és a dimenziócsökkentést. A könyvtár maga nagyrészt Python nyelven készült, a \textit{NumPy}, a \textit{SciPy} és a \textit{Matplotlib} alapokra épül \cite{pedregosa2011scikit}.

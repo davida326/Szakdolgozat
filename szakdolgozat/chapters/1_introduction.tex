@@ -1,0 +1,19 @@
+\Chapter{Bevezetés}
+
+A mai világban nehezen elképzelhetőnek tűnnek azok a számítógépek, amik egyszerre csak egyetlen folyamatot képesek futtatni.
+A definiciója a single-tasking rendszereknek, kicsit értelmét vesztette a modern hardware-eken. Egy multi tasking rendszer már alapvető követelménynek tekinthető manapság az általános célú operációs rendszerek között. Egy ilyen rendszerben, több proccess verseng egymással és mindenki szeretne processzor időhöz jutni. Könnyen előfordulhat, hogy száz, akár kétszáz processz is várakozik, de nekünk nincs kétszáz processzorunk, hogy mindenki futni tudjon. Ezt egy "pszeudo párhuzamossággal" éri el a rendszer, ami azt jelenti, hogy váltogatva futnak és ez a váltogatás nagyon gyorsan történik. Egy másodperc alatt akár ezerszer is bekövetkezhet.
+A ütemező egyik fő feladata a CPU kiosztása, egy processz számára, a sok futásra kész folyamat közül. El kell döntenie, hogy melyik futásra kész állapotú processz kapja meg a CPU-t.
+Processz ütemezőnek hívják kernelnek azt a részét, amelyik ezzel a döntéssel foglalkozik.
+%https://users.iit.uni-miskolc.hu/~vinczed/ldapauth/osbsc2019/Operacios-rendszerek-jegyzet.pdf
+%https://www.cs.rutgers.edu/~pxk/416/notes/07-scheduling.html
+
+Négy olyan esemény fordulhat elő, ahol az ütemezőnek lépnie kell és döntést kell hoznia:
+\begin{itemize}
+  \item Az aktuális processz futó állapotból, blokkolt állapotba kerül, ez I/O kérés vagy gyerek processzre való várakozás miatt következhet be.
+  \item Egy I/O művelet befejeződésének hatására, egy blokkolt processz, futásra kész állapotra vált. Ekkor az ütemező eldönti, hogy az aktuálisan futó processzt preemptálja és megválassza az új kész állapotú processzt.
+  \item Egy processz terminálódásakor.
+  \item Óraeszköztől származó megszakítás hatására, a processz futó állapotból, futásra kész állapotra vált. 
+\end{itemize}
+
+A dolgozat azt vizsgálja, hogy a Linux kernel esetében milyen lehetőségek vannak az ütemezés optimalizálására, különféle operációs rendszer felhasználási módok esetén. Tipikusan elkülöníthetjük például az asztali környezettel használt, illetve a szerverként üzemeltetett rendszereket. A dolgozat áttekinti az ismert ütemezési algoritmusokat, ezt követően a linux kernel legújabb ütemezőjét mutatja be, ezután pedig Completely Fair Scheduler optimalizálásra keres megoldásokat. Benchmark programok segítségével figyelem meg, hogy az ütemezőn végzett változtatások milyen hatást gyakorolnak a teszt eredmények értékeire.
+Az így kapott adatok alapján, egy Machine learning program segítségével javaslatokat készítek, az ütemezőhöz tartozó kernel változók beállítására. A felhasználónak ki kell választania néhány beállítást, hogy mégis milyen felhasználási módra szeretné optimalizálni az ütemezőt és a model ezek alapján megpróbálja a legjobb beállítási lehetőségeket visszaadni. 
