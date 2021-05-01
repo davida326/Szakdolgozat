@@ -41,7 +41,7 @@ Processzoronként, két listát tart nyilván, amiben tárolódnak a futásra k�
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{images/activeExpiredRunqueue.png}
-\caption{Active and Expired Run queues}
+\caption{\textit{Active} és \textit{Expired run queues}}
 \label{fig:activeExpiredRunqueue}
 \end{figure}
 
@@ -77,7 +77,7 @@ ahol az időszelet (\texttt{time\_slice}) értéke ezredmásodpercben van megadv
 %TODO referencia: https://elixir.bootlin.com/linux/v5.8.5/source/kernel/sched/fair.c
 %TODO referencia könyvből: Linux Kernel Development 3rd Edition 51.oldal
 
-\Section{A linux ütemező felépítése}
+\Section{A Linux ütemezőjének felépítése}
 
 A GNU/Linux operációs rendszer elsődlegesen asztali gépekhez lett tervezve, ennek ellenére hamar multi-dimenziós operációs rendszerré nőtte ki magát, széles körben használják beágyazott rendszereken, szervereken, mainframe-eken és szuperszámítógépeken is. Különböző platformok is befogadták, mint például valós idejű rendszerek, SMP, virtualizáció. Az ilyen változatos platformok miatt, alakultak ki a típusai a processzeknek. Egy asztali rendszeren, többnyire magas interaktivitású processzeket kell ütemezni, amik I/O igényesek, a valós idejű rendszereken pedig inkább  determinisztikus processzek a jellemzőek. A különböző típusú processzeket, egymástól eltérő heurisztikus módszerekkel ütemezhetjük fair módon.
 
@@ -548,13 +548,13 @@ Ebből kifolyólag az is megtörténhet, hogy az A processz még több szálon s
 Annak érdekében, hogy ezt az igazságtalan időszelet kiosztást elkerüljük, a CFS csoportos ütemezést használ. Itt konkrétan a csoport kapja meg a processzor időt, és nem a szálak külön-külön.
 A CFS taszk csoportok, a \texttt{sched\_entity} strúktúra egy része, és minden csoport megfeleltethető egy ütemezési entitásnak.
 
-Áttekintés képpen a \textit{runqueue} és a tasztstruktúra hierarchiáját láthatjuk \aref{fig:structurehierarchi}. ábrán.
+Áttekintés képpen a \textit{runqueue} és a tasztstruktúra hierarchiáját láthatjuk \aref{fig:structrb}. ábrán.
 
 \begin{figure}[h!]
 \centering
 \includegraphics[width=\textwidth]{images/structureHierarchy.png}
 \caption{Struktúra hierarchia}
-\label{fig:structurehierarchi}
+\label{fig:structrb}
 \end{figure}
 
 \Section{Kernel modulok}
