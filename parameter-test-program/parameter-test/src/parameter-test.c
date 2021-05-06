@@ -78,7 +78,7 @@ void preparations(char *testName){
             searchForNodeValues(nodeList->element,doc,"Name",&entryList,&num); // Minden más beállításhoz, megtalálható az .xml fájlban
             printReverse(entryList,num+1,win);                                 // a lehetséges opciók. Ezt egy másik láncolt listában tárolom.
             yline=yline+num+1;
-            mvwprintw(win,yline,1,"Write the configuration number please, from above");yline++;
+            mvwprintw(win,yline,1,"Write the configuration number from the list above");yline++;
             mvwprintw(win,yline,1,"Configuration(positive integer):");yline++;
         }
         
