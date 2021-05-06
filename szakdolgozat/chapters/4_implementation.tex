@@ -183,7 +183,7 @@ Ez az opció késlelteti a preempció hatásait és csökkenti a túlütemezést
 
 \item \texttt{sched\_tunable\_scaling}
 
-Az ütemező hangoló paramétereket milyen mértékben befolyásolhatja, ehhez három féle opció is rendelkezésre áll.
+Az ütemező hangoló paramétereket milyen mértékben szabályozhatja a kernel, amihez három féle opció is rendelkezésre áll.
 \begin{enumerate}
 \item \texttt{SCHED\_TUNABLESCALING\_NONE}
 
@@ -300,7 +300,7 @@ Az így kapott fájl formátuma JSON típusú, amely előnyös a későbbi elemz
 % \SubSection{\textit{SchedulerTuneML} program implentációja}
 
 A \textit{SchedulerTuneML} program Python programozási nyelven készítettem, több különböző modul felhasználásával.
-A program célja, hogy a \textit{parameter-test} program által készített JSON fájlokat feldolgozza. A fájlból kinyert adatokat elemzi, besorolja őket csoportokba, diagrammokat készít ezekből és javaslatokat tesz a kernel változók értékeinek beállítására, az adott felhasználási módhoz viszonyítva.
+A program célja, hogy a \textit{parameter-test} program által készített JSON fájlokat feldolgozza. A fájlból kinyert adatokat elemzi, előkészíti az adathalmazt és miután a gépi tanulás befejeződött, javaslatokat tesz a kernel változók értékeinek beállítására, az adott felhasználási módhoz viszonyítva.
 
 \SubSection{Adatok előkészítése az elemzéshez}
 
