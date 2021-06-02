@@ -82,10 +82,10 @@ A jelenlegi Linux kernel ütemező, a Completely Fair Scheduler és ennek az opt
 % Konstans idejű ütemezés $\mathcal{O}(1)
 Annak érdekében, hogy ezt megvalósítsam, módosításokat kell végezzek az ütemezőn, amit megtehetek többféleképpen például:
 \begin{itemize}
-\pause
+
 \item Módosítom konkrétan a forráskódot.
 %Ezzel a probléma hogy minden módosítás után, újra kell fordítanom a kernelt és ezután kell megfigyelem a módosítások hatásait. Ez elég időigényes és mellesleg a forráskód sem túl rövid. Jelenleg olyan 11ezer sor, a cfs rész
-\pause
+
 \item Az ütemezőhöz kapcsolódó kernel változókat módosítom.
 %Én ezt az utóbbit választottam, mivel ezeknek van egy olyan tulajdonságuk, hogy futásidőben is módosíthatók.
 \end{itemize}
@@ -175,12 +175,9 @@ A változókat intervallumaik szerint négy részre szedtem szét és az összes
 Ennek az automatizálására készítettem a \textit{Parameter-test} programot, ami C programozási nyelv felhasználásval készült. 
 A program feladatai:
 \begin{itemize}
-\pause
 \item Előkészíteni a Phoronix Test Suite programot batch tesztelési módra.
 %Itt főként az xml konfigurációs fájlok írására gondolok, de a program itt kapcsolja ki  a \texttt{sched\_tunable\_scaling} változót is.
-\pause
 \item A kernel változók és prioritás értékeit módosítania kell.
-\pause
 \item Amikor végzett a benchmark egy adott mintaszámmal, a kapott értéket le kell mentenie egy fájlba.
 \end{itemize}
 \end{frame}
